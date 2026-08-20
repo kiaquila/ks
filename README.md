@@ -134,11 +134,11 @@ node scripts/check-repository.mjs
 ```
 
 ```bash
-npm --prefix ks/website run check
+npm --prefix website run check
 ```
 
 Local preview:
 
 ```bash
-npm --prefix ks/website run dev
+npm --prefix website run dev
 ```

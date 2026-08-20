@@ -5,15 +5,15 @@ import test from "node:test";
 
 const root = resolve(import.meta.dirname, "..");
 const wrapper = await readFile(
-  resolve(root, "ks/website/production/server-deploy.sh"),
+  resolve(root, "website/production/server-deploy.sh"),
   "utf8"
 );
 const installer = await readFile(
-  resolve(root, "ks/website/production/install-deploy-access.sh"),
+  resolve(root, "website/production/install-deploy-access.sh"),
   "utf8"
 );
 const sshCommand = await readFile(
-  resolve(root, "ks/website/production/ssh-command.sh"),
+  resolve(root, "website/production/ssh-command.sh"),
   "utf8"
 );
 
@@ -28,9 +28,17 @@ test("the server wrapper accepts only validated staged candidates", () => {
   assert.match(wrapper, /KS_PRODUCTION_DEPLOYED/);
   assert.match(wrapper, /Requested revision is absent from the trusted source mirror/);
   assert.match(wrapper, /Staged deployment payload does not match the trusted source revision/);
-  assert.match(wrapper, /Current trusted main ks tree differs from the registered candidate/);
+  assert.match(wrapper, /Current trusted main website tree differs from the registered candidate/);
   assert.match(wrapper, /-g ksdeploy -m 0710/);
   assert.match(wrapper, /diff --recursive --brief --no-dereference/);
+  assert.match(wrapper, /source_remote="git@github\.com:kiaquila\/ks\.git"/);
+  // Candidate, current trusted main, and archived payload are all compared
+  // through the website subtree, never the whole root, so a governance-only
+  // commit cannot invalidate an approved deployment candidate.
+  assert.match(wrapper, /rev-parse "\$trusted_main:website"/);
+  assert.match(wrapper, /rev-parse "\$revision:website"/);
+  assert.match(wrapper, /archive --format=tar "\$revision:website"/);
+  assert.doesNotMatch(wrapper, /rev-parse "\$(?:trusted_main|revision)"\s/);
   assert.match(wrapper, /trap cleanup EXIT/);
   assert.match(wrapper, /rsync --archive --delete --chown=root:root "\$trusted_payload\//);
   assert.match(
@@ -52,6 +60,7 @@ test("the deploy account is limited to the root-owned wrapper", () => {
   assert.match(installer, /chmod 0640 "\/home\/\$deploy_user\/.ssh\/authorized_keys"/);
   assert.match(installer, /ssh-command\.sh/);
   assert.match(installer, /ks-production-source/);
+  assert.match(installer, /source_remote="git@github\.com:kiaquila\/ks\.git"/);
   assert.match(installer, /git init --bare/);
   assert.match(installer, /chmod 0700 "\$source_git_dir"/);
   assert.match(installer, /-g "\$deploy_user" -m 0710/);

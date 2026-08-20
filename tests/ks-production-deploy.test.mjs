@@ -47,7 +47,7 @@ test("no second workflow can drive the production environment", () => {
 test("production deploy is push-only, KS-scoped, main-only, and serialized", () => {
   assert.match(workflow, /^on:\n  push:\n/m);
   assert.match(workflow, /branches:\n\s+- main/);
-  assert.match(workflow, /paths:\n\s+- "ks\/\*\*"/);
+  assert.match(workflow, /paths:\n\s+- "website\/\*\*"/);
   assert.doesNotMatch(workflow, /^\s*pull_request:/m);
   const deployJob = workflow.slice(workflow.indexOf("  deploy:"));
   assert.match(deployJob, /group: ks-production-deploy/);
@@ -89,7 +89,7 @@ test("production credentials are isolated to the production environment", () => 
 
 test("production deploy verifies the revision, pages, cache purge, and asset hash", () => {
   assert.match(workflow, /KS_DESIGN_EXPECTED_REVISION: \$\{\{ github\.sha \}\}/);
-  assert.match(workflow, /ks\/website\/production\/deploy\.sh/);
+  assert.match(workflow, /^\s+website\/production\/deploy\.sh$/m);
   assert.match(workflow, /https:\/\/ks-design\.art\/es\//);
   assert.match(workflow, /https:\/\/ks-design\.art\/en\//);
   const spanishSmokeCheck = workflow
@@ -115,7 +115,7 @@ test("production deploy verifies the revision, pages, cache purge, and asset has
     /test "\$legacy_english_redirect" = "https:\/\/ks-design\.art\/"/
   );
   assert.match(workflow, /purge_cache/);
-  assert.match(workflow, /sha256sum ks\/website\/src\/js\/site\.js/);
+  assert.match(workflow, /sha256sum website\/src\/js\/site\.js/);
   assert.ok(workflow.indexOf("purge_cache") < workflow.indexOf("https://ks-design.art/es/"));
 });
 

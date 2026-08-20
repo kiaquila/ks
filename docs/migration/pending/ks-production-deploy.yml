@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - "ks/**"
+      - "website/**"
 
 permissions:
   contents: read
@@ -94,7 +94,7 @@ jobs:
             UserKnownHostsFile $known_hosts_file
           EOF
 
-          ks/website/production/deploy.sh
+          website/production/deploy.sh
           if [[ -f "$KS_DESIGN_DEPLOY_STATUS_FILE" ]] &&
             [[ "$(<"$KS_DESIGN_DEPLOY_STATUS_FILE")" == "skipped" ]]; then
             echo "current=false" >> "$GITHUB_OUTPUT"
@@ -174,7 +174,7 @@ jobs:
             UserKnownHostsFile $known_hosts_file
           EOF
 
-          ks/website/production/deploy.sh
+          website/production/deploy.sh
           if [[ -f "$KS_DESIGN_DEPLOY_STATUS_FILE" ]] &&
             [[ "$(<"$KS_DESIGN_DEPLOY_STATUS_FILE")" == "skipped" ]]; then
             echo "A newer eligible KS deployment has already reached cz."
@@ -211,6 +211,6 @@ jobs:
             --header 'Cache-Control: no-cache' \
             --output "$production_asset" \
             "https://ks-design.art/assets/site.js?revision=$REVISION"
-          expected="$(sha256sum ks/website/src/js/site.js | cut -d ' ' -f 1)"
+          expected="$(sha256sum website/src/js/site.js | cut -d ' ' -f 1)"
           actual="$(sha256sum "$production_asset" | cut -d ' ' -f 1)"
           test "$actual" = "$expected"

@@ -8,7 +8,7 @@ project_dir="/opt/ks-design-portfolio"
 state_file="/var/lib/ks-production/latest-candidate"
 lock_file="/var/lock/ks-production-deploy.lock"
 source_git_dir="/var/lib/ks-production/source.git"
-source_remote="git@github.com:kiaquila/web-design.git"
+source_remote="git@github.com:kiaquila/ks.git"
 source_key="/root/.ssh/ks-production-source"
 source_known_hosts="/root/.ssh/known_hosts"
 
@@ -20,16 +20,16 @@ fail() {
 [[ "${EUID}" -eq 0 ]] || fail "This wrapper must run as root."
 case "$command" in
   register)
-    [[ "$#" -eq 4 ]] || fail "Usage: register <revision> <ks-tree> <run-id>."
+    [[ "$#" -eq 4 ]] || fail "Usage: register <revision> <website-tree> <run-id>."
     revision="$2"
-    ks_tree="$3"
+    website_tree="$3"
     run_id="$4"
     staging_dir=""
     ;;
   deploy)
-    [[ "$#" -eq 5 ]] || fail "Usage: deploy <revision> <ks-tree> <run-id> <staging-dir>."
+    [[ "$#" -eq 5 ]] || fail "Usage: deploy <revision> <website-tree> <run-id> <staging-dir>."
     revision="$2"
-    ks_tree="$3"
+    website_tree="$3"
     run_id="$4"
     staging_dir="$5"
     ;;
@@ -38,7 +38,7 @@ case "$command" in
     ;;
 esac
 [[ "$revision" =~ ^[a-f0-9]{40}$ ]] || fail "Invalid source revision."
-[[ "$ks_tree" =~ ^[a-f0-9]{40}$ ]] || fail "Invalid ks tree hash."
+[[ "$website_tree" =~ ^[a-f0-9]{40}$ ]] || fail "Invalid website tree hash."
 [[ "$run_id" =~ ^[0-9]+$ ]] || fail "Invalid GitHub Actions run ID."
 if [[ "$command" == "deploy" ]]; then
   [[ "$staging_dir" =~ ^/var/lib/ks-production/staging/ks-"$revision"-[a-zA-Z0-9._-]+$ ]] ||
@@ -66,13 +66,13 @@ if [[ "$command" == "register" ]]; then
     echo "KS_PRODUCTION_DEPLOY_SKIPPED"
     exit 0
   fi
-  if (( run_id == latest_run )) && [[ -n "$latest_tree" && "$ks_tree" != "$latest_tree" ]]; then
-    fail "Run ID is already associated with a different ks tree."
+  if (( run_id == latest_run )) && [[ -n "$latest_tree" && "$website_tree" != "$latest_tree" ]]; then
+    fail "Run ID is already associated with a different website tree."
   fi
   if (( run_id > latest_run )); then
     state_tmp="${state_file}.tmp.$$"
     umask 077
-    printf '%s %s\n' "$run_id" "$ks_tree" > "$state_tmp"
+    printf '%s %s\n' "$run_id" "$website_tree" > "$state_tmp"
     chown root:root "$state_tmp"
     mv -f "$state_tmp" "$state_file"
   fi
@@ -84,7 +84,7 @@ if (( run_id != latest_run )); then
   echo "KS_PRODUCTION_DEPLOY_SKIPPED"
   exit 0
 fi
-[[ "$ks_tree" == "$latest_tree" ]] || fail "Registered deployment tree mismatch."
+[[ "$website_tree" == "$latest_tree" ]] || fail "Registered deployment tree mismatch."
 
 # The deploy SSH credential may only stage bytes; it cannot choose what Docker
 # executes. Fetch the current main tip through a separate root-owned read-only
@@ -101,17 +101,17 @@ GIT_SSH_COMMAND="ssh -i $source_key -o IdentitiesOnly=yes -o StrictHostKeyChecki
 trusted_main="$(git --git-dir="$source_git_dir" rev-parse refs/remotes/origin/main)"
 git --git-dir="$source_git_dir" cat-file -e "$revision^{commit}" ||
   fail "Requested revision is absent from the trusted source mirror."
-[[ "$(git --git-dir="$source_git_dir" rev-parse "$trusted_main:ks")" == "$ks_tree" ]] ||
-  fail "Current trusted main ks tree differs from the registered candidate."
-[[ "$(git --git-dir="$source_git_dir" rev-parse "$revision:ks")" == "$ks_tree" ]] ||
-  fail "Requested revision ks tree does not match the registered candidate."
+[[ "$(git --git-dir="$source_git_dir" rev-parse "$trusted_main:website")" == "$website_tree" ]] ||
+  fail "Current trusted main website tree differs from the registered candidate."
+[[ "$(git --git-dir="$source_git_dir" rev-parse "$revision:website")" == "$website_tree" ]] ||
+  fail "Requested revision website tree does not match the registered candidate."
 
 trusted_payload="$(mktemp -d /var/lib/ks-production/trusted-payload.XXXXXX)"
 cleanup() {
   rm -rf -- "$trusted_payload" "$staging_dir"
 }
 trap cleanup EXIT
-git --git-dir="$source_git_dir" archive --format=tar "$revision:ks/website" |
+git --git-dir="$source_git_dir" archive --format=tar "$revision:website" |
   tar -xf - -C "$trusted_payload"
 if ! diff --recursive --brief --no-dereference "$trusted_payload" "$staging_dir"; then
   fail "Staged deployment payload does not match the trusted source revision."

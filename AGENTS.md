@@ -225,7 +225,7 @@ The social card renders the real page fonts through headless Chrome, so it
 cannot drift from the design:
 
 ```bash
-node ks/website/scripts/make-og.mjs
+node website/scripts/make-og.mjs
 ```
 
 Portfolio card screenshots, from the live stages. Every card is 1200×750 and
@@ -255,7 +255,7 @@ node scripts/check-repository.mjs
 ```
 
 ```bash
-npm --prefix ks/website run check
+npm --prefix website run check
 ```
 
 Tests cover the client's wording, the price list, the multilingual contract
