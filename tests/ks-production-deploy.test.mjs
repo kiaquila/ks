@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { readFile } from "node:fs/promises";
 import { resolve } from "node:path";
 import test from "node:test";
@@ -11,10 +12,37 @@ import {
 } from "../scripts/wait-for-production-checks.mjs";
 
 const root = resolve(import.meta.dirname, "..");
-const workflow = await readFile(
-  resolve(root, ".github/workflows/ks-production-deploy.yml"),
-  "utf8"
+
+// The migration parks the production workflow outside .github/workflows so a
+// bootstrapped repository has no way to deploy. The reviewed cutover pull
+// request moves the same file back. Exactly one copy may exist at any time, so
+// the old and the new deployment path can never run against each other.
+const ARMED_WORKFLOW = ".github/workflows/ks-production-deploy.yml";
+const PARKED_WORKFLOW = "docs/migration/pending/ks-production-deploy.yml";
+
+const presentWorkflows = [ARMED_WORKFLOW, PARKED_WORKFLOW].filter((path) =>
+  existsSync(resolve(root, path))
 );
+assert.equal(
+  presentWorkflows.length,
+  1,
+  `Exactly one production workflow copy must exist; found ${presentWorkflows.join(", ") || "none"}`
+);
+const workflowPath = presentWorkflows[0];
+const workflow = await readFile(resolve(root, workflowPath), "utf8");
+
+test("no second workflow can drive the production environment", () => {
+  const workflowsDir = resolve(root, ".github/workflows");
+  const productionWorkflows = (existsSync(workflowsDir) ? readdirSync(workflowsDir) : [])
+    .filter((name) => /\.ya?ml$/.test(name))
+    .filter((name) => /environment:\n\s+name: production/.test(
+      readFileSync(resolve(workflowsDir, name), "utf8")
+    ));
+  assert.deepEqual(
+    productionWorkflows,
+    workflowPath === ARMED_WORKFLOW ? ["ks-production-deploy.yml"] : []
+  );
+});
 
 test("production deploy is push-only, KS-scoped, main-only, and serialized", () => {
   assert.match(workflow, /^on:\n  push:\n/m);
