@@ -119,11 +119,33 @@ test("production deploy verifies the revision, pages, cache purge, and asset has
   assert.ok(workflow.indexOf("purge_cache") < workflow.indexOf("https://ks-design.art/es/"));
 });
 
-test("required checks include every push gate and the PR-only Codex gate", () => {
-  assert.deepEqual(PULL_REQUEST_CHECKS, [...PUSH_CHECKS, "Codex Review"]);
-  assert.ok(PUSH_CHECKS.includes("repository-guard"));
-  assert.ok(PUSH_CHECKS.includes("ks-website"));
-  assert.ok(PUSH_CHECKS.includes("osv-scan"));
+test("required checks are this repository's real contexts and exclude the deploy", () => {
+  assert.deepEqual(PUSH_CHECKS, ["project-ci", "repository-guard", "osv-scan"]);
+  assert.deepEqual(PULL_REQUEST_CHECKS, [
+    ...PUSH_CHECKS,
+    "baseline-source-verification",
+    "Codex Review"
+  ]);
+  const workflows = readdirSync(resolve(root, ".github/workflows"))
+    .filter((name) => /\.ya?ml$/.test(name));
+  const publishedJobNames = new Set(
+    workflows.flatMap((name) =>
+      [...readFileSync(resolve(root, ".github/workflows", name), "utf8")
+        .matchAll(/^\s{4}name: (.+)$/gm)].map((match) => match[1].trim())
+    )
+  );
+  // Every push gate must be a context some other workflow really publishes,
+  // otherwise the deploy would wait forever on a name that never appears.
+  for (const check of PUSH_CHECKS) assert.ok(publishedJobNames.has(check), check);
+  const baselineWorkflow = readFileSync(
+    resolve(root, ".github/workflows/baseline-source-verification.yml"),
+    "utf8"
+  );
+  assert.match(baselineWorkflow, /-f name=baseline-source-verification/);
+  assert.match(baselineWorkflow, /workflow_run\.event == 'pull_request'/);
+  // The deploy job may not gate on itself.
+  const deployJobNames = [...workflow.matchAll(/^\s{4}name: (.+)$/gm)].map((m) => m[1].trim());
+  for (const name of deployJobNames) assert.ok(!PULL_REQUEST_CHECKS.includes(name), name);
 });
 
 test("required check evaluation uses the newest run and fails closed", () => {

@@ -6,18 +6,20 @@ import { pathToFileURL } from "node:url";
 const DEFAULT_INTERVAL_MS = 15_000;
 const DEFAULT_ATTEMPTS = 120;
 
+// Contexts this repository actually publishes on a push to main. The
+// production deploy workflow must never list itself here.
 export const PUSH_CHECKS = Object.freeze([
+  "project-ci",
   "repository-guard",
-  "alex-neon-website",
-  "alphacentr-site",
-  "chaijana-menu",
-  "chaijana-website",
-  "ks-website",
   "osv-scan"
 ]);
 
+// baseline-source-verification is published by a workflow_run handler that only
+// fires for pull requests, and Codex Review is a pull-request gate, so both are
+// verified on the reviewed head rather than on the merge commit.
 export const PULL_REQUEST_CHECKS = Object.freeze([
   ...PUSH_CHECKS,
+  "baseline-source-verification",
   "Codex Review"
 ]);
 

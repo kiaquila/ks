@@ -246,16 +246,31 @@ and scale to the card sizes.
 
 Neither is part of `npm run build`; both outputs are committed.
 
+## Shared baseline
+
+Policy files, workflows, and the shared scripts and tests under `scripts/` and
+`tests/` that carry a managed path in
+[`.web-design/managed-files.json`](./.web-design/managed-files.json) come from
+`kiaquila/web-design` and are byte-pinned in `.web-design/lock.json`. Follow
+every document under `docs/standards/`. Do not edit a managed file to make a
+check pass; adopt the change upstream and re-pin through a reviewed update pull
+request.
+
+Project-owned, and therefore editable here: `website/`, `source-assets/`,
+`README.md`, this file, `third-party-notices.md`, the KS production workflow,
+`scripts/wait-for-production-checks.mjs`, and
+`tests/ks-production-*.test.mjs`.
+
 ## Checks
 
 From the repository root:
 
 ```bash
-node scripts/check-repository.mjs
+npm run preflight
 ```
 
 ```bash
-npm --prefix website run check
+npm run project:check
 ```
 
 Tests cover the client's wording, the price list, the multilingual contract

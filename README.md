@@ -118,8 +118,10 @@ container only on `127.0.0.1:3100`, and is routed by a dedicated host-Nginx
 virtual host. It does not join, restart, or edit the `capsule-zero` Compose
 project or its ports.
 
-Changes under `ks/**` deploy automatically from merged, fully checked pull
-requests after the resulting push reaches `main`. GitHub Environment
+Changes under `website/**` deploy automatically from merged, fully checked
+pull requests after the resulting push reaches `main`. The deploy workflow is
+currently parked outside `.github/workflows/` for the migration — see
+[`docs/migration/README.md`](./docs/migration/README.md). GitHub Environment
 configuration, verification, cache purge, and recovery steps are documented in
 [`website/production/README.md`](./website/production/README.md). Cloudflare
 Workers remains PR-preview-only; its permanent `ks.ks-design.workers.dev` route
@@ -127,14 +129,27 @@ is disabled.
 
 ## Checks
 
-From the repository root:
+From the repository root, the shared governance baseline:
 
 ```bash
-node scripts/check-repository.mjs
+npm run preflight
 ```
+
+and the project's own checks — the site build and tests, then the production
+regression tests:
+
+```bash
+npm run project:check
+```
+
+Either half can be run on its own:
 
 ```bash
 npm --prefix website run check
+```
+
+```bash
+node --test tests/ks-production-deploy.test.mjs tests/ks-production-server-deploy.test.mjs
 ```
 
 Local preview:
@@ -142,3 +157,16 @@ Local preview:
 ```bash
 npm --prefix website run dev
 ```
+
+## Governance baseline
+
+Shared policy, workflows, and checks come from `kiaquila/web-design` and are
+pinned in [`.web-design/lock.json`](./.web-design/lock.json). Those files are
+managed: change them upstream and adopt the change through a reviewed update
+pull request, never by editing them here. The product tree (`website/`,
+`source-assets/`) and the whole production stack are project-owned.
+
+The pinned baseline is currently the provisional `0.1.0-dev` source state at
+`kiaquila/web-design@f042879d8b6d11cc80021bb19cc4aacd645cc621`. It must be
+re-pinned to the first immutable stable release once `kiaquila/web-design`
+publishes one — see [`docs/migration/provenance.md`](./docs/migration/provenance.md).

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "project": {
+    "slug": "ks",
+    "profile": "custom-production",
+    "productPaths": [
+      "website",
+      "source-assets"
+    ]
+  },
+  "commands": {
+    "check": [
+      {
+        "name": "project-check-1",
+        "run": "npm --prefix website run check"
+      },
+      {
+        "name": "project-check-2",
+        "run": "node --test tests/ks-production-deploy.test.mjs tests/ks-production-server-deploy.test.mjs"
+      }
+    ]
+  },
+  "deployment": {
+    "provider": "custom",
+    "productionBranch": "main",
+    "rootDirectory": "website"
+  },
+  "governance": {
+    "source": "kiaquila/web-design",
+    "channel": "v1",
+    "mode": "consumer"
+  },
+  "requiredChecks": [
+    "project-ci",
+    "repository-guard",
+    "baseline-source-verification",
+    "osv-scan",
+    "Codex Review"
+  ]
+}
