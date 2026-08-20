@@ -6,15 +6,17 @@ production deployment stack is present but **disarmed**.
 
 ## What is parked
 
-`docs/migration/pending/ks-production-deploy.yml` is the KS production deploy
-workflow. It is a real workflow file kept outside `.github/workflows/`, so
-GitHub never schedules it. A bootstrapped clone of this repository therefore has
-no code path that can reach the production server, the Tailnet, Cloudflare, or
+Between the bootstrap commit and this cutover,
+`docs/migration/pending/ks-production-deploy.yml` held the KS production deploy
+workflow: a real workflow file kept outside `.github/workflows/`, so GitHub
+never scheduled it. A bootstrapped clone of this repository therefore had no
+code path that could reach the production server, the Tailnet, Cloudflare, or
 `ks-design.art`.
 
-The file is parked, never deleted: the cutover pull request moves the same file
-back into `.github/workflows/` after its content, credentials, and server-side
-counterparts have been reviewed.
+The file was parked, never deleted. **This pull request moves the same file
+back into `.github/workflows/`** and is the moment production becomes
+reachable from this repository. Merge it only after steps 1 to 4 below are
+done and verified.
 
 ## Invariant: exactly one production workflow
 
@@ -34,7 +36,7 @@ same time.
 3. The `kiaquila/web-design` production workflow is disabled.
 4. The server wrapper and the trusted source mirror are pointed at this
    repository.
-5. The reviewed cutover pull request returns the workflow to
+5. The reviewed cutover pull request (this one) returns the workflow to
    `.github/workflows/`.
 6. The resulting deployment is verified against the exact commit SHA.
 7. A rollback window is observed.
