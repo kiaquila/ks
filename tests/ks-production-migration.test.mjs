@@ -80,11 +80,23 @@ function buildFakeHost() {
   writeFileSync(oldSshCommand, "#!/usr/bin/env bash\necho old web-design forced command\n");
   chmodSync(oldSshCommand, 0o755);
 
+  // A real old mirror: the rollback has to be able to read the recorded
+  // production tree out of it, so an empty bare repository will not do.
+  const oldWork = mkdtempSync(join(tmpdir(), "ks-old-work-"));
+  mkdirSync(join(oldWork, "website"), { recursive: true });
+  writeFileSync(join(oldWork, "website/index.html"), "<!doctype html>old\n");
+  execFileSync("git", ["init", "--quiet", "--initial-branch=main", oldWork]);
+  execFileSync("git", ["-C", oldWork, "config", "user.email", "test@test"]);
+  execFileSync("git", ["-C", oldWork, "config", "user.name", "test"]);
+  execFileSync("git", ["-C", oldWork, "add", "-A"]);
+  execFileSync("git", ["-C", oldWork, "commit", "--quiet", "-m", "old production"]);
+  const oldWebsiteTree = git(["rev-parse", "HEAD:website"], oldWork);
   const oldMirror = join(root, "var/lib/ks-production/source.git");
-  execFileSync("git", ["init", "--quiet", "--bare", oldMirror]);
-  execFileSync("git", ["--git-dir", oldMirror, "remote", "add", "origin", "git@github.com:kiaquila/web-design.git"]);
+  execFileSync("git", ["clone", "--quiet", "--bare", oldWork, oldMirror]);
+  execFileSync("git", ["--git-dir", oldMirror, "remote", "set-url", "origin", "git@github.com:kiaquila/web-design.git"]);
+  execFileSync("git", ["--git-dir", oldMirror, "update-ref", "refs/remotes/origin/main", git(["rev-parse", "HEAD"], oldWork)]);
 
-  writeFileSync(join(root, "var/lib/ks-production/latest-candidate"), "4242 " + "a".repeat(40) + "\n");
+  writeFileSync(join(root, "var/lib/ks-production/latest-candidate"), `4242 ${oldWebsiteTree}\n`);
   writeFileSync(join(root, "root/.ssh/known_hosts"), "github.com ssh-ed25519 AAAA-test\n");
   const oldSourceKey = makeKey(keys, "old-source");
   cpSync(oldSourceKey.private, join(root, "root/.ssh/ks-production-source"));
@@ -105,7 +117,7 @@ function buildFakeHost() {
   execFileSync("git", ["clone", "--quiet", "--bare", ksWork, ksOrigin]);
   const newMain = git(["rev-parse", "HEAD"], ksWork);
 
-  return { root, keys, oldActionKey, newActionKey, newSourceKey, oldSourceKey, authorizedKeys, oldWrapper, oldSshCommand, oldMirror, ksOrigin, newMain };
+  return { root, keys, oldActionKey, newActionKey, newSourceKey, oldSourceKey, authorizedKeys, oldWrapper, oldSshCommand, oldMirror, oldWebsiteTree, ksOrigin, newMain };
 }
 
 function runMigration(host, { env = {}, args = {} } = {}) {
@@ -115,7 +127,7 @@ function runMigration(host, { env = {}, args = {} } = {}) {
     "--expected-new-main": host.newMain,
     "--expected-old-wrapper-sha256": sha256(host.oldWrapper),
     "--expected-old-run-id": "4242",
-    "--expected-old-tree": "a".repeat(40),
+    "--expected-old-tree": host.oldWebsiteTree,
     "--expected-running-revision": "b".repeat(40),
     ...args
   };
@@ -160,7 +172,7 @@ linuxTest("a successful migration swaps every trust facet and preserves rollback
   assert.equal(readFileSync(join(stateDir, "latest-candidate"), "utf8"), "", "state namespace reset");
   const backup = join(stateDir, "web-design-trust-backup");
   assert.equal(sha256(join(backup, "authorized_keys")), oldAuthorizedSha, "old admission preserved");
-  assert.equal(readFileSync(join(backup, "latest-candidate"), "utf8"), "4242 " + "a".repeat(40) + "\n");
+  assert.equal(readFileSync(join(backup, "latest-candidate"), "utf8"), `4242 ${host.oldWebsiteTree}\n`);
   assert.ok(existsSync(join(backup, "source.git")), "old mirror preserved");
   const mirrorMode = execFileSync("stat", ["-c", "%a", join(stateDir, "source.git")], { encoding: "utf8" }).trim();
   assert.equal(mirrorMode, "700", "installed mirror stays root-only despite the umask");
@@ -181,7 +193,7 @@ linuxTest("a key the host already trusts is refused before any write", () => {
   const result = runMigration(host, { args: { "--new-action-public-key-file": host.oldActionKey.public } });
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /must differ from every key the host already trusts/);
-  assert.equal(readFileSync(join(host.root, "var/lib/ks-production/latest-candidate"), "utf8"), "4242 " + "a".repeat(40) + "\n");
+  assert.equal(readFileSync(join(host.root, "var/lib/ks-production/latest-candidate"), "utf8"), `4242 ${host.oldWebsiteTree}\n`);
   assert.equal(
     git(["--git-dir", host.oldMirror, "remote", "get-url", "origin"], host.root),
     "git@github.com:kiaquila/web-design.git"
@@ -244,7 +256,7 @@ linuxTest("a wrapper whose bytes differ from reviewed main is refused even if gr
     "--expected-new-main", host.newMain,
     "--expected-old-wrapper-sha256", sha256(host.oldWrapper),
     "--expected-old-run-id", "4242",
-    "--expected-old-tree", "a".repeat(40),
+    "--expected-old-tree", host.oldWebsiteTree,
     "--expected-running-revision", "b".repeat(40)
   ], {
     encoding: "utf8",
@@ -295,7 +307,7 @@ linuxTest("a failure after the swap begins rolls the trust path back and verifie
   );
   assert.equal(
     readFileSync(join(host.root, "var/lib/ks-production/latest-candidate"), "utf8"),
-    "4242 " + "a".repeat(40) + "\n",
+    `4242 ${host.oldWebsiteTree}\n`,
     "old state restored"
   );
   assert.ok(!existsSync(join(host.root, "var/lib/ks-production/trust-repository")), "namespace not left behind");
@@ -362,6 +374,20 @@ linuxTest("idempotent success is refused when the admission gained an extra line
   writeFileSync(host.authorizedKeys, current + `restrict,command="/usr/local/sbin/ks-production-ssh-command" ${extraKey.publicKey}\n`);
   const replay = runMigration(host);
   assert.notEqual(replay.status, 0, "drifted admission must not be blessed as already-migrated");
+  assert.doesNotMatch(replay.stdout, /already migrated/);
+});
+
+linuxTest("a gutted backup mirror refuses the idempotent verdict", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  const mirror = join(host.root, "var/lib/ks-production/web-design-trust-backup/source.git");
+  // Config and remote survive; refs and objects do not.
+  rmSync(join(mirror, "refs"), { recursive: true, force: true });
+  rmSync(join(mirror, "objects"), { recursive: true, force: true });
+  mkdirSync(join(mirror, "refs"), { recursive: true });
+  mkdirSync(join(mirror, "objects"), { recursive: true });
+  const replay = runMigration(host);
+  assert.notEqual(replay.status, 0, "a mirror that cannot supply the recorded tree is not a rollback package");
   assert.doesNotMatch(replay.stdout, /already migrated/);
 });
 

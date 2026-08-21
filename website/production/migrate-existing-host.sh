@@ -186,6 +186,12 @@ already_migrated() {
   [[ -d "$backup_dir/source.git" && ! -L "$backup_dir/source.git" ]] || return 1
   [[ "$(git --git-dir="$backup_dir/source.git" rev-parse --is-bare-repository 2>/dev/null)" == "true" ]] || return 1
   [[ "$(git --git-dir="$backup_dir/source.git" remote get-url origin 2>/dev/null)" == "$old_remote" ]] || return 1
+  # Shape and remote survive a mirror that has lost its refs or objects, and
+  # such a mirror cannot supply the revision the rollback would redeploy. The
+  # recorded production tree must actually be readable, and the object graph
+  # must be connected.
+  git --git-dir="$backup_dir/source.git" cat-file -e "${expected_old_tree}^{tree}" 2>/dev/null || return 1
+  git --git-dir="$backup_dir/source.git" fsck --connectivity-only --no-progress >/dev/null 2>&1 || return 1
   # The staged key copy is retained through the rollback window; the installed
   # key matching it is what proves the new credential is the one in service.
   cmp --silent "$source_key" "$staged_source_key" 2>/dev/null || return 1
