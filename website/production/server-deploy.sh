@@ -111,10 +111,16 @@ GIT_SSH_COMMAND="ssh -i $source_key -o IdentitiesOnly=yes -o StrictHostKeyChecki
   git --git-dir="$source_git_dir" fetch --force --no-tags origin \
   '+refs/heads/main:refs/remotes/origin/main'
 trusted_main="$(git --git-dir="$source_git_dir" rev-parse refs/remotes/origin/main)"
-[[ "$trusted_main" == "$revision" ]] ||
-  fail "Requested revision is not the current trusted main revision."
 git --git-dir="$source_git_dir" cat-file -e "$revision^{commit}" ||
   fail "Requested revision is absent from the trusted source mirror."
+# Exact-head equality here would deadlock: the deploy workflow only triggers on
+# website changes, so a docs-only commit landing while this deployment waits
+# would advance main without creating a replacement run, and the pending
+# website change would be stranded forever. Ancestry pins the revision to
+# main's real history, and the tree comparisons below still guarantee that the
+# bytes deployed are exactly the current main's website content.
+git --git-dir="$source_git_dir" merge-base --is-ancestor "$revision" "$trusted_main" ||
+  fail "Requested revision is not on the trusted main history."
 [[ "$(git --git-dir="$source_git_dir" rev-parse "$trusted_main:website")" == "$website_tree" ]] ||
   fail "Current trusted main website tree differs from the registered candidate."
 [[ "$(git --git-dir="$source_git_dir" rev-parse "$revision:website")" == "$website_tree" ]] ||

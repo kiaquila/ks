@@ -31,7 +31,8 @@ test("the server wrapper accepts only validated staged candidates", () => {
   assert.match(wrapper, /KS_PRODUCTION_DEPLOY_SKIPPED/);
   assert.match(wrapper, /KS_PRODUCTION_DEPLOYED/);
   assert.match(wrapper, /Requested revision is absent from the trusted source mirror/);
-  assert.match(wrapper, /Requested revision is not the current trusted main revision/);
+  assert.match(wrapper, /Requested revision is not on the trusted main history/);
+  assert.match(wrapper, /merge-base --is-ancestor "\$revision" "\$trusted_main"/);
   assert.match(wrapper, /Staged deployment payload does not match the trusted source revision/);
   assert.match(wrapper, /Current trusted main website tree differs from the registered candidate/);
   assert.match(wrapper, /-g ksdeploy -m 0710/);
