@@ -382,10 +382,20 @@ linuxTest("a backup mirror missing the deployed commit refuses the idempotent ve
   const host = buildFakeHost();
   assert.equal(runMigration(host).status, 0);
   const mirror = join(host.root, "var/lib/ks-production/web-design-trust-backup/source.git");
-  // Drop the refs so the commit becomes unreachable, then prune it. The website
-  // tree object is re-written first so it survives on its own.
-  execFileSync("git", ["--git-dir", mirror, "update-ref", "-d", "refs/remotes/origin/main"]);
-  execFileSync("git", ["--git-dir", mirror, "update-ref", "-d", "refs/heads/main"], { stdio: "ignore" });
+  // Deleting refs alone leaves the commit readable, so it must actually be
+  // pruned. The website tree is re-anchored on its own ref first so it survives
+  // and the test isolates the missing commit rather than a missing tree.
+  execFileSync("git", ["--git-dir", mirror, "update-ref", "refs/keep/tree", host.oldWebsiteTree], { stdio: "ignore" });
+  for (const ref of ["refs/remotes/origin/main", "refs/heads/main"]) {
+    spawnSync("git", ["--git-dir", mirror, "update-ref", "-d", ref], { stdio: "ignore" });
+  }
+  execFileSync("git", ["--git-dir", mirror, "reflog", "expire", "--expire=now", "--all"], { stdio: "ignore" });
+  execFileSync("git", ["--git-dir", mirror, "gc", "--prune=now", "--quiet"], { stdio: "ignore" });
+  assert.notEqual(
+    spawnSync("git", ["--git-dir", mirror, "cat-file", "-e", `${host.oldCommit}^{commit}`]).status,
+    0,
+    "fixture must actually remove the commit"
+  );
   const replay = runMigration(host);
   assert.notEqual(replay.status, 0, "a mirror that cannot supply the deployed commit is not a rollback package");
   assert.doesNotMatch(replay.stdout, /already migrated/);

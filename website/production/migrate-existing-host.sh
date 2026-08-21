@@ -221,6 +221,17 @@ old_wrapper_sha256="$expected_old_wrapper_sha256"
   fail "The old trusted source directory is not a bare Git repository."
 [[ "$(git --git-dir="$source_git_dir" remote get-url origin)" == "$old_remote" ]] ||
   fail "The old trusted mirror does not target the recorded web-design remote."
+# The rollback redeploys the recorded running revision out of this mirror, so
+# the mirror must already be able to supply it — checked before the swap, not
+# only on a later replay.
+git --git-dir="$source_git_dir" cat-file -e "${expected_running_revision}^{commit}" 2>/dev/null ||
+  fail "The old mirror does not contain the recorded running revision."
+# The snapshot records the revision and the deployed tree separately; the old
+# wrapper will refuse a redeploy whose website tree does not match, so the two
+# must describe the same state.
+[[ "$(git --git-dir="$source_git_dir" rev-parse --verify --quiet "${expected_running_revision}:website" 2>/dev/null)" == "$expected_old_tree" ||
+   "$(git --git-dir="$source_git_dir" rev-parse --verify --quiet "${expected_running_revision}:ks/website" 2>/dev/null)" == "$expected_old_tree" ]] ||
+  fail "The recorded running revision's website tree is not the recorded deployment tree."
 [[ -f "$state_file" && ! -L "$state_file" ]] ||
   fail "The old deployment state file is missing or unsafe."
 [[ "$(<"$state_file")" == "$expected_old_run_id $expected_old_tree" ]] ||
@@ -359,11 +370,20 @@ trap cleanup EXIT
 
 # Backups first, then each swap step; order keeps every partial state
 # restorable from what the backup already holds.
-cp --preserve=mode,ownership,timestamps "$authorized_keys" "$backup_dir/authorized_keys"
-cp --preserve=mode,ownership,timestamps "$state_file" "$backup_dir/latest-candidate"
-cp --preserve=mode,ownership,timestamps "$wrapper_target" "$backup_dir/ks-production-deploy"
-cp --preserve=mode,ownership,timestamps "$source_key" "$backup_dir/ks-production-source"
-cp --preserve=mode,ownership,timestamps "$ssh_command_target" "$backup_dir/ks-production-ssh-command"
+# Each backup is staged and renamed into place, so a copy interrupted part-way
+# leaves no file for cleanup to restore. A half-written backup copied back over
+# a still-valid live file is worse than no rollback at all.
+backup_file() {
+  local live="$1" name="$2"
+  cp --preserve=mode,ownership,timestamps "$live" "$backup_dir/.$name.partial" ||
+    fail "Could not back up $name."
+  mv -f -- "$backup_dir/.$name.partial" "$backup_dir/$name"
+}
+backup_file "$authorized_keys" authorized_keys
+backup_file "$state_file" latest-candidate
+backup_file "$wrapper_target" ks-production-deploy
+backup_file "$source_key" ks-production-source
+backup_file "$ssh_command_target" ks-production-ssh-command
 # The rollback runbook validates this manifest before restoring anything:
 #   cd <backup-dir> && sha256sum -c manifest.sha256
 ( cd "$backup_dir" && sha256sum "${BACKED_UP_TRUST_FILES[@]}" > manifest.sha256 )

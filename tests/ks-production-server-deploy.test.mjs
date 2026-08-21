@@ -114,7 +114,8 @@ test("the existing-host migration is exact-head, idempotent, and rollback-preser
   assert.match(existingHostMigration, /Migration failed; restoring the recorded web-design trust path/);
   assert.match(existingHostMigration, /mv -- "\$source_git_dir" "\$backup_dir\/source\.git"/);
   assert.match(existingHostMigration, /mv -- "\$staged_source_git_dir" "\$source_git_dir"/);
-  assert.match(existingHostMigration, /cp --preserve=mode,ownership,timestamps "\$authorized_keys"/);
+  assert.match(existingHostMigration, /backup_file "\$authorized_keys" authorized_keys/);
+  assert.match(existingHostMigration, /mv -f -- "\$backup_dir\/\.\$name\.partial" "\$backup_dir\/\$name"/);
   assert.match(existingHostMigration, /printf '%s\\n' "\$new_authorized_line" >> "\$authorized_tmp"/);
   assert.doesNotMatch(existingHostMigration, /> "\$authorized_keys"/);
   assert.match(existingHostMigration, /KS_PRODUCTION_MIGRATION_BACKUP=/);
