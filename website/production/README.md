@@ -34,9 +34,12 @@ Production deploys automatically after a merged pull request changes
 `website/**`, or after the reviewed cutover changes the production workflow
 path itself. The resulting push to `main` must pass every push check plus the
 required checks on the reviewed pull-request head. GitHub and cz both require
-that triggering SHA to remain the exact current `main` head. A direct push, a
-pull-request event, a superseded SHA, or a red/missing check fails closed before
-production credentials are exposed.
+the triggering SHA to be on the current `main` history with a `website` tree
+equal to the current head's — so a docs-only commit landing later does not
+strand the deployment, while any website-changing advance invalidates it in
+favour of its own replacement run. A direct push, a pull-request event, a
+diverged SHA, or a red/missing check fails closed before production
+credentials are exposed.
 
 The workflow is [`.github/workflows/ks-production-deploy.yml`](../../.github/workflows/ks-production-deploy.yml).
 It uses the GitHub Environment `production`, whose deployment branch policy
@@ -77,8 +80,10 @@ The wrapper treats the staged directory as untrusted. It independently fetches
 `main` with a root-owned, read-only GitHub deploy key, requires the current
 trusted `website` tree to equal the candidate, archives `website` from the
 validated revision, and byte-compares it with the staged payload before Docker
-can read it. The trusted `main` revision must equal the candidate exactly; even
-an unrelated later commit invalidates an older candidate. The root source mirror is
+can read it. The candidate must be on the trusted `main` history and the
+current `main` website tree must equal the candidate's — an unrelated later
+commit leaves both true and the deployment proceeds, while a website-changing
+commit invalidates the candidate in favour of its replacement run. The root source mirror is
 `/var/lib/ks-production/source.git`; its
 key is `/root/.ssh/ks-production-source` and is separate from the GitHub
 Actions SSH key.

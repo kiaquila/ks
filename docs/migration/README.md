@@ -20,7 +20,9 @@ The workflow watches both `website/**` and its own
 `.github/workflows/ks-production-deploy.yml` path. The cutover merge therefore
 creates one honest first deployment without a fake product edit; later website
 changes keep the normal product-only trigger. Both GitHub and cz independently
-require the triggering SHA to remain the exact current `main` head.
+require the triggering SHA to be on the current `main` history with a
+`website` tree equal to the current head's, so an unrelated later commit
+cannot strand a pending deployment while a website change supersedes it.
 
 ## Invariant: exactly one production workflow
 
