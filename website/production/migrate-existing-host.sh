@@ -241,7 +241,10 @@ cleanup() {
     return 0
   fi
   echo "Migration failed; restoring the recorded web-design trust path." >&2
-  if [[ -d "$backup_dir/source.git" && ! -d "$source_git_dir" ]]; then
+  if [[ -d "$backup_dir/source.git" ]]; then
+    # The live path may already hold the new mirror; the backup holds the old
+    # one, so displacing the new copy loses nothing.
+    rm -rf -- "$source_git_dir"
     mv -- "$backup_dir/source.git" "$source_git_dir"
   fi
   if [[ -f "$backup_dir/authorized_keys" ]]; then

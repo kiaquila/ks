@@ -267,11 +267,12 @@ linuxTest("a failure after the swap begins rolls the trust path back and verifie
   const host = buildFakeHost();
   const oldAuthorizedSha = sha256(host.authorizedKeys);
   const oldWrapperSha = sha256(host.oldWrapper);
-  // Force a failure inside the swap: the post-backup step that installs the
-  // shared helper hits an unwritable libexec directory.
-  chmodSync(join(host.root, "usr/local/libexec"), 0o555);
+  // Force a failure inside the swap: installing the new wrapper needs to
+  // replace the file, which needs write on the sbin directory. The script
+  // recreates libexec itself, so that is not a usable failpoint; sbin is.
+  chmodSync(join(host.root, "usr/local/sbin"), 0o555);
   const result = runMigration(host);
-  chmodSync(join(host.root, "usr/local/libexec"), 0o755);
+  chmodSync(join(host.root, "usr/local/sbin"), 0o755);
   assert.notEqual(result.status, 0);
   assert.match(result.stderr, /Migration failed; restoring the recorded web-design trust path/);
   assert.match(result.stderr, /Rollback verified/);
