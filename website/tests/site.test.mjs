@@ -815,7 +815,7 @@ test("production runs as an isolated, hardened container", () => {
   assert.match(productionDeploy, /\/usr\/local\/sbin\/ks-production-deploy/);
   assert.match(productionServerDeploy, /\.State\.Health\.Status/);
   assert.match(productionServerDeploy, /org\.opencontainers\.image\.revision/);
-  assert.match(productionServerDeploy, /flock --exclusive 9/);
+  assert.match(productionServerDeploy, /open_production_lock "\$lock_file"/);
   assert.match(productionEdgeInstaller, /had_live_tls=false/);
   assert.match(productionEdgeInstaller, /backup_ready=false/);
   assert.match(productionEdgeInstaller, /restore_live_edge/);

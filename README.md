@@ -120,8 +120,10 @@ project or its ports.
 
 Changes under `website/**` deploy automatically from merged, fully checked
 pull requests after the resulting push reaches `main`. The deploy workflow is
-currently parked outside `.github/workflows/` for the migration — see
-[`docs/migration/README.md`](./docs/migration/README.md). GitHub Environment
+returned to `.github/workflows/` only by the reviewed cutover PR; that workflow
+also watches its own path so the merge produces the first exact-SHA deployment
+without a fake product change. Do not merge it before the prerequisites in
+[`docs/migration/README.md`](./docs/migration/README.md) hold. GitHub Environment
 configuration, verification, cache purge, and recovery steps are documented in
 [`website/production/README.md`](./website/production/README.md). Cloudflare
 Workers remains PR-preview-only; its permanent `ks.ks-design.workers.dev` route

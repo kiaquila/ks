@@ -30,12 +30,15 @@ Spaceship Advanced DNS carries these records with a 30-minute TTL:
 
 ## Deployment
 
-Production deploys automatically after a merged pull request changes `ks/**`
-and the resulting push to `main` passes every push check plus the required
-checks on the reviewed pull-request head. A direct push, a pull-request event,
-or a red/missing check fails closed before production credentials are exposed.
+Production deploys automatically after a merged pull request changes
+`website/**`, or after the reviewed cutover changes the production workflow
+path itself. The resulting push to `main` must pass every push check plus the
+required checks on the reviewed pull-request head. GitHub and cz both require
+that triggering SHA to remain the exact current `main` head. A direct push, a
+pull-request event, a superseded SHA, or a red/missing check fails closed before
+production credentials are exposed.
 
-The workflow is [`.github/workflows/ks-production-deploy.yml`](../../../.github/workflows/ks-production-deploy.yml).
+The workflow is [`.github/workflows/ks-production-deploy.yml`](../../.github/workflows/ks-production-deploy.yml).
 It uses the GitHub Environment `production`, whose deployment branch policy
 must allow `main` only. Configure these Environment values:
 
@@ -74,14 +77,13 @@ The wrapper treats the staged directory as untrusted. It independently fetches
 `main` with a root-owned, read-only GitHub deploy key, requires the current
 trusted `website` tree to equal the candidate, archives `website` from the
 validated revision, and byte-compares it with the staged payload before Docker
-can read it. This deliberately permits an unrelated later repository commit
-when `website/` itself has not changed, so a governance-only commit never
-invalidates an approved deployment candidate. The root source mirror is
+can read it. The trusted `main` revision must equal the candidate exactly; even
+an unrelated later commit invalidates an older candidate. The root source mirror is
 `/var/lib/ks-production/source.git`; its
 key is `/root/.ssh/ks-production-source` and is separate from the GitHub
 Actions SSH key.
 
-One-time cz setup first creates an Ed25519 key at
+One-time setup on a new cz host first creates an Ed25519 key at
 `/root/.ssh/ks-production-source`, adds its public half to this private
 repository as a **read-only GitHub deploy key**, and pins GitHub's SSH host key
 in `/root/.ssh/known_hosts`. The private key must remain root-readable only;
@@ -93,6 +95,31 @@ an interactive SSH session:
 ```bash
 sudo website/production/install-deploy-access.sh 'ssh-ed25519 AAAA… github-production'
 ```
+
+`install-deploy-access.sh` is not an existing-host migration. It validates any
+existing mirror before its first write and refuses a mirror that still targets
+`kiaquila/web-design`; this prevents a failed retarget from overwriting the old
+`authorized_keys`. For the live host, stage a new root-owned source key at
+`/root/.ssh/ks-production-source.ks`, add its public half to `kiaquila/ks` as a
+read-only deploy key, record the current authorization hash, deployment state,
+container revision and standalone `main` SHA, then run the reviewed transaction:
+
+```bash
+sudo website/production/migrate-existing-host.sh \
+  'ssh-ed25519 AAAA… ks-production' \
+  '<old-revision>' '<old-run-id>' '<old-tree>' \
+  '<authorized-keys-sha256>' '<standalone-main-sha>'
+```
+
+The migration takes the production deployment lock, validates the exact old
+remote, wrapper hashes, state, authorization hash and running revision before
+creating any live replacement. It builds and fetches a separate KS mirror with
+the new key, requires its `main` to equal the supplied standalone SHA, preserves
+the old action key while adding the new one, then swaps the mirror, source key
+and root-owned wrappers. A failure restores the old path automatically. A
+successful run prints the root-only backup directory; preserve it through the
+rollback window. Re-running the same reviewed migration after success is a
+read-only idempotency check.
 
 The first server installation, or an intentional TLS/edge refresh, is:
 
@@ -134,3 +161,6 @@ ssh cz 'sudo docker compose -f /opt/ks-design-portfolio/production/docker-compos
 Cloudflare preview deployments for pull requests remain unchanged at
 `*-ks.ks-design.workers.dev`. The permanent Worker URL
 `ks.ks-design.workers.dev` remains disabled and is not a production fallback.
+Workers Builds is a separate stage integration: it must watch `kiaquila/ks`
+with root `website` and a dedicated KS build token. Its repository connection
+does not deploy or replace the GitHub-to-cz production path described above.

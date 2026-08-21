@@ -63,6 +63,16 @@ export function selectMergedPullRequest(pullRequests, baseBranch = "main") {
     .sort((left, right) => String(right.merged_at).localeCompare(String(left.merged_at)))[0];
 }
 
+export function assertCurrentBranchHead(ref, expectedSha, branch = "main") {
+  const currentSha = ref?.object?.sha;
+  if (currentSha !== expectedSha) {
+    throw new Error(
+      `Production revision ${expectedSha} is not the current ${branch} head ` +
+        `(current: ${currentSha ?? "missing"})`
+    );
+  }
+}
+
 class GitHubApi {
   constructor(repository, token) {
     if (!/^[^/]+\/[^/]+$/.test(repository ?? "")) {
@@ -140,6 +150,8 @@ async function main() {
   }
 
   const api = new GitHubApi(repository, process.env.GITHUB_TOKEN);
+  const mainRefPath = `/repos/${repository}/git/ref/heads/main`;
+  assertCurrentBranchHead(await api.request(mainRefPath), targetSha);
   await waitForRequiredChecks({ api, sha: targetSha, requiredNames: PUSH_CHECKS });
 
   const pullRequests = await api.request(
@@ -159,6 +171,9 @@ async function main() {
     attempts: 1,
     intervalMs: 0
   });
+  // Fail closed if main advanced while checks were being evaluated. The server
+  // performs the same current-head check through its independent source mirror.
+  assertCurrentBranchHead(await api.request(mainRefPath), targetSha);
   console.log(
     `Production gates passed for ${targetSha} from merged PR #${pullRequest.number} ` +
       `at reviewed head ${pullRequest.head.sha}.`

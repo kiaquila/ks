@@ -22,7 +22,8 @@ currently serving.
 `git filter-repo` kept `ks/` and renamed it to the repository root, and kept
 four root artifacts at their original paths so their history survives:
 
-- `.github/workflows/ks-production-deploy.yml` (now parked, see below);
+- `.github/workflows/ks-production-deploy.yml` (parked before the reviewed
+  cutover, see below);
 - `scripts/wait-for-production-checks.mjs`;
 - `tests/ks-production-deploy.test.mjs`;
 - `tests/ks-production-server-deploy.test.mjs`.

@@ -7,6 +7,7 @@ import test from "node:test";
 import {
   PULL_REQUEST_CHECKS,
   PUSH_CHECKS,
+  assertCurrentBranchHead,
   evaluateRequiredChecks,
   selectMergedPullRequest
 } from "../scripts/wait-for-production-checks.mjs";
@@ -30,6 +31,10 @@ assert.equal(
 );
 const workflowPath = presentWorkflows[0];
 const workflow = await readFile(resolve(root, workflowPath), "utf8");
+const productionGate = await readFile(
+  resolve(root, "scripts/wait-for-production-checks.mjs"),
+  "utf8"
+);
 
 test("no second workflow can drive the production environment", () => {
   const workflowsDir = resolve(root, ".github/workflows");
@@ -48,6 +53,15 @@ test("production deploy is push-only, KS-scoped, main-only, and serialized", () 
   assert.match(workflow, /^on:\n  push:\n/m);
   assert.match(workflow, /branches:\n\s+- main/);
   assert.match(workflow, /paths:\n\s+- "website\/\*\*"/);
+  assert.match(workflow, /- "\.github\/workflows\/ks-production-deploy\.yml"/);
+  const triggerPaths = workflow
+    .match(/paths:\n((?:\s+- "[^"]+"\n)+)/)?.[1]
+    .match(/"([^"]+)"/g)
+    .map((value) => value.slice(1, -1));
+  assert.deepEqual(triggerPaths, [
+    "website/**",
+    ".github/workflows/ks-production-deploy.yml"
+  ]);
   assert.doesNotMatch(workflow, /^\s*pull_request:/m);
   const deployJob = workflow.slice(workflow.indexOf("  deploy:"));
   assert.match(deployJob, /group: ks-production-deploy/);
@@ -182,5 +196,21 @@ test("only a merged pull request into main can authorize production", () => {
       }
     ]).number,
     3
+  );
+});
+
+test("production requires the triggering SHA to remain the exact main head", () => {
+  const expected = "a".repeat(40);
+  assert.doesNotThrow(() =>
+    assertCurrentBranchHead({ object: { sha: expected } }, expected)
+  );
+  assert.throws(
+    () => assertCurrentBranchHead({ object: { sha: "b".repeat(40) } }, expected),
+    /is not the current main head/
+  );
+  assert.equal(
+    productionGate.match(/assertCurrentBranchHead\(await api\.request\(mainRefPath\), targetSha\)/g)
+      ?.length,
+    2
   );
 });
