@@ -79,6 +79,8 @@ function buildFakeHost() {
 
   writeFileSync(join(root, "var/lib/ks-production/latest-candidate"), "4242 " + "a".repeat(40) + "\n");
   writeFileSync(join(root, "root/.ssh/known_hosts"), "github.com ssh-ed25519 AAAA-test\n");
+  const oldSourceKey = makeKey(keys, "old-source");
+  cpSync(oldSourceKey.private, join(root, "root/.ssh/ks-production-source"));
   writeFileSync(join(root, "running-revision"), "b".repeat(40) + "\n");
 
   // Local stand-in for kiaquila/ks: a work repo committed and cloned bare.
@@ -96,7 +98,7 @@ function buildFakeHost() {
   execFileSync("git", ["clone", "--quiet", "--bare", ksWork, ksOrigin]);
   const newMain = git(["rev-parse", "HEAD"], ksWork);
 
-  return { root, keys, oldActionKey, newActionKey, newSourceKey, authorizedKeys, oldWrapper, oldMirror, ksOrigin, newMain };
+  return { root, keys, oldActionKey, newActionKey, newSourceKey, oldSourceKey, authorizedKeys, oldWrapper, oldMirror, ksOrigin, newMain };
 }
 
 function runMigration(host, { env = {}, args = {} } = {}) {
@@ -288,5 +290,34 @@ linuxTest("a failure after the swap begins rolls the trust path back and verifie
     "old state restored"
   );
   assert.ok(!existsSync(join(host.root, "var/lib/ks-production/trust-repository")), "namespace not left behind");
+  assert.equal(
+    sha256(join(host.root, "root/.ssh/ks-production-source")),
+    sha256(host.oldSourceKey.private),
+    "old source key restored — the restored wrapper fetches with this credential"
+  );
+});
+
+linuxTest("a CRLF line in authorized_keys stops the migration instead of comparing zero keys", () => {
+  const host = buildFakeHost();
+  writeFileSync(
+    host.authorizedKeys,
+    `restrict,command="/usr/local/sbin/ks-production-ssh-command" ${host.oldActionKey.publicKey}\r\n`
+  );
+  const result = runMigration(host, {
+    env: { KS_MIGRATE_EXPECTED_AUTHORIZED_KEYS_SHA256: sha256(host.authorizedKeys) }
+  });
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /carriage return/i);
+  assert.ok(!existsSync(join(host.root, "var/lib/ks-production/trust-repository")));
+});
+
+linuxTest("a successful migration also installs the new source credential", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  assert.equal(
+    sha256(join(host.root, "root/.ssh/ks-production-source")),
+    sha256(host.newSourceKey.private),
+    "new key in service"
+  );
 });
 

@@ -54,16 +54,20 @@ authorized_key_blobs() {
 require_new_action_fingerprint() {
   local new_public_key="$1"
   local old_authorized_file="$2"
-  local new_fingerprint old_key old_fingerprint
+  local new_fingerprint old_keys old_key old_fingerprint
   new_fingerprint="$(action_key_fingerprint "$new_public_key")" || return 1
   [[ -n "$new_fingerprint" ]] ||
     { ks_fail "Could not fingerprint the new action key."; return 1; }
 
+  # Capture first: a parser failure inside a process substitution would only
+  # kill the subshell, and the loop would compare zero keys and succeed.
+  old_keys="$(authorized_key_blobs "$old_authorized_file")" || return 1
   while IFS= read -r old_key; do
+    [[ -n "$old_key" ]] || continue
     old_fingerprint="$(action_key_fingerprint "$old_key")" || return 1
     [[ "$new_fingerprint" != "$old_fingerprint" ]] ||
       { ks_fail "The new action key fingerprint matches an existing authorized key."; return 1; }
-  done < <(authorized_key_blobs "$old_authorized_file")
+  done <<< "$old_keys"
 }
 
 require_git_blob_matches_file() {

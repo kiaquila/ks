@@ -99,27 +99,40 @@ sudo website/production/install-deploy-access.sh 'ssh-ed25519 AAAA… github-pro
 `install-deploy-access.sh` is not an existing-host migration. It validates any
 existing mirror before its first write and refuses a mirror that still targets
 `kiaquila/web-design`; this prevents a failed retarget from overwriting the old
-`authorized_keys`. For the live host, stage a new root-owned source key at
-`/root/.ssh/ks-production-source.ks`, add its public half to `kiaquila/ks` as a
-read-only deploy key, record the current authorization hash, deployment state,
-container revision and standalone `main` SHA, then run the reviewed transaction:
+`authorized_keys`. For the live host, generate the new action key pair and a new
+read-only source key, add the source key's public half to `kiaquila/ks` as a
+read-only deploy key, and snapshot the live state: the old wrapper's SHA-256,
+the `authorized_keys` SHA-256, the deployment state line's run ID and tree, the
+running container revision, and the standalone `main` SHA. Then run the reviewed
+transaction with those exact values — every flag is required, and the
+authorization hash travels in the environment so it never appears in `ps`
+output alongside the rest:
 
 ```bash
-sudo website/production/migrate-existing-host.sh \
-  'ssh-ed25519 AAAA… ks-production' \
-  '<old-revision>' '<old-run-id>' '<old-tree>' \
-  '<authorized-keys-sha256>' '<standalone-main-sha>'
+sudo KS_MIGRATE_EXPECTED_AUTHORIZED_KEYS_SHA256='<authorized-keys-sha256>' \
+  website/production/migrate-existing-host.sh \
+  --new-action-public-key-file /root/ks-action-key.pub \
+  --new-source-key /root/.ssh/ks-production-source.ks \
+  --expected-new-main '<standalone-main-sha>' \
+  --expected-old-wrapper-sha256 '<old-wrapper-sha256>' \
+  --expected-old-run-id '<old-run-id>' \
+  --expected-old-tree '<old-tree>' \
+  --expected-running-revision '<running-revision>'
 ```
 
-The migration takes the production deployment lock, validates the exact old
-remote, wrapper hashes, state, authorization hash and running revision before
-creating any live replacement. It builds and fetches a separate KS mirror with
-the new key, requires its `main` to equal the supplied standalone SHA, preserves
-the old action key while adding the new one, then swaps the mirror, source key
-and root-owned wrappers. A failure restores the old path automatically. A
-successful run prints the root-only backup directory; preserve it through the
-rollback window. Re-running the same reviewed migration after success is a
-read-only idempotency check.
+The migration validates every snapshot value against the live host before its
+first write, stages and fetches a separate KS mirror with the new key, requires
+its `main` to equal the supplied standalone SHA, and byte-binds the wrapper,
+forced command, and shared helper it installs to that fetched revision. Under
+the production deployment lock it then swaps the mirror, source key, root-owned
+scripts, and the deploy account's admission — the `authorized_keys` afterwards
+holds exactly one line, the new restricted key; the old admission survives only
+in the backup. The deployment state restarts empty because `kiaquila/ks` run
+IDs are unrelated to `kiaquila/web-design`'s. A failure restores the old
+mirror, wrapper, source key, admission, and state, and verifies the restoration
+rather than asserting it. A successful run prints the root-only backup
+directory; preserve it through the rollback window. Re-running after success
+reports the migrated state and changes nothing.
 
 The first server installation, or an intentional TLS/edge refresh, is:
 

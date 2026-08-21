@@ -189,6 +189,8 @@ expected_authorized_keys_sha256="${KS_MIGRATE_EXPECTED_AUTHORIZED_KEYS_SHA256:-}
 require_new_action_fingerprint "$new_action_public_key" "$authorized_keys" ||
   fail "The new action key must differ from every key the host already trusts."
 [[ -f "$source_known_hosts" ]] || fail "The root known_hosts file is missing."
+[[ -f "$source_key" && ! -L "$source_key" ]] ||
+  fail "The old read-only source key is missing or unsafe."
 
 if [[ -z "$root_prefix" ]]; then
   running_revision="$(docker ps --filter 'name=portfolio' --format '{{.Names}}' >/dev/null 2>&1 &&
@@ -256,12 +258,17 @@ cleanup() {
   if [[ -f "$backup_dir/ks-production-deploy" ]]; then
     cp --preserve=mode,ownership,timestamps "$backup_dir/ks-production-deploy" "$wrapper_target"
   fi
+  if [[ -f "$backup_dir/ks-production-source" ]]; then
+    cp --preserve=mode,ownership,timestamps "$backup_dir/ks-production-source" "$source_key"
+  fi
   rm -f -- "$trust_repository_file"
   # Verify the restoration rather than assuming it.
   if [[ -f "$wrapper_target" && "$(sha256 "$wrapper_target")" == "$old_wrapper_sha256" ]] &&
      [[ "$(git --git-dir="$source_git_dir" remote get-url origin 2>/dev/null)" == "$old_remote" ]] &&
      [[ "$(<"$state_file")" == "$expected_old_run_id $expected_old_tree" ]] &&
-     [[ "$(sha256 "$authorized_keys")" == "$expected_authorized_keys_sha256" ]]; then
+     [[ "$(sha256 "$authorized_keys")" == "$expected_authorized_keys_sha256" ]] &&
+     { [[ ! -f "$backup_dir/ks-production-source" ]] ||
+       cmp --silent "$backup_dir/ks-production-source" "$source_key"; }; then
     echo "Rollback verified: the web-design trust path is restored." >&2
   else
     echo "ROLLBACK VERIFICATION FAILED: reconcile the trust path by hand before any deploy." >&2
@@ -275,6 +282,7 @@ trap cleanup EXIT
 cp --preserve=mode,ownership,timestamps "$authorized_keys" "$backup_dir/authorized_keys"
 cp --preserve=mode,ownership,timestamps "$state_file" "$backup_dir/latest-candidate"
 cp --preserve=mode,ownership,timestamps "$wrapper_target" "$backup_dir/ks-production-deploy"
+cp --preserve=mode,ownership,timestamps "$source_key" "$backup_dir/ks-production-source"
 mv -- "$source_git_dir" "$backup_dir/source.git"
 
 mv -- "$staged_source_git_dir" "$source_git_dir"
