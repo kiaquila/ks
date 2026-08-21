@@ -148,7 +148,9 @@ already_migrated() {
   cmp --silent "$new_ssh_command_source" "$ssh_command_target" || return 1
   cmp --silent "$common_source" "$common_target" || return 1
   [[ -f "$authorized_keys" ]] || return 1
-  grep -qxF "$new_authorized_line" "$authorized_keys" || return 1
+  # The contract is exactly one line; a grep would bless a file that also
+  # admits something else.
+  [[ "$(<"$authorized_keys")" == "$new_authorized_line" ]] || return 1
   [[ -f "$state_file" && ! -s "$state_file" ]] || return 1
   [[ -d "$backup_dir" ]] || return 1
   # The staged key copy is retained through the rollback window; the installed
@@ -233,6 +235,26 @@ open_production_lock "$lock_file" || fail "Could not acquire the production depl
 # open_production_lock validated the target and holds it on fd 9.
 flock --exclusive 9
 
+# The pre-write validations above ran before the lock, and an old-repository
+# deployment already holding it may have finished while this process waited.
+# Everything the snapshot recorded is revalidated under the lock, so the swap
+# cannot proceed against a live state the snapshot never described.
+[[ "$(sha256 "$wrapper_target")" == "$old_wrapper_sha256" ]] ||
+  fail "The old production wrapper changed while waiting for the lock."
+[[ "$(git --git-dir="$source_git_dir" remote get-url origin)" == "$old_remote" ]] ||
+  fail "The trusted mirror changed while waiting for the lock."
+[[ "$(<"$state_file")" == "$expected_old_run_id $expected_old_tree" ]] ||
+  fail "The deployment state changed while waiting for the lock."
+[[ "$(sha256 "$authorized_keys")" == "$expected_authorized_keys_sha256" ]] ||
+  fail "authorized_keys changed while waiting for the lock."
+if [[ -z "$root_prefix" ]]; then
+  locked_running_revision="$(docker inspect --format '{{index .Config.Labels "org.opencontainers.image.revision"}}'     "$(cd "$project_dir" && docker compose -f production/docker-compose.yml ps -q portfolio)" 2>/dev/null || true)"
+else
+  locked_running_revision="$(cat "$root_prefix/running-revision" 2>/dev/null || true)"
+fi
+[[ "$locked_running_revision" == "$expected_running_revision" ]] ||
+  fail "The running KS revision changed while waiting for the lock."
+
 rm -rf -- "$backup_dir"
 install -d -m 0700 "$backup_dir"
 
@@ -283,6 +305,9 @@ cp --preserve=mode,ownership,timestamps "$authorized_keys" "$backup_dir/authoriz
 cp --preserve=mode,ownership,timestamps "$state_file" "$backup_dir/latest-candidate"
 cp --preserve=mode,ownership,timestamps "$wrapper_target" "$backup_dir/ks-production-deploy"
 cp --preserve=mode,ownership,timestamps "$source_key" "$backup_dir/ks-production-source"
+# The rollback runbook validates this manifest before restoring anything:
+#   cd <backup-dir> && sha256sum -c manifest.sha256
+( cd "$backup_dir" && sha256sum authorized_keys latest-candidate ks-production-deploy ks-production-source > manifest.sha256 )
 mv -- "$source_git_dir" "$backup_dir/source.git"
 
 mv -- "$staged_source_git_dir" "$source_git_dir"

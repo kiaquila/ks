@@ -89,6 +89,12 @@ install -o root -g root -m 0644 "$common_source" "$common_target"
 install -o root -g root -m 0755 "$wrapper_source" "$wrapper_target"
 install -o root -g root -m 0755 "$ssh_command_source" "$ssh_command_target"
 
+# The wrapper refuses to run without its repository namespace; a fresh host is
+# born trusting kiaquila/ks, so the installer writes it.
+umask 077
+printf '%s\n' "kiaquila/ks" > "/var/lib/ks-production/trust-repository.tmp.$$"
+mv -f -- "/var/lib/ks-production/trust-repository.tmp.$$" "/var/lib/ks-production/trust-repository"
+
 tmp_sudoers="${sudoers_file}.tmp.$$"
 printf '%s\n' \
   "$deploy_user ALL=(root) NOPASSWD: $wrapper_target *" > "$tmp_sudoers"

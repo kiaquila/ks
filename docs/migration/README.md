@@ -101,8 +101,11 @@ fails. Keep that directory and the existing
 the rollback window.
 
 For a post-deploy rollback, first disable the standalone workflow. Under the
-deployment lock, validate the backup manifest and restore its old mirror and
-root-owned files, verify the mirror again targets `kiaquila/web-design`, then
+deployment lock, validate the backup with
+`cd <backup-dir> && sha256sum -c manifest.sha256` — the migration wrote that
+manifest over the old admission, state, wrapper, and source key when it made
+the backup — then restore the old mirror and root-owned files from it, verify
+the mirror again targets `kiaquila/web-design`, then
 re-enable only the old workflow and redeploy the recorded revision. Do not
 re-enable the old workflow while the standalone workflow is active. After the
 rollback, repeat the production smoke checks and confirm the live asset hash is

@@ -311,6 +311,28 @@ linuxTest("a CRLF line in authorized_keys stops the migration instead of compari
   assert.ok(!existsSync(join(host.root, "var/lib/ks-production/trust-repository")));
 });
 
+linuxTest("idempotent success is refused when the admission gained an extra line", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  const extraKey = makeKey(host.keys, "extra-action");
+  const current = readFileSync(host.authorizedKeys, "utf8");
+  writeFileSync(host.authorizedKeys, current + `restrict,command="/usr/local/sbin/ks-production-ssh-command" ${extraKey.publicKey}\n`);
+  const replay = runMigration(host);
+  assert.notEqual(replay.status, 0, "drifted admission must not be blessed as already-migrated");
+  assert.doesNotMatch(replay.stdout, /already migrated/);
+});
+
+linuxTest("the backup carries a verifiable manifest", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  const backup = join(host.root, "var/lib/ks-production/web-design-trust-backup");
+  const check = spawnSync("bash", ["-c", "cd '" + backup + "' && sha256sum -c manifest.sha256"], { encoding: "utf8" });
+  assert.equal(check.status, 0, check.stdout + check.stderr);
+  for (const name of ["authorized_keys", "latest-candidate", "ks-production-deploy", "ks-production-source"]) {
+    assert.match(check.stdout, new RegExp(`${name}: OK`));
+  }
+});
+
 linuxTest("a successful migration also installs the new source credential", () => {
   const host = buildFakeHost();
   assert.equal(runMigration(host).status, 0);
