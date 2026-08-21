@@ -16,7 +16,7 @@
       },
       {
         "name": "project-check-2",
-        "run": "node --test tests/ks-production-deploy.test.mjs tests/ks-production-server-deploy.test.mjs"
+        "run": "node --test tests/ks-production-deploy.test.mjs tests/ks-production-migration.test.mjs tests/ks-production-server-deploy.test.mjs"
       }
     ]
   },

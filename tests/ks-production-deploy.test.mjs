@@ -7,6 +7,7 @@ import test from "node:test";
 import {
   PULL_REQUEST_CHECKS,
   PUSH_CHECKS,
+  assertDeployableAgainstBranchHead,
   evaluateRequiredChecks,
   selectMergedPullRequest
 } from "../scripts/wait-for-production-checks.mjs";
@@ -30,6 +31,10 @@ assert.equal(
 );
 const workflowPath = presentWorkflows[0];
 const workflow = await readFile(resolve(root, workflowPath), "utf8");
+const productionGate = await readFile(
+  resolve(root, "scripts/wait-for-production-checks.mjs"),
+  "utf8"
+);
 
 test("no second workflow can drive the production environment", () => {
   const workflowsDir = resolve(root, ".github/workflows");
@@ -48,6 +53,15 @@ test("production deploy is push-only, KS-scoped, main-only, and serialized", () 
   assert.match(workflow, /^on:\n  push:\n/m);
   assert.match(workflow, /branches:\n\s+- main/);
   assert.match(workflow, /paths:\n\s+- "website\/\*\*"/);
+  assert.match(workflow, /- "\.github\/workflows\/ks-production-deploy\.yml"/);
+  const triggerPaths = workflow
+    .match(/paths:\n((?:\s+- "[^"]+"\n)+)/)?.[1]
+    .match(/"([^"]+)"/g)
+    .map((value) => value.slice(1, -1));
+  assert.deepEqual(triggerPaths, [
+    "website/**",
+    ".github/workflows/ks-production-deploy.yml"
+  ]);
   assert.doesNotMatch(workflow, /^\s*pull_request:/m);
   const deployJob = workflow.slice(workflow.indexOf("  deploy:"));
   assert.match(deployJob, /group: ks-production-deploy/);
@@ -182,5 +196,54 @@ test("only a merged pull request into main can authorize production", () => {
       }
     ]).number,
     3
+  );
+});
+
+test("production deploys only revisions on main whose website tree is current", async () => {
+  const expected = "a".repeat(40);
+  const advanced = "b".repeat(40);
+  const makeApi = ({ head, status, trees }) => ({
+    repository: "kiaquila/ks",
+    async request(path) {
+      if (path.endsWith("/git/ref/heads/main")) return { object: { sha: head } };
+      if (path.includes("/compare/")) return { status };
+      if (path.includes("/git/commits/")) {
+        const sha = path.slice(path.lastIndexOf("/") + 1);
+        return { tree: { sha: `tree-${sha}` } };
+      }
+      if (path.includes("/git/trees/")) {
+        const commitSha = path.slice(path.lastIndexOf("tree-") + 5);
+        return { tree: [{ path: "website", type: "tree", sha: trees[commitSha] }] };
+      }
+      throw new Error(`unexpected request ${path}`);
+    }
+  });
+  // The triggering SHA is still the head.
+  await assert.doesNotReject(
+    assertDeployableAgainstBranchHead(makeApi({ head: expected }), expected)
+  );
+  // A docs-only advance: expected is an ancestor and the website trees match.
+  await assert.doesNotReject(
+    assertDeployableAgainstBranchHead(
+      makeApi({ head: advanced, status: "ahead", trees: { [expected]: "w1", [advanced]: "w1" } }),
+      expected
+    )
+  );
+  // A website-changing advance: the replacement run supersedes this one.
+  await assert.rejects(
+    assertDeployableAgainstBranchHead(
+      makeApi({ head: advanced, status: "ahead", trees: { [expected]: "w1", [advanced]: "w2" } }),
+      expected
+    ),
+    /replacement deployment run supersedes/
+  );
+  // A revision not on main's history is refused outright.
+  await assert.rejects(
+    assertDeployableAgainstBranchHead(makeApi({ head: advanced, status: "diverged" }), expected),
+    /not on the current main history/
+  );
+  assert.equal(
+    productionGate.match(/await assertDeployableAgainstBranchHead\(api, targetSha\)/g)?.length,
+    2
   );
 });

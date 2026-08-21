@@ -3,10 +3,19 @@
 # server-side entrypoint allowed to mutate the KS production Compose project.
 set -euo pipefail
 
+common_target="/usr/local/libexec/ks-production-common.sh"
+[[ -f "$common_target" && ! -L "$common_target" ]] || {
+  echo "Trusted production helper is missing or unsafe." >&2
+  exit 1
+}
+# shellcheck source=/dev/null
+source "$common_target"
+
 command="${1:-}"
 project_dir="/opt/ks-design-portfolio"
 state_file="/var/lib/ks-production/latest-candidate"
 lock_file="/var/lock/ks-production-deploy.lock"
+trust_repository_file="/var/lib/ks-production/trust-repository"
 source_git_dir="/var/lib/ks-production/source.git"
 source_remote="git@github.com:kiaquila/ks.git"
 source_key="/root/.ssh/ks-production-source"
@@ -18,6 +27,10 @@ fail() {
 }
 
 [[ "${EUID}" -eq 0 ]] || fail "This wrapper must run as root."
+[[ -f "$trust_repository_file" && ! -L "$trust_repository_file" ]] ||
+  fail "Production repository namespace is missing."
+[[ "$(<"$trust_repository_file")" == "kiaquila/ks" ]] ||
+  fail "Production repository namespace is invalid."
 case "$command" in
   register)
     [[ "$#" -eq 4 ]] || fail "Usage: register <revision> <website-tree> <run-id>."
@@ -50,8 +63,7 @@ fi
 # ksdeploy needs traversal (not listing or reading) to create its staging child.
 # Root-owned source and state files remain inaccessible inside this parent.
 install -d -o root -g ksdeploy -m 0710 "$(dirname "$state_file")"
-exec 9>"$lock_file"
-flock --exclusive 9
+open_production_lock "$lock_file" || fail "Could not acquire the production deployment lock."
 
 latest_run=0
 latest_tree=""
@@ -101,6 +113,14 @@ GIT_SSH_COMMAND="ssh -i $source_key -o IdentitiesOnly=yes -o StrictHostKeyChecki
 trusted_main="$(git --git-dir="$source_git_dir" rev-parse refs/remotes/origin/main)"
 git --git-dir="$source_git_dir" cat-file -e "$revision^{commit}" ||
   fail "Requested revision is absent from the trusted source mirror."
+# Exact-head equality here would deadlock: the deploy workflow only triggers on
+# website changes, so a docs-only commit landing while this deployment waits
+# would advance main without creating a replacement run, and the pending
+# website change would be stranded forever. Ancestry pins the revision to
+# main's real history, and the tree comparisons below still guarantee that the
+# bytes deployed are exactly the current main's website content.
+git --git-dir="$source_git_dir" merge-base --is-ancestor "$revision" "$trusted_main" ||
+  fail "Requested revision is not on the trusted main history."
 [[ "$(git --git-dir="$source_git_dir" rev-parse "$trusted_main:website")" == "$website_tree" ]] ||
   fail "Current trusted main website tree differs from the registered candidate."
 [[ "$(git --git-dir="$source_git_dir" rev-parse "$revision:website")" == "$website_tree" ]] ||

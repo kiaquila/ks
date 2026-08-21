@@ -63,6 +63,41 @@ export function selectMergedPullRequest(pullRequests, baseBranch = "main") {
     .sort((left, right) => String(right.merged_at).localeCompare(String(left.merged_at)))[0];
 }
 
+// Exact-head equality here would recreate the deadlock the server wrapper
+// avoids: this workflow only triggers on website changes, so a docs-only
+// commit advancing main while checks poll would strand the pending website
+// deployment forever. The deployable condition mirrors the wrapper's — the
+// revision must be on main's history and main's current website tree must
+// equal the revision's — so what ships is always exactly the current main's
+// website content.
+export async function assertDeployableAgainstBranchHead(api, expectedSha, branch = "main") {
+  const ref = await api.request(`/repos/${api.repository}/git/ref/heads/${branch}`);
+  const currentSha = ref?.object?.sha;
+  if (!currentSha) throw new Error(`Could not resolve the current ${branch} head`);
+  if (currentSha === expectedSha) return;
+  const comparison = await api.request(
+    `/repos/${api.repository}/compare/${expectedSha}...${currentSha}`
+  );
+  if (comparison?.status !== "ahead") {
+    throw new Error(
+      `Production revision ${expectedSha} is not on the current ${branch} history ` +
+        `(current: ${currentSha}, comparison: ${comparison?.status ?? "missing"})`
+    );
+  }
+  const websiteTree = async (sha) => {
+    const commit = await api.request(`/repos/${api.repository}/git/commits/${sha}`);
+    const tree = await api.request(`/repos/${api.repository}/git/trees/${commit?.tree?.sha}`);
+    return (tree?.tree ?? []).find((entry) => entry.path === "website" && entry.type === "tree")?.sha;
+  };
+  const [expectedTree, currentTree] = [await websiteTree(expectedSha), await websiteTree(currentSha)];
+  if (!expectedTree || expectedTree !== currentTree) {
+    throw new Error(
+      `The current ${branch} website tree differs from production revision ${expectedSha}; ` +
+        "a replacement deployment run supersedes this one"
+    );
+  }
+}
+
 class GitHubApi {
   constructor(repository, token) {
     if (!/^[^/]+\/[^/]+$/.test(repository ?? "")) {
@@ -140,6 +175,7 @@ async function main() {
   }
 
   const api = new GitHubApi(repository, process.env.GITHUB_TOKEN);
+  await assertDeployableAgainstBranchHead(api, targetSha);
   await waitForRequiredChecks({ api, sha: targetSha, requiredNames: PUSH_CHECKS });
 
   const pullRequests = await api.request(
@@ -159,6 +195,10 @@ async function main() {
     attempts: 1,
     intervalMs: 0
   });
+  // Fail closed if main advanced incompatibly while checks were being
+  // evaluated. The server enforces the same ancestry-plus-tree condition
+  // through its independent source mirror.
+  await assertDeployableAgainstBranchHead(api, targetSha);
   console.log(
     `Production gates passed for ${targetSha} from merged PR #${pullRequest.number} ` +
       `at reviewed head ${pullRequest.head.sha}.`
