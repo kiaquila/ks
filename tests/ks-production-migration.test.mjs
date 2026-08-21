@@ -82,15 +82,17 @@ function buildFakeHost() {
 
   // A real old mirror: the rollback has to be able to read the recorded
   // production tree out of it, so an empty bare repository will not do.
+  // The live host is pre-split: the old wrapper registered `<revision>:ks`, the
+  // monorepo's KS project subtree, so the fixture mirrors that layout.
   const oldWork = mkdtempSync(join(tmpdir(), "ks-old-work-"));
-  mkdirSync(join(oldWork, "website"), { recursive: true });
-  writeFileSync(join(oldWork, "website/index.html"), "<!doctype html>old\n");
+  mkdirSync(join(oldWork, "ks/website"), { recursive: true });
+  writeFileSync(join(oldWork, "ks/website/index.html"), "<!doctype html>old\n");
   execFileSync("git", ["init", "--quiet", "--initial-branch=main", oldWork]);
   execFileSync("git", ["-C", oldWork, "config", "user.email", "test@test"]);
   execFileSync("git", ["-C", oldWork, "config", "user.name", "test"]);
   execFileSync("git", ["-C", oldWork, "add", "-A"]);
   execFileSync("git", ["-C", oldWork, "commit", "--quiet", "-m", "old production"]);
-  const oldWebsiteTree = git(["rev-parse", "HEAD:website"], oldWork);
+  const oldWebsiteTree = git(["rev-parse", "HEAD:ks"], oldWork);
   const oldCommit = git(["rev-parse", "HEAD"], oldWork);
   const oldMirror = join(root, "var/lib/ks-production/source.git");
   execFileSync("git", ["clone", "--quiet", "--bare", oldWork, oldMirror]);

@@ -226,12 +226,15 @@ old_wrapper_sha256="$expected_old_wrapper_sha256"
 # only on a later replay.
 git --git-dir="$source_git_dir" cat-file -e "${expected_running_revision}^{commit}" 2>/dev/null ||
   fail "The old mirror does not contain the recorded running revision."
-# The snapshot records the revision and the deployed tree separately; the old
-# wrapper will refuse a redeploy whose website tree does not match, so the two
-# must describe the same state.
-[[ "$(git --git-dir="$source_git_dir" rev-parse --verify --quiet "${expected_running_revision}:website" 2>/dev/null)" == "$expected_old_tree" ||
-   "$(git --git-dir="$source_git_dir" rev-parse --verify --quiet "${expected_running_revision}:ks/website" 2>/dev/null)" == "$expected_old_tree" ]] ||
-  fail "The recorded running revision's website tree is not the recorded deployment tree."
+# The snapshot records the revision and the deployed tree separately, and the
+# old wrapper refuses a redeploy where they disagree, so the two must describe
+# the same state. The live host is pre-split: its `latest-candidate` holds
+# `<revision>:ks`, the monorepo's KS project subtree — not a website tree.
+# `:website` is accepted too, for a host already migrated to this repository's
+# own layout.
+[[ "$(git --git-dir="$source_git_dir" rev-parse --verify --quiet "${expected_running_revision}:ks" 2>/dev/null)" == "$expected_old_tree" ||
+   "$(git --git-dir="$source_git_dir" rev-parse --verify --quiet "${expected_running_revision}:website" 2>/dev/null)" == "$expected_old_tree" ]] ||
+  fail "The recorded running revision's deployed subtree is not the recorded deployment tree."
 [[ -f "$state_file" && ! -L "$state_file" ]] ||
   fail "The old deployment state file is missing or unsafe."
 [[ "$(<"$state_file")" == "$expected_old_run_id $expected_old_tree" ]] ||
