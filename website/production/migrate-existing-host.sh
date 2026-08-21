@@ -190,6 +190,11 @@ already_migrated() {
   # such a mirror cannot supply the revision the rollback would redeploy. The
   # recorded production tree must actually be readable, and the object graph
   # must be connected.
+  # The deployed commit is what the rollback redeploys. A dangling tree survives
+  # `fsck --connectivity-only`, so the commit itself — and the tree reachable
+  # through it — must be readable.
+  git --git-dir="$backup_dir/source.git" cat-file -e "${expected_running_revision}^{commit}" 2>/dev/null || return 1
+  git --git-dir="$backup_dir/source.git" cat-file -e "${expected_running_revision}^{tree}" 2>/dev/null || return 1
   git --git-dir="$backup_dir/source.git" cat-file -e "${expected_old_tree}^{tree}" 2>/dev/null || return 1
   git --git-dir="$backup_dir/source.git" fsck --connectivity-only --no-progress >/dev/null 2>&1 || return 1
   # The staged key copy is retained through the rollback window; the installed

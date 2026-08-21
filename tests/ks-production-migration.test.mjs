@@ -91,16 +91,17 @@ function buildFakeHost() {
   execFileSync("git", ["-C", oldWork, "add", "-A"]);
   execFileSync("git", ["-C", oldWork, "commit", "--quiet", "-m", "old production"]);
   const oldWebsiteTree = git(["rev-parse", "HEAD:website"], oldWork);
+  const oldCommit = git(["rev-parse", "HEAD"], oldWork);
   const oldMirror = join(root, "var/lib/ks-production/source.git");
   execFileSync("git", ["clone", "--quiet", "--bare", oldWork, oldMirror]);
   execFileSync("git", ["--git-dir", oldMirror, "remote", "set-url", "origin", "git@github.com:kiaquila/web-design.git"]);
-  execFileSync("git", ["--git-dir", oldMirror, "update-ref", "refs/remotes/origin/main", git(["rev-parse", "HEAD"], oldWork)]);
+  execFileSync("git", ["--git-dir", oldMirror, "update-ref", "refs/remotes/origin/main", oldCommit]);
 
   writeFileSync(join(root, "var/lib/ks-production/latest-candidate"), `4242 ${oldWebsiteTree}\n`);
   writeFileSync(join(root, "root/.ssh/known_hosts"), "github.com ssh-ed25519 AAAA-test\n");
   const oldSourceKey = makeKey(keys, "old-source");
   cpSync(oldSourceKey.private, join(root, "root/.ssh/ks-production-source"));
-  writeFileSync(join(root, "running-revision"), "b".repeat(40) + "\n");
+  writeFileSync(join(root, "running-revision"), `${oldCommit}\n`);
 
   // Local stand-in for kiaquila/ks: a work repo committed and cloned bare.
   const ksWork = mkdtempSync(join(tmpdir(), "ks-origin-work-"));
@@ -117,7 +118,7 @@ function buildFakeHost() {
   execFileSync("git", ["clone", "--quiet", "--bare", ksWork, ksOrigin]);
   const newMain = git(["rev-parse", "HEAD"], ksWork);
 
-  return { root, keys, oldActionKey, newActionKey, newSourceKey, oldSourceKey, authorizedKeys, oldWrapper, oldSshCommand, oldMirror, oldWebsiteTree, ksOrigin, newMain };
+  return { root, keys, oldActionKey, newActionKey, newSourceKey, oldSourceKey, authorizedKeys, oldWrapper, oldSshCommand, oldMirror, oldWebsiteTree, oldCommit, ksOrigin, newMain };
 }
 
 function runMigration(host, { env = {}, args = {} } = {}) {
@@ -128,7 +129,7 @@ function runMigration(host, { env = {}, args = {} } = {}) {
     "--expected-old-wrapper-sha256": sha256(host.oldWrapper),
     "--expected-old-run-id": "4242",
     "--expected-old-tree": host.oldWebsiteTree,
-    "--expected-running-revision": "b".repeat(40),
+    "--expected-running-revision": host.oldCommit,
     ...args
   };
   const argv = Object.entries(defaults).flatMap(([flag, value]) => [flag, value]);
@@ -257,7 +258,7 @@ linuxTest("a wrapper whose bytes differ from reviewed main is refused even if gr
     "--expected-old-wrapper-sha256", sha256(host.oldWrapper),
     "--expected-old-run-id", "4242",
     "--expected-old-tree", host.oldWebsiteTree,
-    "--expected-running-revision", "b".repeat(40)
+    "--expected-running-revision", host.oldCommit
   ], {
     encoding: "utf8",
     env: {
@@ -374,6 +375,19 @@ linuxTest("idempotent success is refused when the admission gained an extra line
   writeFileSync(host.authorizedKeys, current + `restrict,command="/usr/local/sbin/ks-production-ssh-command" ${extraKey.publicKey}\n`);
   const replay = runMigration(host);
   assert.notEqual(replay.status, 0, "drifted admission must not be blessed as already-migrated");
+  assert.doesNotMatch(replay.stdout, /already migrated/);
+});
+
+linuxTest("a backup mirror missing the deployed commit refuses the idempotent verdict", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  const mirror = join(host.root, "var/lib/ks-production/web-design-trust-backup/source.git");
+  // Drop the refs so the commit becomes unreachable, then prune it. The website
+  // tree object is re-written first so it survives on its own.
+  execFileSync("git", ["--git-dir", mirror, "update-ref", "-d", "refs/remotes/origin/main"]);
+  execFileSync("git", ["--git-dir", mirror, "update-ref", "-d", "refs/heads/main"], { stdio: "ignore" });
+  const replay = runMigration(host);
+  assert.notEqual(replay.status, 0, "a mirror that cannot supply the deployed commit is not a rollback package");
   assert.doesNotMatch(replay.stdout, /already migrated/);
 });
 
