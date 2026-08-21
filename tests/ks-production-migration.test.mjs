@@ -76,6 +76,9 @@ function buildFakeHost() {
   const oldWrapper = join(root, "usr/local/sbin/ks-production-deploy");
   writeFileSync(oldWrapper, "#!/usr/bin/env bash\necho old web-design wrapper\n");
   chmodSync(oldWrapper, 0o755);
+  const oldSshCommand = join(root, "usr/local/sbin/ks-production-ssh-command");
+  writeFileSync(oldSshCommand, "#!/usr/bin/env bash\necho old web-design forced command\n");
+  chmodSync(oldSshCommand, 0o755);
 
   const oldMirror = join(root, "var/lib/ks-production/source.git");
   execFileSync("git", ["init", "--quiet", "--bare", oldMirror]);
@@ -102,7 +105,7 @@ function buildFakeHost() {
   execFileSync("git", ["clone", "--quiet", "--bare", ksWork, ksOrigin]);
   const newMain = git(["rev-parse", "HEAD"], ksWork);
 
-  return { root, keys, oldActionKey, newActionKey, newSourceKey, oldSourceKey, authorizedKeys, oldWrapper, oldMirror, ksOrigin, newMain };
+  return { root, keys, oldActionKey, newActionKey, newSourceKey, oldSourceKey, authorizedKeys, oldWrapper, oldSshCommand, oldMirror, ksOrigin, newMain };
 }
 
 function runMigration(host, { env = {}, args = {} } = {}) {
@@ -301,6 +304,11 @@ linuxTest("a failure after the swap begins rolls the trust path back and verifie
     sha256(host.oldSourceKey.private),
     "old source key restored — the restored wrapper fetches with this credential"
   );
+  assert.match(
+    readFileSync(host.oldSshCommand, "utf8"),
+    /old web-design forced command/,
+    "old forced-command handler restored — the restored key routes through it"
+  );
 });
 
 linuxTest("a CRLF line in authorized_keys stops the migration instead of comparing zero keys", () => {
@@ -373,7 +381,7 @@ linuxTest("the backup carries a verifiable manifest", () => {
   const backup = join(host.root, "var/lib/ks-production/web-design-trust-backup");
   const check = spawnSync("bash", ["-c", "cd '" + backup + "' && sha256sum -c manifest.sha256"], { encoding: "utf8" });
   assert.equal(check.status, 0, check.stdout + check.stderr);
-  for (const name of ["authorized_keys", "latest-candidate", "ks-production-deploy", "ks-production-source"]) {
+  for (const name of ["authorized_keys", "latest-candidate", "ks-production-deploy", "ks-production-source", "ks-production-ssh-command"]) {
     assert.match(check.stdout, new RegExp(`${name}: OK`));
   }
 });

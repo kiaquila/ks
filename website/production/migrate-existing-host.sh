@@ -203,6 +203,8 @@ require_new_action_fingerprint "$new_action_public_key" "$authorized_keys" ||
 [[ -f "$source_known_hosts" ]] || fail "The root known_hosts file is missing."
 [[ -f "$source_key" && ! -L "$source_key" ]] ||
   fail "The old read-only source key is missing or unsafe."
+[[ -f "$ssh_command_target" && ! -L "$ssh_command_target" ]] ||
+  fail "The old forced-command handler is missing or unsafe."
 
 if [[ -z "$root_prefix" ]]; then
   running_revision="$(docker ps --filter 'name=portfolio' --format '{{.Names}}' >/dev/null 2>&1 &&
@@ -300,6 +302,9 @@ cleanup() {
   if [[ -f "$backup_dir/ks-production-source" ]]; then
     cp --preserve=mode,ownership,timestamps "$backup_dir/ks-production-source" "$source_key"
   fi
+  if [[ -f "$backup_dir/ks-production-ssh-command" ]]; then
+    cp --preserve=mode,ownership,timestamps "$backup_dir/ks-production-ssh-command" "$ssh_command_target"
+  fi
   rm -f -- "$trust_repository_file"
   # Verify the restoration rather than assuming it.
   if [[ -f "$wrapper_target" && "$(sha256 "$wrapper_target")" == "$old_wrapper_sha256" ]] &&
@@ -307,7 +312,9 @@ cleanup() {
      [[ "$(<"$state_file")" == "$expected_old_run_id $expected_old_tree" ]] &&
      [[ "$(sha256 "$authorized_keys")" == "$expected_authorized_keys_sha256" ]] &&
      { [[ ! -f "$backup_dir/ks-production-source" ]] ||
-       cmp --silent "$backup_dir/ks-production-source" "$source_key"; }; then
+       cmp --silent "$backup_dir/ks-production-source" "$source_key"; } &&
+     { [[ ! -f "$backup_dir/ks-production-ssh-command" ]] ||
+       cmp --silent "$backup_dir/ks-production-ssh-command" "$ssh_command_target"; }; then
     echo "Rollback verified: the web-design trust path is restored." >&2
   else
     echo "ROLLBACK VERIFICATION FAILED: reconcile the trust path by hand before any deploy." >&2
@@ -322,9 +329,10 @@ cp --preserve=mode,ownership,timestamps "$authorized_keys" "$backup_dir/authoriz
 cp --preserve=mode,ownership,timestamps "$state_file" "$backup_dir/latest-candidate"
 cp --preserve=mode,ownership,timestamps "$wrapper_target" "$backup_dir/ks-production-deploy"
 cp --preserve=mode,ownership,timestamps "$source_key" "$backup_dir/ks-production-source"
+cp --preserve=mode,ownership,timestamps "$ssh_command_target" "$backup_dir/ks-production-ssh-command"
 # The rollback runbook validates this manifest before restoring anything:
 #   cd <backup-dir> && sha256sum -c manifest.sha256
-( cd "$backup_dir" && sha256sum authorized_keys latest-candidate ks-production-deploy ks-production-source > manifest.sha256 )
+( cd "$backup_dir" && sha256sum authorized_keys latest-candidate ks-production-deploy ks-production-source ks-production-ssh-command > manifest.sha256 )
 mv -- "$source_git_dir" "$backup_dir/source.git"
 
 mv -- "$staged_source_git_dir" "$source_git_dir"
