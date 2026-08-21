@@ -365,6 +365,25 @@ linuxTest("idempotent success is refused when the admission gained an extra line
   assert.doesNotMatch(replay.stdout, /already migrated/);
 });
 
+linuxTest("a manifest missing a restored file refuses the idempotent verdict", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  // An older revision's manifest: internally consistent, but written before the
+  // forced-command handler joined the transaction.
+  const backup = join(host.root, "var/lib/ks-production/web-design-trust-backup");
+  const manifest = join(backup, "manifest.sha256");
+  const trimmed = readFileSync(manifest, "utf8")
+    .split("\n")
+    .filter((line) => line && !line.endsWith("ks-production-ssh-command"))
+    .join("\n") + "\n";
+  writeFileSync(manifest, trimmed);
+  const check = spawnSync("bash", ["-c", "cd '" + backup + "' && sha256sum -c manifest.sha256"], { encoding: "utf8" });
+  assert.equal(check.status, 0, "the trimmed manifest still verifies on its own terms");
+  const replay = runMigration(host);
+  assert.notEqual(replay.status, 0, "an incomplete rollback package must not report success");
+  assert.doesNotMatch(replay.stdout, /already migrated/);
+});
+
 linuxTest("a lost or corrupted backup manifest refuses the idempotent verdict", () => {
   const host = buildFakeHost();
   assert.equal(runMigration(host).status, 0);

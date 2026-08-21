@@ -108,6 +108,17 @@ done
 [[ "$expected_old_tree" =~ ^[a-f0-9]{40}$ ]] || fail "Invalid expected old tree hash."
 [[ "$expected_running_revision" =~ ^[a-f0-9]{40}$ ]] || fail "Invalid expected running revision."
 
+# Every file the transaction replaces and must be able to restore. The backup,
+# the manifest, the rollback restore, and the idempotency check all read this
+# list, so adding a file to the transaction cannot leave one of them behind.
+BACKED_UP_TRUST_FILES=(
+  authorized_keys
+  latest-candidate
+  ks-production-deploy
+  ks-production-source
+  ks-production-ssh-command
+)
+
 sha256() {
   sha256sum "$1" | cut -d' ' -f1
 }
@@ -160,8 +171,15 @@ already_migrated() {
   fi
   [[ -d "$backup_dir" ]] || return 1
   # The rollback runbook's mandatory validation must actually pass, or the
-  # "already migrated" verdict blesses a state that cannot be rolled back.
+  # "already migrated" verdict blesses a state that cannot be rolled back. A
+  # manifest written by an older revision verifies happily while missing an
+  # entry this revision now restores, so completeness is checked too.
   [[ -f "$backup_dir/manifest.sha256" ]] || return 1
+  local backed_up
+  for backed_up in "${BACKED_UP_TRUST_FILES[@]}"; do
+    [[ -f "$backup_dir/$backed_up" ]] || return 1
+    grep -qE "[[:space:]]\*?${backed_up}\$" "$backup_dir/manifest.sha256" || return 1
+  done
   ( cd "$backup_dir" && sha256sum --check --quiet manifest.sha256 ) >/dev/null 2>&1 || return 1
   # The staged key copy is retained through the rollback window; the installed
   # key matching it is what proves the new credential is the one in service.
@@ -332,7 +350,7 @@ cp --preserve=mode,ownership,timestamps "$source_key" "$backup_dir/ks-production
 cp --preserve=mode,ownership,timestamps "$ssh_command_target" "$backup_dir/ks-production-ssh-command"
 # The rollback runbook validates this manifest before restoring anything:
 #   cd <backup-dir> && sha256sum -c manifest.sha256
-( cd "$backup_dir" && sha256sum authorized_keys latest-candidate ks-production-deploy ks-production-source ks-production-ssh-command > manifest.sha256 )
+( cd "$backup_dir" && sha256sum "${BACKED_UP_TRUST_FILES[@]}" > manifest.sha256 )
 mv -- "$source_git_dir" "$backup_dir/source.git"
 
 mv -- "$staged_source_git_dir" "$source_git_dir"
