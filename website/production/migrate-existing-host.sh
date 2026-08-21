@@ -153,6 +153,10 @@ already_migrated() {
   [[ "$(<"$authorized_keys")" == "$new_authorized_line" ]] || return 1
   [[ -f "$state_file" && ! -s "$state_file" ]] || return 1
   [[ -d "$backup_dir" ]] || return 1
+  # The rollback runbook's mandatory validation must actually pass, or the
+  # "already migrated" verdict blesses a state that cannot be rolled back.
+  [[ -f "$backup_dir/manifest.sha256" ]] || return 1
+  ( cd "$backup_dir" && sha256sum --check --quiet manifest.sha256 ) >/dev/null 2>&1 || return 1
   # The staged key copy is retained through the rollback window; the installed
   # key matching it is what proves the new credential is the one in service.
   cmp --silent "$source_key" "$staged_source_key" 2>/dev/null || return 1

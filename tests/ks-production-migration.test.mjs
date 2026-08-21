@@ -322,6 +322,16 @@ linuxTest("idempotent success is refused when the admission gained an extra line
   assert.doesNotMatch(replay.stdout, /already migrated/);
 });
 
+linuxTest("a lost or corrupted backup manifest refuses the idempotent verdict", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  const manifest = join(host.root, "var/lib/ks-production/web-design-trust-backup/manifest.sha256");
+  writeFileSync(manifest, readFileSync(manifest, "utf8").replace(/^[0-9a-f]{8}/, "00000000"));
+  const replay = runMigration(host);
+  assert.notEqual(replay.status, 0, "an unverifiable rollback package must not report success");
+  assert.doesNotMatch(replay.stdout, /already migrated/);
+});
+
 linuxTest("the backup carries a verifiable manifest", () => {
   const host = buildFakeHost();
   assert.equal(runMigration(host).status, 0);
