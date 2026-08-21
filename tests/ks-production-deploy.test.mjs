@@ -7,7 +7,7 @@ import test from "node:test";
 import {
   PULL_REQUEST_CHECKS,
   PUSH_CHECKS,
-  assertCurrentBranchHead,
+  assertDeployableAgainstBranchHead,
   evaluateRequiredChecks,
   selectMergedPullRequest
 } from "../scripts/wait-for-production-checks.mjs";
@@ -199,18 +199,51 @@ test("only a merged pull request into main can authorize production", () => {
   );
 });
 
-test("production requires the triggering SHA to remain the exact main head", () => {
+test("production deploys only revisions on main whose website tree is current", async () => {
   const expected = "a".repeat(40);
-  assert.doesNotThrow(() =>
-    assertCurrentBranchHead({ object: { sha: expected } }, expected)
+  const advanced = "b".repeat(40);
+  const makeApi = ({ head, status, trees }) => ({
+    repository: "kiaquila/ks",
+    async request(path) {
+      if (path.endsWith("/git/ref/heads/main")) return { object: { sha: head } };
+      if (path.includes("/compare/")) return { status };
+      if (path.includes("/git/commits/")) {
+        const sha = path.slice(path.lastIndexOf("/") + 1);
+        return { tree: { sha: `tree-${sha}` } };
+      }
+      if (path.includes("/git/trees/")) {
+        const commitSha = path.slice(path.lastIndexOf("tree-") + 5);
+        return { tree: [{ path: "website", type: "tree", sha: trees[commitSha] }] };
+      }
+      throw new Error(`unexpected request ${path}`);
+    }
+  });
+  // The triggering SHA is still the head.
+  await assert.doesNotReject(
+    assertDeployableAgainstBranchHead(makeApi({ head: expected }), expected)
   );
-  assert.throws(
-    () => assertCurrentBranchHead({ object: { sha: "b".repeat(40) } }, expected),
-    /is not the current main head/
+  // A docs-only advance: expected is an ancestor and the website trees match.
+  await assert.doesNotReject(
+    assertDeployableAgainstBranchHead(
+      makeApi({ head: advanced, status: "ahead", trees: { [expected]: "w1", [advanced]: "w1" } }),
+      expected
+    )
+  );
+  // A website-changing advance: the replacement run supersedes this one.
+  await assert.rejects(
+    assertDeployableAgainstBranchHead(
+      makeApi({ head: advanced, status: "ahead", trees: { [expected]: "w1", [advanced]: "w2" } }),
+      expected
+    ),
+    /replacement deployment run supersedes/
+  );
+  // A revision not on main's history is refused outright.
+  await assert.rejects(
+    assertDeployableAgainstBranchHead(makeApi({ head: advanced, status: "diverged" }), expected),
+    /not on the current main history/
   );
   assert.equal(
-    productionGate.match(/assertCurrentBranchHead\(await api\.request\(mainRefPath\), targetSha\)/g)
-      ?.length,
+    productionGate.match(/await assertDeployableAgainstBranchHead\(api, targetSha\)/g)?.length,
     2
   );
 });
