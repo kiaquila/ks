@@ -6,7 +6,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { execFileSync, spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, cpSync, chmodSync, symlinkSync, existsSync } from "node:fs";
+import { mkdtempSync, mkdirSync, writeFileSync, readFileSync, cpSync, chmodSync, symlinkSync, existsSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -362,6 +362,18 @@ linuxTest("idempotent success is refused when the admission gained an extra line
   writeFileSync(host.authorizedKeys, current + `restrict,command="/usr/local/sbin/ks-production-ssh-command" ${extraKey.publicKey}\n`);
   const replay = runMigration(host);
   assert.notEqual(replay.status, 0, "drifted admission must not be blessed as already-migrated");
+  assert.doesNotMatch(replay.stdout, /already migrated/);
+});
+
+linuxTest("a missing or foreign backup mirror refuses the idempotent verdict", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  const backup = join(host.root, "var/lib/ks-production/web-design-trust-backup");
+  const mirror = join(backup, "source.git");
+  // The five hashed files stay valid; only the mirror is gone.
+  rmSync(mirror, { recursive: true, force: true });
+  const replay = runMigration(host);
+  assert.notEqual(replay.status, 0, "the rollback cannot restore a mirror that is not there");
   assert.doesNotMatch(replay.stdout, /already migrated/);
 });
 
