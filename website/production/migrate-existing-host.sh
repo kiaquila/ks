@@ -181,6 +181,11 @@ already_migrated() {
     grep -qE "[[:space:]]\*?${backed_up}\$" "$backup_dir/manifest.sha256" || return 1
   done
   ( cd "$backup_dir" && sha256sum --check --quiet manifest.sha256 ) >/dev/null 2>&1 || return 1
+  # The old mirror is restored by cleanup and by the documented rollback, but it
+  # is a directory rather than a hashed file, so it is checked by shape.
+  [[ -d "$backup_dir/source.git" && ! -L "$backup_dir/source.git" ]] || return 1
+  [[ "$(git --git-dir="$backup_dir/source.git" rev-parse --is-bare-repository 2>/dev/null)" == "true" ]] || return 1
+  [[ "$(git --git-dir="$backup_dir/source.git" remote get-url origin 2>/dev/null)" == "$old_remote" ]] || return 1
   # The staged key copy is retained through the rollback window; the installed
   # key matching it is what proves the new credential is the one in service.
   cmp --silent "$source_key" "$staged_source_key" 2>/dev/null || return 1
