@@ -13,9 +13,13 @@ import { join, resolve } from "node:path";
 // The production scripts target the Linux host: GNU stat, flock, /proc. On any
 // other platform these behaviour tests skip loudly instead of pretending, and
 // project CI on ubuntu-latest is where they actually run.
+// Root is also excluded: the migration deliberately ignores the fake-root
+// override when EUID is 0, so under root these tests would inspect the real
+// host paths instead of their fixtures.
 const onLinux = process.platform === "linux" &&
+  typeof process.getuid === "function" && process.getuid() !== 0 &&
   spawnSync("flock", ["--version"], { encoding: "utf8" }).status === 0;
-const linuxTest = onLinux ? test : (name) => test(name, { skip: "requires the Linux production toolchain (GNU stat, flock)" }, () => {});
+const linuxTest = onLinux ? test : (name) => test(name, { skip: "requires the Linux production toolchain (GNU stat, flock) and an unprivileged user" }, () => {});
 
 const repoRoot = resolve(import.meta.dirname, "..");
 const production = join(repoRoot, "website/production");
