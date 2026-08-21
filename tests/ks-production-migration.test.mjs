@@ -313,6 +313,35 @@ linuxTest("a CRLF line in authorized_keys stops the migration instead of compari
   assert.ok(!existsSync(join(host.root, "var/lib/ks-production/trust-repository")));
 });
 
+linuxTest("replay after the first standalone deployment still reports idempotent success", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  // The wrapper writes the new namespace's state after the first deploy.
+  writeFileSync(join(host.root, "var/lib/ks-production/latest-candidate"), "7 " + "f".repeat(40) + "\n");
+  const replay = runMigration(host);
+  assert.equal(replay.status, 0, replay.stderr);
+  assert.match(replay.stdout, /already migrated/);
+});
+
+linuxTest("a malformed state file refuses the idempotent verdict", () => {
+  const host = buildFakeHost();
+  assert.equal(runMigration(host).status, 0);
+  writeFileSync(join(host.root, "var/lib/ks-production/latest-candidate"), "not a state line\n");
+  const replay = runMigration(host);
+  assert.notEqual(replay.status, 0);
+  assert.doesNotMatch(replay.stdout, /already migrated/);
+});
+
+linuxTest("staging leaves the live state directory's mode alone", () => {
+  const host = buildFakeHost();
+  const stateDir = join(host.root, "var/lib/ks-production");
+  chmodSync(stateDir, 0o710);
+  const result = runMigration(host);
+  assert.equal(result.status, 0, result.stderr);
+  const mode = execFileSync("stat", ["-c", "%a", stateDir], { encoding: "utf8" }).trim();
+  assert.equal(mode, "710", "an in-flight old deployment still needs its traversal");
+});
+
 linuxTest("idempotent success is refused when the admission gained an extra line", () => {
   const host = buildFakeHost();
   assert.equal(runMigration(host).status, 0);

@@ -151,7 +151,13 @@ already_migrated() {
   # The contract is exactly one line; a grep would bless a file that also
   # admits something else.
   [[ "$(<"$authorized_keys")" == "$new_authorized_line" ]] || return 1
-  [[ -f "$state_file" && ! -s "$state_file" ]] || return 1
+  # Immediately after migration the state is empty; after the first standalone
+  # deployment the wrapper legitimately writes "run-id tree". Both are migrated
+  # states — anything else is drift.
+  if [[ ! -f "$state_file" || -L "$state_file" ]]; then return 1; fi
+  if [[ -s "$state_file" ]]; then
+    [[ "$(<"$state_file")" =~ ^[0-9]+\ [a-f0-9]{40}$ ]] || return 1
+  fi
   [[ -d "$backup_dir" ]] || return 1
   # The rollback runbook's mandatory validation must actually pass, or the
   # "already migrated" verdict blesses a state that cannot be rolled back.
@@ -212,7 +218,10 @@ fi
 # Stage everything next to the live state without touching it.
 # ---------------------------------------------------------------------------
 rm -rf -- "$staged_source_git_dir"
-install -d -m 0700 "$state_dir"
+# The live state directory is 0710 root:ksdeploy by design — the deploy
+# account needs traversal for its staging children — and an in-flight old
+# deployment may still be using it, so its mode is not touched here.
+[[ -d "$state_dir" ]] || fail "The production state directory is missing."
 git init --bare "$staged_source_git_dir" >/dev/null
 # The host umask leaves a fresh bare repository group- and world-readable, and
 # the wrapper later widens the parent to group-traversable 0710 for ksdeploy's
