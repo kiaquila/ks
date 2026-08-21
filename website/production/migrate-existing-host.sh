@@ -214,6 +214,10 @@ fi
 rm -rf -- "$staged_source_git_dir"
 install -d -m 0700 "$state_dir"
 git init --bare "$staged_source_git_dir" >/dev/null
+# The host umask leaves a fresh bare repository group- and world-readable, and
+# the wrapper later widens the parent to group-traversable 0710 for ksdeploy's
+# staging. The mirror itself must stay root-only, matching the installer.
+chmod 0700 "$staged_source_git_dir"
 git --git-dir="$staged_source_git_dir" remote add origin "$new_remote"
 install -m 0600 "$new_source_key_source" "$staged_source_key"
 GIT_SSH_COMMAND="$(git_ssh "$staged_source_key")" \

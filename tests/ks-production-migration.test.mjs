@@ -155,6 +155,8 @@ linuxTest("a successful migration swaps every trust facet and preserves rollback
   assert.equal(sha256(join(backup, "authorized_keys")), oldAuthorizedSha, "old admission preserved");
   assert.equal(readFileSync(join(backup, "latest-candidate"), "utf8"), "4242 " + "a".repeat(40) + "\n");
   assert.ok(existsSync(join(backup, "source.git")), "old mirror preserved");
+  const mirrorMode = execFileSync("stat", ["-c", "%a", join(stateDir, "source.git")], { encoding: "utf8" }).trim();
+  assert.equal(mirrorMode, "700", "installed mirror stays root-only despite the umask");
 });
 
 linuxTest("a second run after success replays idempotently and changes nothing", () => {
