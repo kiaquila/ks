@@ -118,27 +118,38 @@ container only on `127.0.0.1:3100`, and is routed by a dedicated host-Nginx
 virtual host. It does not join, restart, or edit the `capsule-zero` Compose
 project or its ports.
 
-Changes under `ks/**` deploy automatically from merged, fully checked pull
-requests after the resulting push reaches `main`. GitHub Environment
-configuration, verification, cache purge, and recovery steps are documented in
+The automated production deploy still runs from the old `kiaquila/web-design`
+monorepo; re-pointing it at this repository (and disabling it there) is the
+next migration stage, so the scripts under
+[`website/production/`](./website/production/) deliberately still reference the
+old repository until that stage lands. GitHub Environment configuration,
+verification, cache purge, and recovery steps are documented in
 [`website/production/README.md`](./website/production/README.md). Cloudflare
 Workers remains PR-preview-only; its permanent `ks.ks-design.workers.dev` route
 is disabled.
 
 ## Checks
 
-From the repository root:
+From the repository root — repository policy, harness tests, the website build
+and tests, and the payload budget in one pass (CI runs exactly this):
 
 ```bash
-node scripts/check-repository.mjs
+npm run preflight
 ```
 
+Website build and tests alone:
+
 ```bash
-npm --prefix ks/website run check
+npm --prefix website run check
 ```
 
 Local preview:
 
 ```bash
-npm --prefix ks/website run dev
+npm --prefix website run dev
 ```
+
+Every pull request also goes through the Codex review gate: the `Codex Review`
+check stays red until Codex has reviewed the current head. Request a review by
+commenting `@codex review <current-full-head-sha>` on the pull request — the
+trusted gate binds the request to that exact 40-character head SHA.

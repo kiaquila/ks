@@ -214,9 +214,8 @@ The only dependency is `wrangler`, and it is needed for deployment, never for
 `npm run build` or the tests — those use Node builtins alone.
 
 `package.json` pins `undici` to `7.29.0` through `overrides` because wrangler
-resolves `7.28.0`, which the repository's OSV scan flags. `alex-neon/website`
-carries the same pin for the same reason. Drop it once wrangler's own range
-moves past the advisory, and regenerate the lockfile with
+resolves `7.28.0`, which the repository's OSV scan flags. Drop it once
+wrangler's own range moves past the advisory, and regenerate the lockfile with
 `npm install --package-lock-only`.
 
 ## Regenerating assets
@@ -225,7 +224,7 @@ The social card renders the real page fonts through headless Chrome, so it
 cannot drift from the design:
 
 ```bash
-node ks/website/scripts/make-og.mjs
+node website/scripts/make-og.mjs
 ```
 
 Portfolio card screenshots, from the live stages. Every card is 1200×750 and
@@ -248,15 +247,30 @@ Neither is part of `npm run build`; both outputs are committed.
 
 ## Checks
 
-From the repository root:
+From the repository root — repository policy, harness tests, the website build
+and tests, and the payload budget in one pass (CI runs exactly this):
 
 ```bash
-node scripts/check-repository.mjs
+npm run preflight
 ```
 
+Website build and tests alone:
+
 ```bash
-npm --prefix ks/website run check
+npm --prefix website run check
 ```
+
+Every pull request must pass the Codex review gate: the `Codex Review` check
+validates that Codex has reviewed the current head. Request a review by
+commenting `@codex review <current-full-head-sha>` on the pull request — the
+trusted gate binds the request to that exact 40-character head SHA. Once
+Codex posts its evidence, `codex-review-rerun.yml` re-runs the gate
+automatically. The one exception is an installation PR — while the gate is
+not on the default branch yet, GitHub cannot trigger the comment- and
+review-driven workflows, so after Codex responds, re-run the failed gate run
+by hand: `gh run rerun <run-id> --failed`. The gate's workflows and runtime
+scripts are listed as required files in `scripts/check-repository.mjs`;
+removing the guardrail is a deliberate separate decision, never an omission.
 
 Tests cover the client's wording, the price list, the multilingual contract
 (English at `/` as `x-default`, `hreflang` for both, no untranslated Russian in
