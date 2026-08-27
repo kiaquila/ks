@@ -9,7 +9,6 @@ staging_dir="/var/lib/ks-production/staging"
 source_git_dir="/var/lib/ks-production/source.git"
 source_remote="git@github.com:kiaquila/ks.git"
 previous_source_remote="git@github.com:kiaquila/web-design.git"
-state_file="/var/lib/ks-production/latest-candidate"
 lock_file="/var/lock/ks-production-deploy.lock"
 source_key="/root/.ssh/ks-production-source"
 source_known_hosts="/root/.ssh/known_hosts"
@@ -67,9 +66,6 @@ if [[ -z "$existing_source_remote" ]]; then
   git --git-dir="$source_git_dir" remote add origin "$source_remote"
 elif [[ "$existing_source_remote" == "$previous_source_remote" ]]; then
   git --git-dir="$source_git_dir" remote set-url origin "$source_remote"
-  # GitHub Actions run IDs are repository-local. The old monorepo candidate
-  # cannot participate in ordering candidates from this standalone repository.
-  rm -f -- "$state_file"
 fi
 [[ "$(git --git-dir="$source_git_dir" remote get-url origin)" == "$source_remote" ]] ||
   fail "Trusted source mirror remote is invalid."

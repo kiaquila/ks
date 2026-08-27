@@ -94,11 +94,12 @@ sudo website/production/install-deploy-access.sh 'ssh-ed25519 AAAA… github-pro
 ```
 
 On the existing production host, the installer recognizes the old
-`kiaquila/web-design` source mirror, retargets its `origin` to `kiaquila/ks`,
-and removes the old repository's latest-candidate state because Actions run IDs
-are ordered only within one repository. The retarget, state reset, fetch, and
-wrapper installation hold the same lock as production registration and deploy.
-Re-running it after the cutover leaves the standalone candidate state intact.
+`kiaquila/web-design` source mirror and retargets its `origin` to `kiaquila/ks`.
+The standalone wrapper records ordering in
+`/var/lib/ks-production/latest-candidate-ks`, separate from the monorepo state,
+because Actions run IDs are ordered only within one repository. The retarget,
+fetch, and wrapper installation hold the same lock as production registration
+and deploy.
 
 The first server installation, or an intentional TLS/edge refresh, is:
 

@@ -5,7 +5,7 @@ set -euo pipefail
 
 command="${1:-}"
 project_dir="/opt/ks-design-portfolio"
-state_file="/var/lib/ks-production/latest-candidate"
+state_file="/var/lib/ks-production/latest-candidate-ks"
 lock_file="/var/lock/ks-production-deploy.lock"
 source_git_dir="/var/lib/ks-production/source.git"
 source_remote="git@github.com:kiaquila/ks.git"
