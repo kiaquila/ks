@@ -160,6 +160,11 @@ Below that it is an ordinary flowing document.
 - The production Compose project is `ks-design-portfolio` and may publish only
   `127.0.0.1:3100`. Do not reuse the `capsule-zero` Compose project, networks,
   volumes, images, ports, or Nginx configuration.
+- Production deploys from this repository when a checked merge changes
+  `website/**`. Keep the workflow at
+  `.github/workflows/ks-production-deploy.yml`, the gate at
+  `scripts/wait-for-production-checks.mjs`, and the server path under
+  `website/production/`; the trusted server mirror is `kiaquila/ks`.
 
 ## The hero portrait
 

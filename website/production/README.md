@@ -30,12 +30,12 @@ Spaceship Advanced DNS carries these records with a 30-minute TTL:
 
 ## Deployment
 
-Production deploys automatically after a merged pull request changes `ks/**`
+Production deploys automatically after a merged pull request changes `website/**`
 and the resulting push to `main` passes every push check plus the required
 checks on the reviewed pull-request head. A direct push, a pull-request event,
 or a red/missing check fails closed before production credentials are exposed.
 
-The workflow is [`.github/workflows/ks-production-deploy.yml`](../../../.github/workflows/ks-production-deploy.yml).
+The workflow is [`.github/workflows/ks-production-deploy.yml`](../../.github/workflows/ks-production-deploy.yml).
 It uses the GitHub Environment `production`, whose deployment branch policy
 must allow `main` only. Configure these Environment values:
 
@@ -72,10 +72,10 @@ repository push does not register a KS candidate.
 
 The wrapper treats the staged directory as untrusted. It independently fetches
 `main` with a root-owned, read-only GitHub deploy key, requires the current
-trusted `ks` tree to equal the candidate, archives `ks/website` from the
+trusted `website` tree to equal the candidate, archives `website` from the
 validated revision, and byte-compares it with the staged payload before Docker
 can read it. This deliberately permits an unrelated later repository commit
-when `ks/` itself has not changed. The root source mirror is
+when `website/` itself has not changed. The root source mirror is
 `/var/lib/ks-production/source.git`; its
 key is `/root/.ssh/ks-production-source` and is separate from the GitHub
 Actions SSH key.
@@ -90,13 +90,13 @@ operation; normal production recovery uses a GitHub Actions re-run rather than
 an interactive SSH session:
 
 ```bash
-sudo ks/website/production/install-deploy-access.sh 'ssh-ed25519 AAAA… github-production'
+sudo website/production/install-deploy-access.sh 'ssh-ed25519 AAAA… github-production'
 ```
 
 The first server installation, or an intentional TLS/edge refresh, is:
 
 ```bash
-ks/website/production/install-edge.sh
+website/production/install-edge.sh
 ```
 
 On a first install, the edge installer loads the HTTP-only ACME virtual host,
@@ -118,7 +118,7 @@ and both the English `/` and Spanish `/es/` pages return successfully without a
 redirect after the Cloudflare cache purge. The retired `/en/` redirect remains
 a separate manual verification below.
 It then compares the SHA-256 of live `/assets/site.js` with
-`ks/website/src/js/site.js` from that exact commit.
+`website/src/js/site.js` from that exact commit.
 
 ```bash
 dig +short A ks-design.art

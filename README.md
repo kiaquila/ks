@@ -118,12 +118,10 @@ container only on `127.0.0.1:3100`, and is routed by a dedicated host-Nginx
 virtual host. It does not join, restart, or edit the `capsule-zero` Compose
 project or its ports.
 
-The automated production deploy still runs from the old `kiaquila/web-design`
-monorepo; re-pointing it at this repository (and disabling it there) is the
-next migration stage, so the scripts under
-[`website/production/`](./website/production/) deliberately still reference the
-old repository until that stage lands. GitHub Environment configuration,
-verification, cache purge, and recovery steps are documented in
+Changes under `website/**` deploy automatically from this repository after a
+merged, fully checked pull request reaches `main`. GitHub Environment
+configuration, server access, verification, cache purge, and recovery steps
+are documented in
 [`website/production/README.md`](./website/production/README.md). Cloudflare
 Workers remains PR-preview-only; its permanent `ks.ks-design.workers.dev` route
 is disabled.
