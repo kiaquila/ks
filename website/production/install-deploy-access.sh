@@ -10,6 +10,7 @@ source_git_dir="/var/lib/ks-production/source.git"
 source_remote="git@github.com:kiaquila/ks.git"
 previous_source_remote="git@github.com:kiaquila/web-design.git"
 state_file="/var/lib/ks-production/latest-candidate"
+lock_file="/var/lock/ks-production-deploy.lock"
 source_key="/root/.ssh/ks-production-source"
 source_known_hosts="/root/.ssh/known_hosts"
 wrapper_source="$script_dir/server-deploy.sh"
@@ -30,6 +31,11 @@ fail() {
   fail "Pass one SSH Ed25519 public key as the only argument."
 [[ -f "$source_key" && -f "$source_known_hosts" ]] ||
   fail "Install the root-owned read-only GitHub source key and known_hosts entry first."
+
+# Serialize the one-time repository migration with legacy and standalone
+# registration/deployment calls, which use the same lock in server-deploy.sh.
+exec 9>"$lock_file"
+flock --exclusive 9
 
 if ! id "$deploy_user" >/dev/null 2>&1; then
   useradd --create-home --shell /bin/bash "$deploy_user"
