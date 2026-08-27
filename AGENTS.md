@@ -263,10 +263,14 @@ npm --prefix website run check
 Every pull request must pass the Codex review gate: the `Codex Review` check
 validates that Codex has reviewed the current head. Request a review by
 commenting `@codex review <current-full-head-sha>` on the pull request — the
-trusted gate binds the request to that exact 40-character head SHA. The gate's
-workflows and runtime scripts are listed as required files in
-`scripts/check-repository.mjs`; removing the guardrail is a deliberate
-separate decision, never an omission.
+trusted gate binds the request to that exact 40-character head SHA. Once
+Codex posts its evidence, `codex-review-rerun.yml` re-runs the gate
+automatically. The one exception is an installation PR — while the gate is
+not on the default branch yet, GitHub cannot trigger the comment- and
+review-driven workflows, so after Codex responds, re-run the failed gate run
+by hand: `gh run rerun <run-id> --failed`. The gate's workflows and runtime
+scripts are listed as required files in `scripts/check-repository.mjs`;
+removing the guardrail is a deliberate separate decision, never an omission.
 
 Tests cover the client's wording, the price list, the multilingual contract
 (English at `/` as `x-default`, `hreflang` for both, no untranslated Russian in
