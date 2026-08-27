@@ -95,6 +95,11 @@ sudo website/production/install-deploy-access.sh 'ssh-ed25519 AAAA… github-pro
 
 On the existing production host, the installer recognizes the old
 `kiaquila/web-design` source mirror and retargets its `origin` to `kiaquila/ks`.
+Before running it, move the public half of
+`/root/.ssh/ks-production-source` from the old repository's deploy keys to
+`kiaquila/ks` as read-only, or replace the pair and add the replacement public
+key there; the key must authenticate to the standalone repository before the
+installer fetches its new `main`.
 The standalone wrapper records ordering in
 `/var/lib/ks-production/latest-candidate-ks`, separate from the monorepo state,
 because Actions run IDs are ordered only within one repository. The retarget,
