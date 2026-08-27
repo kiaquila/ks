@@ -151,4 +151,5 @@ npm --prefix website run dev
 
 Every pull request also goes through the Codex review gate: the `Codex Review`
 check stays red until Codex has reviewed the current head. Request a review by
-commenting `@codex review` on the pull request.
+commenting `@codex review <current-full-head-sha>` on the pull request — the
+trusted gate binds the request to that exact 40-character head SHA.
