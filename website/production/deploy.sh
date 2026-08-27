@@ -44,7 +44,7 @@ fi
 
 branch="$(git -C "$repo_dir" branch --show-current)"
 revision="$(git -C "$repo_dir" rev-parse HEAD)"
-ks_tree="$(git -C "$repo_dir" rev-parse "$revision:ks")"
+website_tree="$(git -C "$repo_dir" rev-parse "$revision:website")"
 expected_revision="${KS_DESIGN_EXPECTED_REVISION:-}"
 if [[ -n "$expected_revision" ]]; then
   if [[ ! "$expected_revision" =~ ^[a-f0-9]{40}$ ]]; then
@@ -68,7 +68,7 @@ if [[ "$deploy_mode" == "register" ]]; then
     exit 1
   fi
   deploy_output="$(ssh "${ssh_options[@]}" "$target" \
-    "sudo /usr/local/sbin/ks-production-deploy register $revision $ks_tree $deploy_run_id")"
+    "sudo /usr/local/sbin/ks-production-deploy register $revision $website_tree $deploy_run_id")"
   printf '%s\n' "$deploy_output"
   if grep --quiet --fixed-strings --line-regexp 'KS_PRODUCTION_DEPLOY_SKIPPED' <<<"$deploy_output"; then
     if [[ -n "$deploy_status_file" ]]; then
@@ -100,7 +100,7 @@ cleanup() {
   fi
 }
 trap cleanup EXIT
-git -C "$repo_dir" archive --format=tar "$revision:ks/website" |
+git -C "$repo_dir" archive --format=tar "$revision:website" |
   tar -xf - -C "$payload_dir"
 
 # The validated remote directory intentionally expands on the client.
@@ -114,7 +114,7 @@ else
   tar -C "$payload_dir" -cf - . |
     ssh "${ssh_options[@]}" "$target" "tar -xf - -C $remote_stage"
   deploy_output="$(ssh "${ssh_options[@]}" "$target" \
-    "sudo /usr/local/sbin/ks-production-deploy deploy $revision $ks_tree $deploy_run_id $remote_stage")"
+    "sudo /usr/local/sbin/ks-production-deploy deploy $revision $website_tree $deploy_run_id $remote_stage")"
   printf '%s\n' "$deploy_output"
   if grep --quiet --fixed-strings --line-regexp 'KS_PRODUCTION_DEPLOY_SKIPPED' <<<"$deploy_output"; then
     remote_stage=""

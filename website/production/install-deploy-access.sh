@@ -7,7 +7,9 @@ script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd)"
 deploy_user="ksdeploy"
 staging_dir="/var/lib/ks-production/staging"
 source_git_dir="/var/lib/ks-production/source.git"
-source_remote="git@github.com:kiaquila/web-design.git"
+source_remote="git@github.com:kiaquila/ks.git"
+previous_source_remote="git@github.com:kiaquila/web-design.git"
+lock_file="/var/lock/ks-production-deploy.lock"
 source_key="/root/.ssh/ks-production-source"
 source_known_hosts="/root/.ssh/known_hosts"
 wrapper_source="$script_dir/server-deploy.sh"
@@ -28,6 +30,11 @@ fail() {
   fail "Pass one SSH Ed25519 public key as the only argument."
 [[ -f "$source_key" && -f "$source_known_hosts" ]] ||
   fail "Install the root-owned read-only GitHub source key and known_hosts entry first."
+
+# Serialize the one-time repository migration with legacy and standalone
+# registration/deployment calls, which use the same lock in server-deploy.sh.
+exec 9>"$lock_file"
+flock --exclusive 9
 
 if ! id "$deploy_user" >/dev/null 2>&1; then
   useradd --create-home --shell /bin/bash "$deploy_user"
@@ -54,8 +61,11 @@ fi
 # history, so it must stay root-traversable only regardless of that umask.
 chown root:root "$source_git_dir"
 chmod 0700 "$source_git_dir"
-if ! git --git-dir="$source_git_dir" remote get-url origin >/dev/null 2>&1; then
+existing_source_remote="$(git --git-dir="$source_git_dir" remote get-url origin 2>/dev/null || true)"
+if [[ -z "$existing_source_remote" ]]; then
   git --git-dir="$source_git_dir" remote add origin "$source_remote"
+elif [[ "$existing_source_remote" == "$previous_source_remote" ]]; then
+  git --git-dir="$source_git_dir" remote set-url origin "$source_remote"
 fi
 [[ "$(git --git-dir="$source_git_dir" remote get-url origin)" == "$source_remote" ]] ||
   fail "Trusted source mirror remote is invalid."
