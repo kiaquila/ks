@@ -15,6 +15,8 @@ for (const path of [
   ".github/dependabot.yml",
   ".github/pull_request_template.md",
   ".github/workflows/ci.yml",
+  ".github/workflows/ks-production-deploy.yml",
+  "scripts/wait-for-production-checks.mjs",
   /* The current-head Codex review gate is a standing guardrail: the three
      workflows and every script they run. Deleting a runtime script while its
      workflow remains would merge under the old trusted gate and break every
