@@ -8,6 +8,8 @@ deploy_user="ksdeploy"
 staging_dir="/var/lib/ks-production/staging"
 source_git_dir="/var/lib/ks-production/source.git"
 source_remote="git@github.com:kiaquila/ks.git"
+previous_source_remote="git@github.com:kiaquila/web-design.git"
+state_file="/var/lib/ks-production/latest-candidate"
 source_key="/root/.ssh/ks-production-source"
 source_known_hosts="/root/.ssh/known_hosts"
 wrapper_source="$script_dir/server-deploy.sh"
@@ -54,8 +56,14 @@ fi
 # history, so it must stay root-traversable only regardless of that umask.
 chown root:root "$source_git_dir"
 chmod 0700 "$source_git_dir"
-if ! git --git-dir="$source_git_dir" remote get-url origin >/dev/null 2>&1; then
+existing_source_remote="$(git --git-dir="$source_git_dir" remote get-url origin 2>/dev/null || true)"
+if [[ -z "$existing_source_remote" ]]; then
   git --git-dir="$source_git_dir" remote add origin "$source_remote"
+elif [[ "$existing_source_remote" == "$previous_source_remote" ]]; then
+  git --git-dir="$source_git_dir" remote set-url origin "$source_remote"
+  # GitHub Actions run IDs are repository-local. The old monorepo candidate
+  # cannot participate in ordering candidates from this standalone repository.
+  rm -f -- "$state_file"
 fi
 [[ "$(git --git-dir="$source_git_dir" remote get-url origin)" == "$source_remote" ]] ||
   fail "Trusted source mirror remote is invalid."
