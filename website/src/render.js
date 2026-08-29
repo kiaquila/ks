@@ -133,9 +133,11 @@ function header(lang, copy, anchorBase = "") {
 function hero(copy, years) {
   /* Two stacked frames that cross-fade on hover. The calm frame carries the
      alt text; the second is decorative, so a screen reader is told about one
-     person, not two. The sizes attribute matches the CSS: a column on phones,
-     the full right half of the screen on the deck. */
-  const portraitSizes = "(max-width: 899px) min(84vw, 420px), 50vw";
+     person, not two. The sizes attribute mirrors the CSS width of the print
+     — keep the two in step, or the browser picks a candidate for a box that
+     does not exist. */
+  const portraitSizes =
+    "(max-width: 899px) min(84vw, 420px), min(54svh, 36vw)";
   const frames = ["calm", "wink"]
     .map((state, index) =>
       picture({
@@ -346,9 +348,9 @@ function kindWords(copy) {
 
 function contact(copy) {
   const mailto = `mailto:${links.email}`;
-  /* LinkedIn and Telegram only: Instagram moved onto the Why me slide with
-     the other feeds, and printing it twice would say nothing new (client
-     decision, 2026-08-28). */
+  /* LinkedIn and Telegram only: Instagram and Pinterest live in the hero's
+     hand-written annotations, and printing Instagram twice would say nothing
+     new (client decision, 2026-08-28). */
   const social = [
     ["linkedin", links.linkedin],
     ["telegram", links.telegram]
@@ -424,8 +426,12 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
   <meta property="og:image:height" content="630">
   <meta name="theme-color" content="#ffffff">
   <meta name="color-scheme" content="light">
-  <link rel="icon" href="/assets/favicon.svg" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png">
+  <!-- ?v=2 is the cornflower dot (2026-08-28). Browsers cache a favicon far
+       past the page that asked for it, so a recoloured icon needs a new URL
+       or returning visitors keep the gold one; bump this whenever the icon's
+       pixels change. -->
+  <link rel="icon" href="/assets/favicon.svg?v=2" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2">
   ${fontPreloads}
   <link rel="stylesheet" href="/assets/styles.css">
   ${extraHead}

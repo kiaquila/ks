@@ -26,7 +26,7 @@
   margin-top: var(--space-xl);
 }
 
-/* From 900px up the hero is the client-approved "taped print": a plain white
+/* From 1100px up the hero is the client-approved "taped print": a plain white
    page, the headline nudged right, and the photograph hanging on the right
    like a print stuck to the wall — tilted 5 degrees counter-clockwise, a
    soft drop shadow under the paper, a piece of masking tape over its top
@@ -40,19 +40,32 @@
   position: relative;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1100px) {
   .hero-copy {
     max-width: min(38rem, 44vw);
     padding-left: clamp(0.5rem, 2vw, 2.5rem);
   }
 
-  /* The zone: the right ~three-fifths of the slide. Hovering anywhere in it
-     — the print or the air around it — swaps the frame and raises the
-     notes, so the pointer can travel to a note link without the state
-     collapsing under it. */
+  /* The copy sits above the portrait zone, which reaches back underneath it.
+     Without this the zone's invisible sheet swallowed part of "See the work"
+     — a click there toggled the portrait instead of following the button. */
+  .hero-copy {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* The zone the print and its notes are positioned in. It takes no pointer
+     events of its own; the print and — once revealed — the notes opt back
+     in, which keeps the hover alive while the pointer travels from the
+     photo to a note's link, because `:hover` walks up to this element. */
   .hero-portrait {
     position: absolute;
     inset: 0 0 0 38%;
+    pointer-events: none;
+  }
+
+  .portrait-box {
+    pointer-events: auto;
   }
 
   /* Width-driven so the print never grows into the headline on a wide
@@ -67,11 +80,14 @@
   }
 }
 
-/* Below 900px the hero flows: the portrait first — the face is the hook, and
-   it is what makes the page feel like a person rather than a template — then
-   the copy. The photo is a sibling of the container, so the visual order is
-   the slide's own flex order. */
-@media (max-width: 899px) {
+/* Below 1100px the hero flows: the portrait first — the face is the hook,
+   and it is what makes the page feel like a person rather than a template —
+   then the copy, then the notes as a list under the photo. The taped print
+   needs a column of white beside it for the notes to live in; a narrow
+   desktop does not have one, and squeezing them in put ink on the sweater
+   and the face. The photo is a sibling of the container, so the visual order
+   is the slide's own flex order. */
+@media (max-width: 1099px) {
   .hero {
     display: flex;
     flex-direction: column;

@@ -177,10 +177,10 @@ test("the years of experience are derived, never hardcoded", () => {
 test("the hero annotations carry the owner's claims and destinations", () => {
   /* Every note is client-supplied; the links are the owner's own channel,
      community and feeds, each listed in `links` so the outbound test below
-     knows them. The Why me slide itself is gone (client decision,
-     2026-08-28): the claims are written over the portrait instead, and the
-     header goes straight to the sections — Process listed before Work,
-     offer-first. */
+     knows them. An interim "Why me" slide was tried and dropped (client
+     decision, 2026-08-28): the claims are written over the portrait
+     instead, and the header goes straight to the sections — Process listed
+     before Work, offer-first. */
   for (const lang of LOCALES) {
     const html = pages[lang];
     assert.equal(content[lang].hero.notes.length, 4);
@@ -277,7 +277,7 @@ test("Contact is reachable at every width and duplicated at none", () => {
 
 test("English is the default and Spanish is the prefixed second locale", () => {
   assert.deepEqual(Object.keys(languages), ["en", "es"]);
-  /* The owner approved the Spanish `whyMe` strings on 2026-08-28. A new or
+  /* The owner approved the Spanish hero annotations on 2026-08-28. A new or
      reworded translation goes back on this list — and into this assertion —
      until she signs it off. */
   assert.deepEqual(localesAwaitingReview, []);
@@ -355,12 +355,25 @@ test("the only external links are the approved destinations", () => {
     ].map((url) => new URL(url).origin)
   );
 
+  /* Any absolute URL, not just http(s): a `javascript:` or `data:` href would
+     otherwise walk straight past a sweep that only looks for http. Local
+     paths and in-page fragments start with / or #, and mailto is the one
+     scheme the contact band is allowed to use. */
   for (const key of DOCUMENTS) {
-    for (const [, url] of pages[key].matchAll(/(?:href|src)="(https?:\/\/[^"]+)"/g)) {
-      const { origin } = new URL(url);
+    for (const [, url] of pages[key].matchAll(/(?:href|src)="([a-z][a-z0-9+.-]*:[^"]+)"/gi)) {
+      if (url.toLowerCase().startsWith(`mailto:${links.email}`)) continue;
+      const parsed = URL.parse ? URL.parse(url) : new URL(url);
+      assert.ok(parsed, `${key}: unparseable URL ${url}`);
+      assert.ok(
+        ["http:", "https:"].includes(parsed.protocol),
+        `${key}: ${parsed.protocol} is not an allowed scheme (${url})`
+      );
       /* Canonical and og:url point at this site's own origin. */
-      if (origin === "https://ks-design.art") continue;
-      assert.ok(approved.has(origin), `${key}: unapproved external origin ${origin}`);
+      if (parsed.origin === "https://ks-design.art") continue;
+      assert.ok(
+        approved.has(parsed.origin),
+        `${key}: unapproved external origin ${parsed.origin}`
+      );
     }
   }
 });
@@ -465,7 +478,7 @@ test("the portrait swaps frames and the annotations stay readable", () => {
 });
 
 test("the wordmark is still two words to a screen reader", () => {
-  /* The gold dot is decorative and hidden, so without a real separator the
+  /* The brand dot is decorative and hidden, so without a real separator the
      home link would be announced as one run-on word instead of the brand. */
   for (const key of DOCUMENTS) {
     const brand = pages[key].match(/<a class="brand"[\s\S]*?<\/a>/)[0];
@@ -689,7 +702,8 @@ test("every touch target clears 44 px", () => {
     [/\.brand\s*\{[^}]*\}/, "height"],
     [/\.site-nav a\s*\{[^}]*\}/, "height"],
     [/\.btn-compact\s*\{[^}]*\}/, "height"],
-    [/(?:^|\})\s*\.btn\s*\{[^}]*\}/, "height"]
+    [/(?:^|\})\s*\.btn\s*\{[^}]*\}/, "height"],
+    [/\.note-link\s*\{[^}]*\}/, "height"]
   ];
 
   for (const [selector, axes] of rules) {
@@ -750,6 +764,10 @@ test("the palette stays achromatic apart from the cornflower dot pair", () => {
      the brand-gold amber of 2026-08-19) is the cornflower gradient of the
      wordmark dot — exactly its two stops and nothing else. */
   const BRAND_DOT = ["818cf8", "22d3ee"];
+  /* The old gradient monogram is gone and must not come back; the dot's own
+     gradient lives in `--brand-dot`, so a `--gradient` token reappearing is
+     the monogram, not this. */
+  assert.ok(!css.includes("--gradient:"), "the old gradient token is back");
   for (const stop of BRAND_DOT) {
     assert.ok(css.includes(`#${stop}`), `the brand-dot stop #${stop} is gone`);
   }
@@ -877,6 +895,67 @@ test("each locale prefix serves its own error page", () => {
   }
 });
 
+test("the hero notes stay inside the hand font's subset", () => {
+  /* Caveat ships as a subset — ASCII plus the Spanish lowercase accents the
+     notes set — to fit beside the two working families inside the woff2
+     budget. A glyph outside it silently falls back mid-word to a system
+     script, so the copy and the subset have to be checked against each
+     other. Widen the subset (and re-measure the budget) before writing a
+     character this rejects. */
+  const SUBSET = /^[\u0020-\u007E\u00E1\u00E9\u00ED\u00F1\u00F3\u00FA\u00FC]*$/;
+  for (const lang of LOCALES) {
+    for (const note of content[lang].hero.notes) {
+      assert.match(note.text, SUBSET, `${lang}: "${note.text}" needs a glyph Caveat lacks`);
+      for (const link of note.links ?? []) {
+        assert.match(link.label, SUBSET, `${lang}: "${link.label}" needs a glyph Caveat lacks`);
+      }
+    }
+  }
+  /* And the file the stylesheet asks for is the subset one. */
+  assert.match(css, /@font-face \{[^}]*"Caveat"[\s\S]*?caveat-latin\.woff2/);
+});
+
+test("the hero's note layer never swallows a click", () => {
+  /* The layer spans the whole hero zone, which reaches back under the copy.
+     When the zone took pointer events it ate a third of the "See the work"
+     button at laptop widths — a click there toggled the portrait instead.
+     The zone stays transparent to the pointer, the revealed layer takes
+     events back so the cursor can cross to a link without the set folding
+     away, and the copy is lifted above the layer so its buttons win either
+     way. All three rules are load-bearing together. */
+  const clean = withoutComments(css);
+  const zone = clean.match(/\.hero-portrait \{[^}]*position: absolute;[^}]*\}/);
+  assert.ok(zone, "the desktop hero zone rule is missing");
+  assert.match(zone[0], /pointer-events:\s*none/);
+  assert.match(clean, /\.portrait-box \{\s*pointer-events:\s*auto/);
+  assert.match(clean, /\.portrait-notes \{[^}]*pointer-events:\s*none/);
+  assert.match(clean, /\.hero-copy \{\s*position: relative;\s*z-index: 1;/);
+});
+
+test("the notes are readable copy below the print's breakpoint", () => {
+  /* Below 1100px there is no margin to scatter them into (and on a phone no
+     hover to reveal them with), so the notes are a plain list under the
+     portrait: visible without a pointer, and never over the face. The
+     floating, rotated, hover-revealed treatment is claimed inside the
+     1100px query — squeezing it into a narrow desktop put ink on the
+     sweater and across the face. */
+  const clean = withoutComments(css);
+  const base = clean.match(/(?:^|\})\s*\.portrait-notes \{[^}]*\}/)[0];
+  assert.match(base, /display: grid/);
+  assert.ok(!/position: absolute/.test(base), "the notes must flow on a phone");
+  assert.ok(!/opacity: 0/.test(base), "the notes must be visible without hover");
+  const desktop = clean.slice(clean.indexOf("@media (min-width: 1100px)", clean.indexOf(base)));
+  assert.match(desktop, /\.portrait-notes \{[^}]*position: absolute[^}]*opacity: 0/);
+  /* The tilt and the tape are the desktop print's, too: a rotated box in the
+     phone column would push its corners past the viewport edge. */
+  assert.match(
+    clean,
+    /@media \(min-width: 1100px\) \{\s*\.portrait-box \{\s*transform: rotate\(-5deg\)/
+  );
+  const tape = clean.match(/(?:^|\})\s*\.tape \{[^}]*\}/)[0];
+  assert.match(tape, /display: none/);
+});
+
 test("the shipped JavaScript stays within its budget", async () => {
   let raw = 0;
   let gzip = 0;
@@ -890,6 +969,54 @@ test("the shipped JavaScript stays within its budget", async () => {
      ever hit, the answer is to remove behaviour, not to raise the number. */
   assert.ok(gzip <= 4 * 1024, `JS is ${gzip} B gzipped, over the 4 KB budget`);
   assert.ok(raw <= 12 * 1024, `JS is ${raw} B raw, over the 12 KB ceiling`);
+
+  /* The build strips the source's comments on the way into dist, so the
+     shipped figure above no longer bounds the behaviour that was written.
+     This second ceiling does: it measures the source, comments and all, and
+     keeps the "remove behaviour rather than raise the number" rule pointed
+     at the thing a person actually edits. Prose is cheap here — 6 KB leaves
+     room to explain a decision without leaving room for a framework. */
+  assert.ok(
+    gzipSync(Buffer.from(siteScript)).length <= 6 * 1024,
+    "the site script source is over its 6 KB gzipped ceiling"
+  );
+});
+
+test("the stripped script is still valid, complete JavaScript", async () => {
+  /* The comment strip is a regex, not a parser: it cannot tell a comment
+     from a `/*` inside a string or a regex literal, and a bad strip would
+     ship a syntactically broken file that the byte budget above would
+     happily accept. Two guards, because either alone can be fooled. */
+  const shipped = await readFile(join(dist, "assets/site.js"), "utf8");
+  assert.doesNotThrow(
+    () => new Function(shipped),
+    "dist/assets/site.js does not parse — the comment strip broke it"
+  );
+
+  /* The strip's own assumption: the source carries no line comments (they
+     would survive and could comment out live code once the block comments
+     around them collapse), and no string or regex literal contains a comment
+     opener for the regex to trip over. */
+  const withoutBlocks = siteScript.replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.ok(
+    !/(^|[^:"'`\\])\/\//.test(withoutBlocks),
+    "site.js must comment in /* */ blocks only — // survives the build strip"
+  );
+  assert.ok(
+    !/["'`][^"'`\n]*\/\*/.test(withoutBlocks),
+    "a literal in site.js contains /*, which the build's strip would eat"
+  );
+
+  /* Every statement of the source survives: the strip may only remove
+     commentary, never code. */
+  const shipped_lines = shipped.split("\n").map((line) => line.trim());
+  for (const line of withoutBlocks.split("\n").map((l) => l.trim())) {
+    if (!line) continue;
+    assert.ok(
+      shipped_lines.includes(line),
+      `the build dropped a line of code: ${line.slice(0, 60)}`
+    );
+  }
 });
 
 test("every image referenced by the pages exists in dist", async () => {

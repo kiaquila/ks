@@ -123,15 +123,19 @@
 /* 44 px tall, not just the 33 px the text needs: touch laptops and tablets
    are above the 900px breakpoint too, and the project's minimum has no
    "desktop is exempt" clause. */
+/* The nav is set a step below the wordmark — 0.72rem at 0.09em against the
+   mark's 0.78rem at 0.14em (client pick, 2026-08-28). The links are
+   signposts, not headings: at the wordmark's setting they competed with it
+   and the row read as two brands. */
 .site-nav a {
   position: relative;
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
   color: var(--ink-soft);
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  letter-spacing: 0.14em;
+  letter-spacing: 0.09em;
   text-transform: uppercase;
   transition: color var(--dur-fast) var(--ease);
 }
@@ -169,14 +173,14 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.78rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.09em;
 }
 
 /* The visual is two small words, but each hit area is a full 44 px square —
-   set at 0.78rem with a few pixels of padding these were the hardest things on
-   the page to tap. */
+   set at 0.72rem with a few pixels of padding these were the hardest things on
+   the page to tap. The type shrank with the nav; the hit area did not. */
 .lang-switch a,
 .lang-current {
   position: relative;
@@ -201,13 +205,17 @@
 }
 
 /* A pseudo-element rather than a border, so the rule sits under the word
-   instead of at the bottom edge of the 44 px box. */
+   instead of at the bottom edge of the 44 px box. The width is measured
+   against the word — two caps at 0.72rem/0.09em run ~17px, and the rule
+   overhangs each side by a couple of pixels the way a printed underscore
+   does. It was 1.6rem when the switch was set at 0.78rem; re-measure it if
+   the type changes again rather than leaving a rule wider than its word. */
 .lang-current::after {
   content: "";
   position: absolute;
   left: 50%;
   bottom: calc(50% - 0.8rem);
-  width: 1.6rem;
+  width: 1.45rem;
   height: 1.5px;
   background: var(--ink);
   transform: translateX(-50%);

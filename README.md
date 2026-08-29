@@ -36,11 +36,11 @@ The hero's hover swap uses the original composite pair: the wink frame
 registers the rock-expression source
 [`source-assets/portrait-rock-reference.png`](./source-assets/portrait-rock-reference.png)
 onto the fixed calm body (the production rules for that composite live in git
-history). A separate Why me slide built from the
+history). An interim second slide built from the
 [`source-assets/hover-candidates/`](./source-assets/hover-candidates)
-exposure was tried on 2026-08-27–28 and retired the next day; the hover
-returned, now carrying the owner's claims as hand-written annotations in
-self-hosted Caveat (OFL, beside the other font licenses).
+exposure was tried on 2026-08-27–28 and dropped; the hover returned, now
+carrying the owner's claims as hand-written annotations in self-hosted
+Caveat (OFL, beside the other font licenses).
 
 ## Source of truth
 
@@ -57,7 +57,7 @@ self-hosted Caveat (OFL, beside the other font licenses).
 | Mentored AI-engineers community | [invite link](https://t.me/+1k8AU1O9-o04MTRi) | client, 2026-08-27 |
 | Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert, aesthetics and authenticity | client, 2026-08-28 |
 | In web development since | 2017 | client |
-| Argentinian Spanish translation | `/es/` copy | client-approved on 2026-08-17; the `whyMe` strings added 2026-08-27 await her sign-off (`localesAwaitingReview`) |
+| Argentinian Spanish translation | `/es/` copy | client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28 |
 
 Every string lives in [`website/src/content.js`](./website/src/content.js).
 Nothing on the page is written anywhere else.
@@ -101,10 +101,11 @@ alight.
   while the renderer omits the entire block until it is approved.
   Replace `kindWords.items` in `content.js` with real quotes and set
   `todo: false`.
-- **The Spanish `whyMe` strings await the owner's sign-off.** The claims are
-  the client's own (supplied 2026-08-27); the `es` translation of them is
-  listed in `localesAwaitingReview` (and pinned by a test) until she confirms
-  the wording.
+- **The mentored-community link is a Telegram invite.** `t.me/+1k8AU1O9-…`
+  is a joining credential rather than a public @username, and the page is
+  indexable, so anyone who reads the markup can join. The owner supplied it
+  for publication knowingly; turn on Telegram's join-request approval for
+  that group, or swap in a public username, if that ever stops being wanted.
 
 ## Production hosting
 

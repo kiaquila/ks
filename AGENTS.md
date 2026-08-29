@@ -28,6 +28,15 @@ rules, heavy tracked capitals. Everything below follows from that.
   Do not add a fourth family.
 - Headings are uppercase with open tracking (`0.06em`–`0.09em`), not tight
   display type.
+- **The header is set in two voices, not one.** The wordmark leads at
+  `0.78rem`/`0.14em`; the navigation links and the language switch follow a
+  step below at `0.72rem`/`0.09em` (client pick, 2026-08-28 — the earlier row
+  set every item at the wordmark's size, and the links competed with the mark
+  instead of pointing at the page). The collapsed mobile menu is a separate
+  context: it takes the same `0.09em` tracking but keeps its own larger
+  `0.9rem`, because a full-screen menu is read at arm's length. The switch's
+  underline is measured against its word — `1.45rem` for two caps at this
+  setting — so re-measure `.lang-current::after` if that type moves again.
 - **A section is opened by its heading and nothing else.** The small-caps label
   over a rule and the lead paragraph beneath both restated the heading, so all
   three of them said one thing three times; the label and the lead are gone and
@@ -47,8 +56,9 @@ rules, heavy tracked capitals. Everything below follows from that.
 - The process numerals grow slightly on hover. Any motion added here stays at
   that scale: a transform on one element, killed by `prefers-reduced-motion`.
 - The wordmark is **typography, not an image**: `ks·design` set in Manrope as
-  tracked uppercase at the nav's type size, with a cornflower dot on the
-  baseline between the two words — nearer the KS than the DESIGN in a 1:2
+  tracked uppercase at `0.78rem`/`0.14em` — a step above the navigation
+  beside it, so the header has one voice and one echo — with a cornflower dot
+  on the baseline between the two words — nearer the KS than the DESIGN in a 1:2
   proportion (position: client decision, 2026-08-19; the dot replaced the
   hyphen of the earlier bold lowercase `ks-design`). The dot uses
   `--brand-dot`, an indigo-to-cyan gradient at 135° (client decision,
@@ -116,11 +126,20 @@ Below that it is an ordinary flowing document.
 
 - Static, no framework: `src/content.js` (copy), `src/render.js` (markup),
   five style layers `src/styles/{tokens,base,layout,components,sections}.css`
-  concatenated in that order, and one classic script `src/js/site.js`. The
-  build strips the script's block comments when copying it into dist — they
-  are written for the reader of src/, and the JS budget measures what a
-  visitor downloads — so keep them block comments; a `//` comment would
-  survive the strip.
+  concatenated in that order, and one classic script `src/js/site.js`.
+- **The build strips the script's block comments when copying it into dist**,
+  because they are written for the reader of `src/` and the visitor should
+  not download them. Three consequences, all test-enforced: comment in
+  `/* */` blocks only (a `//` line survives the strip and could comment out
+  live code once a block around it collapses); no string or regex literal may
+  contain `/*` (the strip is a regex, not a parser, and would eat from there
+  to the next `*/`); and the shipped file is parsed and diffed against the
+  source line by line, so a broken or truncated strip fails the suite rather
+  than shipping.
+- **The JS budget is two numbers now.** The shipped bytes keep the 4 KB
+  gzipped budget, and the source — comments and all — has its own 6 KB
+  ceiling, so "remove behaviour rather than raise the number" still points at
+  the thing a person edits. Neither number may be raised to fit a feature.
 - **The layers are concatenated, so a media query in an earlier layer loses to a
   plain rule in a later one.** A component's responsive rules belong in that
   component's layer. This has already bitten once: `.header-cta { display:none }`
@@ -190,39 +209,57 @@ Below that it is an ordinary flowing document.
 - The cross-fade is ~140 ms on purpose: at that speed the eye reads a cut —
   the requested gif feel — not a slideshow dissolve. Touch toggles the swap
   through `data-active` (set by the script), keyboard through focus.
-- **From 900px up the hero is the "taped print"** (client pick from a
+- **From 1100px up the hero is the "taped print"** (client pick from a
   20-variant show, 2026-08-28): a plain white page, the copy nudged slightly
   right, and the photograph hanging on the right like a print stuck to the
   wall — the whole `.portrait-box` tilted **5° counter-clockwise**, a soft
   paper drop shadow on `.portrait`, and a `.tape` span of semi-translucent
   masking tape over the top edge (it lands on the photographed wall, never
-  the hair). The print sits at `left: 20%` of the `.hero-portrait` zone
-  (which spans the right 62% of the slide), `top: 11svh`, `height: 70svh`.
-  There is no background field: the page's own white is the wall.
+  the hair). The print sits at `left: 30%` of the `.hero-portrait` zone
+  (which spans the right 62% of the slide), `top: 13svh`, and is
+  **width-driven**: `min(54svh, 36vw)`, so it never grows into the headline
+  on a wide window nor spills past the right edge on a narrow one. Keep the
+  `sizes` attribute in `render.js` equal to that width. There is no
+  background field: the page's own white is the wall.
+- **Below 1100px the hero flows instead**: portrait first, then the copy,
+  then the notes as a plain hand-written list under the photo — no tilt, no
+  tape, no shadow, nothing revealed by hover. The scattered treatment needs
+  a column of white beside the print for the notes to live in, and a narrow
+  desktop has none: squeezing them in put ink on the black sweater and
+  across the face. A test pins both halves of this split.
 - **The stage and the portrait are direct children of the slide, never of
   `.container`.** The entrance reveal transforms the container, and a
   transformed ancestor becomes the containing block of absolutely-positioned
   descendants — the photo would ride the reveal and anchor to the wrong box.
   This bit once; do not move the portrait back inside.
+- **Three rules keep the hover honest, and they only work together**: the
+  `.hero-portrait` zone takes no pointer events (it reaches back under the
+  copy, and as a live sheet it ate a third of "See the work" at laptop
+  widths); the revealed `.portrait-notes` layer takes them back, so the
+  cursor can cross the white between print and link without the set folding
+  away; and `.hero-copy` is lifted to `z-index: 1` so its buttons win
+  wherever the layer overlaps them. A test asserts all three.
 - On hover the frosted stats panel of old is replaced by **hand-written
   annotations** (`.portrait-notes`): the owner's claims in Caveat, ink on the
   white around the print — "%YEARS%+ years in web development" and "AI
-  expert" with its join-links stacked as a left-hand column in the wedge
-  between the headline and the print's tilted edge, "I do non-generic AI web
-  design" and the aesthetics claim with its follow-links on the right air —
-  each with a small curled arrow pointing at her, each link with its own
-  transition arrow. The layer spans the whole zone (`.hero-portrait` is the
-  hover/focus/toggle scope, so the pointer can travel to a link without the
-  state collapsing) and sits OUTSIDE `role="img"`, where the claims and
-  links would be silent for assistive tech; links are real 44px targets.
-  Keep notes off the face and off the dark sweater — ink dies there. Below
-  900px the notes sit over the photo's pale wall and the curled arrows hide.
+  expert" with its join-links in the pocket under the headline, "I do
+  non-generic AI web design" and the aesthetics claim with its follow-links
+  on the right air — each with a small curled arrow pointing at her, each
+  link with its own transition arrow. The arrows are children of their note,
+  so they travel with the text they belong to. The layer sits OUTSIDE
+  `role="img"`, where the claims and links would be silent for assistive
+  tech; links are real 44px targets, and the touch-target test names
+  `.note-link` explicitly. Keep notes off the face and off the dark sweater —
+  ink dies there.
 - Caveat is the **one sanctioned third family** (client decision,
   2026-08-28): a single static 600 weight, subset to ASCII plus the Spanish
   lowercase accents the notes set, self-hosted like the other faces with its
   OFL text beside it. It exists for the annotations only — never for UI or
-  running text — and the subset must grow if a note ever needs a glyph
-  outside it.
+  running text. A test walks every note string against the subset, because a
+  missing glyph falls back to a system script mid-word rather than failing
+  loudly. **The font budget is now nearly spent** — 202 940 B of 204 800 —
+  so widening that subset means re-subsetting another face or raising the
+  budget deliberately, not quietly.
 
 ## Dependencies
 
