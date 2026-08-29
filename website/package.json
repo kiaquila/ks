@@ -7,9 +7,6 @@
     "node": ">=22.18.0"
   },
   "type": "module",
-  "overrides": {
-    "undici": "7.29.0"
-  },
   "scripts": {
     "build": "node scripts/build.mjs",
     "og": "node scripts/make-og.mjs",
