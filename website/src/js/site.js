@@ -2,9 +2,9 @@
 
    Every feature here upgrades something that already works without it: the nav
    is a visible list until this script can collapse and reopen it, the carousel
-   is a native scroll container until this script can add buttons to it, and the
-   portrait swaps on hover in CSS. Nothing is hidden in the markup waiting for
-   JavaScript to reveal it. */
+   is a native scroll container until this script can add buttons to it, and
+   the portrait swaps on hover in CSS. Nothing is hidden in the markup waiting
+   for JavaScript to reveal it. */
 
 (() => {
   "use strict";
@@ -293,6 +293,8 @@
       portrait.toggleAttribute("data-active");
     });
 
+    /* Leaving the portrait clears the toggled state — unless focus moved into
+       the notes themselves, which :focus-within keeps visible either way. */
     portrait.addEventListener("blur", () => {
       portrait.removeAttribute("data-active");
     });

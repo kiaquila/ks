@@ -102,7 +102,9 @@ function header(lang, copy, anchorBase = "") {
      collapsed phone menu, where there is no button. The two rules are exact
      mirrors of each other, so Contact is reachable at every width and never
      appears twice. */
-  const navItems = ["work", "process", "services", "contact"]
+  /* Process is listed before Work although the slides run the other way —
+     the client reads the menu as offer-first (client decision, 2026-08-28). */
+  const navItems = ["process", "work", "services", "contact"]
     .map(
       (key) =>
         `<li${key === "contact" ? ' class="nav-contact"' : ""}><a href="${anchorBase}#${key}">${escapeHtml(copy.nav[key])}</a></li>`
@@ -129,10 +131,11 @@ function header(lang, copy, anchorBase = "") {
 }
 
 function hero(copy, years) {
-  /* Two stacked frames that cross-fade. The calm frame carries the alt text;
-     the second is decorative, so a screen reader is told about one person, not
-     two. The sizes attribute matches the CSS column, not the viewport. */
-  const portraitSizes = "(max-width: 899px) min(84vw, 420px), min(34vw, 470px)";
+  /* Two stacked frames that cross-fade on hover. The calm frame carries the
+     alt text; the second is decorative, so a screen reader is told about one
+     person, not two. The sizes attribute matches the CSS: a column on phones,
+     the full right half of the screen on the deck. */
+  const portraitSizes = "(max-width: 899px) min(84vw, 420px), 50vw";
   const frames = ["calm", "wink"]
     .map((state, index) =>
       picture({
@@ -150,19 +153,39 @@ function hero(copy, years) {
     )
     .join("\n      ");
 
-  /* The stats panel is a sibling of the portrait, not a child: the portrait is
-     `role="img"`, which makes its descendants presentational — numbers inside
-     it would vanish for screen readers. A stat with no label is one standing
-     claim rather than a figure with a caption, so no empty span is emitted. */
-  const stats = copy.hero.portraitStats
-    .map((stat) => {
-      const label = stat.label
-        ? `<span class="stat-label">${fill(stat.label, years)}</span>`
-        : "";
-      return `<div class="stat"><span class="stat-value">${fill(stat.value, years)}</span>${label}</div>`;
-    })
-    .join("");
+  /* The hand-written annotations that rise over the stage on hover live
+     OUTSIDE the portrait's role="img" box: descendants of an img role are
+     presentational, so the claims — and their links — would be silent for
+     assistive tech nested inside it. Each note carries a small hand-drawn
+     arrow curling toward the owner, and each link its own transition arrow. */
+  const linkArrow =
+    '<svg class="note-go" viewBox="0 0 22 12" width="20" height="11" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M2 7.2 C 8 5.8, 13 6.6, 19 6.2 M14.5 2.2 C 16 3.8, 17.5 5.2, 19 6.2 C 17.2 7, 15.4 8.6, 14 10.2"/></svg>';
+  const noteArrow = (step) =>
+    `<svg class="note-arrow note-arrow-${step}" viewBox="0 0 52 40" width="52" height="40" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6 C 10 20, 20 30, 34 31 C 41 31.4, 45 29, 47 26 M38 21.5 C 41.5 23.5, 44.5 25, 47 26 C 45.8 28.6, 44.8 31.6, 44.2 34.5"/></svg>`;
 
+  const notes = copy.hero.notes
+    .map((note, index) => {
+      const noteLinks = note.links?.length
+        ? `\n          <p class="note-links">${note.links
+            .map(
+              (link) =>
+                `<a class="note-link" href="${escapeHtml(link.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}${linkArrow}</a>`
+            )
+            .join("")}</p>`
+        : "";
+      return `<div class="note note-${index + 1}">
+          <p class="note-text">${fill(note.text, years)}</p>${noteLinks}
+          ${noteArrow(index + 1)}
+        </div>`;
+    })
+    .join("\n        ");
+
+  /* The portrait lives OUTSIDE `.container`: the entrance reveal transforms
+     the container, and a transformed ancestor would become the containing
+     block of the absolutely-anchored portrait — the photo would ride the
+     reveal instead of standing on the slide. As a direct child of the slide
+     it anchors reliably, and the copy alone drifts in. The tape span is the
+     piece of masking tape the tilted print hangs from. */
   return `<section class="slide hero" aria-labelledby="hero-title">
     <div class="container hero-inner">
       <div class="hero-copy">
@@ -173,13 +196,16 @@ function hero(copy, years) {
           <a class="btn btn-ghost" href="#work">${escapeHtml(copy.hero.secondary)}</a>
         </div>
       </div>
-      <div class="hero-portrait">
-        <div class="portrait-box" data-portrait-box>
-          <div class="portrait" data-portrait tabindex="0" role="img" aria-label="${escapeHtml(copy.hero.portraitAlt)}">
+    </div>
+    <div class="hero-portrait">
+      <div class="portrait-box" data-portrait-box>
+        <div class="portrait" data-portrait tabindex="0" role="img" aria-label="${escapeHtml(copy.hero.portraitAlt)}">
       ${frames}
-          </div>
-          <div class="portrait-stats">${stats}</div>
         </div>
+        <span class="tape" aria-hidden="true"></span>
+      </div>
+      <div class="portrait-notes">
+        ${notes}
       </div>
     </div>
   </section>`;
@@ -320,10 +346,12 @@ function kindWords(copy) {
 
 function contact(copy) {
   const mailto = `mailto:${links.email}`;
+  /* LinkedIn and Telegram only: Instagram moved onto the Why me slide with
+     the other feeds, and printing it twice would say nothing new (client
+     decision, 2026-08-28). */
   const social = [
     ["linkedin", links.linkedin],
-    ["telegram", links.telegram],
-    ["instagram", links.instagram]
+    ["telegram", links.telegram]
   ]
     .map(
       ([name, href]) =>

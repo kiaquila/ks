@@ -7,13 +7,6 @@
   background: var(--ground);
 }
 
-.hero-inner {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
-  align-items: center;
-  gap: clamp(2rem, 1rem + 4vw, 5rem);
-}
-
 .hero h1 {
   max-width: 16ch;
 }
@@ -33,28 +26,63 @@
   margin-top: var(--space-xl);
 }
 
+/* From 900px up the hero is the client-approved "taped print": a plain white
+   page, the headline nudged right, and the photograph hanging on the right
+   like a print stuck to the wall — tilted 5 degrees counter-clockwise, a
+   soft drop shadow under the paper, a piece of masking tape over its top
+   edge. The portrait zone is a direct child of the slide, never of
+   `.container`: the entrance reveal transforms the container, and a
+   transformed ancestor would become the zone's containing block and drag the
+   photo through the reveal. */
+/* The notes layer spans this element, so it is the positioning context on
+   phones too, where it simply wraps the photo. */
 .hero-portrait {
-  justify-self: end;
-  width: 100%;
-  max-width: min(29rem, 74svh * 776 / 971);
+  position: relative;
 }
 
+@media (min-width: 900px) {
+  .hero-copy {
+    max-width: min(38rem, 44vw);
+    padding-left: clamp(0.5rem, 2vw, 2.5rem);
+  }
+
+  /* The zone: the right ~three-fifths of the slide. Hovering anywhere in it
+     — the print or the air around it — swaps the frame and raises the
+     notes, so the pointer can travel to a note link without the state
+     collapsing under it. */
+  .hero-portrait {
+    position: absolute;
+    inset: 0 0 0 38%;
+  }
+
+  /* Width-driven so the print never grows into the headline on a wide
+     window and never spills past the right edge on a narrow one; height
+     follows the source aspect. */
+  .portrait-box {
+    position: absolute;
+    left: 30%;
+    top: 13svh;
+    width: min(54svh, 36vw);
+    aspect-ratio: 776 / 971;
+  }
+}
+
+/* Below 900px the hero flows: the portrait first — the face is the hook, and
+   it is what makes the page feel like a person rather than a template — then
+   the copy. The photo is a sibling of the container, so the visual order is
+   the slide's own flex order. */
 @media (max-width: 899px) {
-  .hero-inner {
-    grid-template-columns: minmax(0, 1fr);
+  .hero {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-lg);
   }
 
-  /* Portrait first on a phone: the face is the hook, and it is what makes the
-     page feel like a person rather than a template. */
-  .hero-copy {
-    order: 2;
-  }
-
   .hero-portrait {
-    order: 1;
-    justify-self: center;
+    order: -1;
+    width: 100%;
     max-width: min(84vw, 26rem);
+    align-self: center;
   }
 
   .hero h1,
@@ -224,20 +252,16 @@
 }
 
 /* Answers a pointer the way the work and service cards do: the whole item
-   lifts 4px. The step has no panel to shade, so its own hairline takes the
-   place of the card's shadow — an inset rule doubles it to 2px without the
-   layout shift a thicker border would cause. */
+   lifts 4px. The rules that used to open each step are gone (client decision,
+   2026-08-28) — the chapter numeral opens the column on its own. */
 .step {
   padding-top: var(--space-md);
-  border-top: 1px solid var(--ink);
-  transition: transform var(--dur) var(--ease),
-    box-shadow var(--dur) var(--ease);
+  transition: transform var(--dur) var(--ease);
 }
 
 .step:hover,
 .step:focus-within {
   transform: translateY(-4px);
-  box-shadow: inset 0 1px 0 var(--ink);
 }
 
 .step-number {

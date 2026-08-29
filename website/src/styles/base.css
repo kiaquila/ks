@@ -57,6 +57,19 @@
     U+FEFF, U+FFFD;
 }
 
+/* The hand-written annotations on the hero portrait. A single static weight,
+   subset to ASCII plus the Spanish lowercase accents the notes actually set —
+   the file has to fit the font budget beside the two working families. */
+@font-face {
+  font-family: "Caveat";
+  src: url("/assets/fonts/caveat-latin.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0020-007E, U+00E1, U+00E9, U+00ED, U+00F1, U+00F3, U+00FA,
+    U+00FC;
+}
+
 *,
 *::before,
 *::after {

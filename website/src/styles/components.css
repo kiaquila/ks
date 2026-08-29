@@ -1,6 +1,5 @@
-/* Reusable primitives: buttons, links, glass, the portrait swap with its
-   stats panel, and the carousel mechanics. Anything used by more than one
-   section lives here. */
+/* Reusable primitives: buttons, links, glass, the portrait frame, and the
+   carousel mechanics. Anything used by more than one section lives here. */
 
 /* --- buttons: rectangular and tracked, like set type ----------------------- */
 
@@ -96,15 +95,39 @@
   position: relative;
 }
 
+/* The whole box tilts 5 degrees counter-clockwise (client pick, 2026-08-28,
+   from the variant show), so the frames, the shadow and the tape lean as one
+   piece of paper. */
+.portrait-box {
+  transform: rotate(-5deg);
+}
+
 .portrait {
   position: relative;
   isolation: isolate;
   /* The exact aspect of the source pair — zero crop, zero drift. */
   aspect-ratio: 776 / 971;
   overflow: hidden;
-  border-radius: var(--radius-md);
+  /* A print, not a card: near-sharp corners and the paper's drop shadow. */
+  border-radius: 2px;
   background: var(--ground-sunk);
+  box-shadow: 0 26px 60px -22px rgb(11 11 12 / 0.45), 0 8px 18px -10px rgb(11 11 12 / 0.25);
   cursor: pointer;
+}
+
+/* The piece of masking tape over the print's top edge — it sits on the wall
+   area of the photograph, never on the hair. Semi-translucent, faintly torn
+   ends, riding the box's own tilt plus a few degrees of its own. */
+.tape {
+  position: absolute;
+  top: -14px;
+  left: 50%;
+  width: 96px;
+  height: 30px;
+  background: rgb(232 230 227 / 0.9);
+  box-shadow: 0 2px 6px rgb(11 11 12 / 0.18), inset 0 0 6px rgb(255 255 255 / 0.5);
+  clip-path: polygon(2% 0, 98% 3%, 100% 32%, 97% 64%, 99% 100%, 3% 97%, 0 62%, 2% 34%);
+  transform: translateX(-50%) rotate(7deg);
 }
 
 .portrait-frame {
@@ -130,63 +153,187 @@
 
 /* `data-active` is set by the script for touch, where there is no hover at
    all; pointer devices need no script for this to work. */
-.portrait-box:hover .portrait-wink,
-.portrait-box:focus-within .portrait-wink,
-.portrait-box:has([data-active]) .portrait-wink {
+.hero-portrait:hover .portrait-wink,
+.hero-portrait:focus-within .portrait-wink,
+.hero-portrait:has([data-active]) .portrait-wink {
   opacity: 1;
 }
 
-.portrait-box:hover .portrait-calm,
-.portrait-box:focus-within .portrait-calm,
-.portrait-box:has([data-active]) .portrait-calm {
+.hero-portrait:hover .portrait-calm,
+.hero-portrait:focus-within .portrait-calm,
+.hero-portrait:has([data-active]) .portrait-calm {
   opacity: 0;
 }
 
-/* The frosted stats panel: rises over the sweater, never over the face. A
-   sibling of the portrait, because inside role="img" it would be silenced
-   for screen readers. */
-.portrait-stats {
+/* The hand-written annotations: the owner's claims, scribbled around the
+   print the way a designer marks a contact sheet, with little arrows curling
+   toward her. A sibling of the portrait box, spanning the whole hover zone,
+   because inside role="img" the claims and their links would be silenced for
+   screen readers. */
+.portrait-notes {
   position: absolute;
-  inset-inline: 0.75rem;
-  bottom: 0.75rem;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 0.6rem 1rem;
-  padding: 0.9rem 1.1rem;
-  border-radius: var(--radius-md);
-  background: var(--glass-panel);
-  border: 1px solid var(--glass-edge);
-  backdrop-filter: blur(20px) saturate(1.2);
-  -webkit-backdrop-filter: blur(20px) saturate(1.2);
+  inset: 0;
+  font-family: var(--font-hand);
   opacity: 0;
-  transform: translateY(10px);
+  transform: translateY(8px);
   pointer-events: none;
   transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
 }
 
-.portrait-box:hover .portrait-stats,
-.portrait-box:focus-within .portrait-stats,
-.portrait-box:has([data-active]) .portrait-stats {
+.hero-portrait:hover .portrait-notes,
+.hero-portrait:focus-within .portrait-notes,
+.hero-portrait:has([data-active]) .portrait-notes {
   opacity: 1;
   transform: none;
+  pointer-events: auto;
 }
 
-.stat-value {
-  display: block;
-  font-family: var(--font-display);
-  font-size: 1.25rem;
-  font-weight: 800;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
+/* Below 900px the notes sit over the photo itself, in ink over its pale
+   wall, and the curled arrows stay hidden — no room to curl. */
+.note {
+  position: absolute;
+  max-width: 15ch;
+  color: var(--ink);
+  font-size: clamp(1.25rem, 1.05rem + 0.7vw, 1.75rem);
+  font-weight: 600;
+  line-height: 1.08;
+  text-shadow: 0 0 10px rgb(255 255 255 / 0.65);
+  transform: rotate(var(--tilt, 0deg));
+}
+
+.note-text {
+  text-wrap: balance;
+}
+
+.note-links {
+  display: grid;
+  justify-items: start;
+}
+
+/* Hand-written but still a link: underlined, its own transition arrow, and a
+   full 44px row to tap. */
+.note-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  min-height: 2.75rem;
+  font-size: 0.82em;
+  line-height: 1.05;
+  text-decoration: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 0.18em;
+  text-decoration-color: var(--ink-soft);
+  transition: text-decoration-color var(--dur-fast) var(--ease);
+}
+
+.note-link:hover,
+.note-link:focus-visible {
+  text-decoration-color: currentColor;
+}
+
+.note-go {
+  flex-shrink: 0;
+}
+
+.note-arrow {
+  display: none;
+  position: absolute;
   color: var(--ink);
 }
 
-.stat-label {
-  display: block;
-  margin-top: 0.15rem;
-  color: var(--ink-soft);
-  font-size: 0.72rem;
-  line-height: 1.3;
+.note-1 {
+  top: 10%;
+  left: 4%;
+  --tilt: -4deg;
+}
+
+.note-2 {
+  top: 12%;
+  right: 4%;
+  --tilt: 3deg;
+  text-align: right;
+}
+
+.note-3 {
+  top: 37%;
+  left: 4%;
+  --tilt: -2deg;
+}
+
+.note-4 {
+  top: 40%;
+  right: 4%;
+  --tilt: 2deg;
+  text-align: right;
+}
+
+.note-4 .note-links {
+  justify-items: end;
+}
+
+/* On the desktop page the notes stand in ink on the white around the print:
+   the claims by its upper corners, the AI-expert block in the channel
+   between the headline and the print, the aesthetics block on the right air.
+   The curled arrows appear and point at the owner. */
+@media (min-width: 900px) {
+  .note-arrow {
+    display: block;
+  }
+
+  .note-1 {
+    top: 7.5svh;
+    left: 4%;
+    --tilt: -3deg;
+  }
+
+  .note-2 {
+    top: 8svh;
+    right: 4%;
+    --tilt: 2deg;
+  }
+
+  /* In the white pocket below the headline, beside the print's lower-left
+     edge (client placement, 2026-08-28). Narrow on purpose: the block must
+     clear the buttons on its left and the tilted paper edge on its right. */
+  .note-3 {
+    top: 59svh;
+    left: 10%;
+    max-width: 12ch;
+    --tilt: -2deg;
+  }
+
+  .note-4 {
+    top: 42svh;
+    right: 3.5%;
+    --tilt: 2deg;
+  }
+
+  /* Each arrow is a child of its note, so it travels with the text it
+     belongs to: curling out of the block toward the print, never across the
+     note's own lines. */
+  .note-arrow-1 {
+    left: 52%;
+    top: calc(100% + 4px);
+    transform: rotate(26deg);
+  }
+
+  .note-arrow-2 {
+    left: -14%;
+    top: 84%;
+    transform: scaleX(-1) rotate(18deg);
+  }
+
+  .note-arrow-3 {
+    right: -50px;
+    top: 2%;
+    transform: scaleY(-1) rotate(-10deg);
+  }
+
+  .note-arrow-4 {
+    left: -34px;
+    top: -32px;
+    transform: scaleX(-1) rotate(10deg);
+  }
 }
 
 /* --- carousel -------------------------------------------------------------- */

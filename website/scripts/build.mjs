@@ -103,9 +103,18 @@ async function main() {
   }
   await writeFile(join(dist, "assets/styles.css"), await buildStylesheet(), "utf8");
 
+  /* The script ships without its comments: they are written for the reader
+     of src/, and the 4 KB budget measures what a visitor downloads. Only
+     block comments exist in the source — the strip is a plain regex, not a
+     minifier, so the shipped code is still the code that was written. */
   for (const file of await readdir(join(root, "src/js"))) {
     if (file.endsWith(".js")) {
-      await cp(join(root, "src/js", file), join(dist, "assets", file));
+      const source = await readFile(join(root, "src/js", file), "utf8");
+      await writeFile(
+        join(dist, "assets", file),
+        source.replace(/[ \t]*\/\*[\s\S]*?\*\/\n?/g, "").replace(/\n{3,}/g, "\n\n"),
+        "utf8"
+      );
     }
   }
 

@@ -1,10 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ks">
   <!-- The wordmark's monogram set as type, not a drawn mark, in the tracked
-       caps the wordmark uses, with the brand-gold dot sitting on the
-       baseline after the letters. No background plate: the letters flip
+       caps the wordmark uses, with the cornflower-gradient dot sitting on
+       the baseline after the letters. No background plate: the letters flip
        black/white with the browser theme, so the tab icon reads on both;
-       the gold dot stays the same on either. Favicons cannot load webfonts,
-       so the stack leans on the system's closest grotesk. -->
+       the gradient dot stays the same on either. Favicons cannot load
+       webfonts, so the stack leans on the system's closest grotesk. -->
   <style>
     /* Sized so the two caps plus the dot fill the 64px square: at a tab's
        16px anything smaller reads as a smudge, anything larger clips the S.
@@ -21,6 +21,13 @@
       text { fill: #ffffff; }
     }
   </style>
+  <defs>
+    <!-- 135° like --brand-dot: indigo top-left into cyan bottom-right. -->
+    <linearGradient id="dot" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#818cf8"/>
+      <stop offset="1" stop-color="#22d3ee"/>
+    </linearGradient>
+  </defs>
   <text x="27" y="46" text-anchor="middle">KS</text>
-  <circle cx="60" cy="42" r="4" fill="#e8a038"/>
+  <circle cx="60" cy="42" r="4" fill="url(#dot)"/>
 </svg>

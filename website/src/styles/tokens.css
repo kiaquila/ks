@@ -3,8 +3,8 @@
    ramp — after the printed-menu reference the page follows. Hierarchy is
    carried by weight, tracking, hairline rules and scale, the way it is on
    paper. The single sanctioned exception (client decision, 2026-08-19) is
-   the brand-gold dot in the ks·design wordmark; a test enforces that every
-   other colour in the compiled stylesheet stays neutral. */
+   the cornflower dot pair in the ks·design wordmark; a test enforces that
+   every other colour in the compiled stylesheet stays neutral. */
 
 :root {
   /* --- ink and ground --- */
@@ -21,30 +21,32 @@
   --line: #e4e4e7;
   --line-strong: #d2d2d6;
 
-  /* The one chromatic token: the gold dot of the ks·design wordmark, shared
-     with the favicon and the ember lab study. Deep enough amber to read on
-     white, warm enough to read on the near-black panel. Use it for the brand
-     dot only — never for text or UI states. */
-  --brand-gold: #e8a038;
+  /* The one chromatic device: the cornflower gradient of the ks·design
+     wordmark dot (client decision, 2026-08-28; it replaced the brand-gold
+     amber of 2026-08-19), shared with the favicon. Indigo into cyan at 135°,
+     saturated enough to read on white, bright enough on the near-black
+     panel. Use it for the brand dot only — never for text or UI states. */
+  --brand-dot-a: #818cf8;
+  --brand-dot-b: #22d3ee;
+  --brand-dot: linear-gradient(135deg, var(--brand-dot-a), var(--brand-dot-b));
 
   /* The Get in touch band: near-black, so it reads as one printed stripe. */
   --panel: #141416;
   --panel-ink: #ffffff;
   --panel-ink-soft: #b9babf;
 
-  /* Frosted glass: services cards and the portrait stats panel. */
+  /* Frosted glass: the services cards. */
   --glass: rgb(255 255 255 / 0.5);
   --glass-strong: rgb(255 255 255 / 0.62);
   --glass-edge: rgb(255 255 255 / 0.75);
-  /* The portrait panel sits over a photograph rather than a controlled ground,
-     so it is frostier than the cards — the numbers have to stay legible over
-     both the black sweater and the pale wall behind her. */
-  --glass-panel: rgb(255 255 255 / 0.76);
 
   /* --- type --- */
   --font-display: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
+  /* The one hand-written voice: the hover annotations on the hero portrait,
+     nowhere else (client decision, 2026-08-28). Legible script, not scrawl. */
+  --font-hand: "Caveat", "Bradley Hand", "Segoe Print", cursive;
 
   /* Fluid scale, capped in svh as well as vw: every section must fit one
      viewport on desktop, so type may not outgrow the screen's height. */

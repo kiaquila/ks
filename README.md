@@ -8,40 +8,39 @@ English is the default and is served at
 [ks-design.art](https://ks-design.art); Argentinian Spanish is at `/es/`. The
 old `/en/` prefix redirects permanently to the root.
 
-The page is a **deck**: six sections, each one screen tall on desktop, scrolling
-with snap points. On phones it is an ordinary flowing document. Each section is
-opened by its heading and nothing else — the label above it and the lead
-paragraph under it repeated what the heading already said.
+The page is a **deck**: six sections, each one screen tall on desktop,
+scrolling with snap points. On phones it is an ordinary flowing document. Each
+section is opened by its heading and nothing else — the label above it and the
+lead paragraph under it repeated what the heading already said.
 
-1. Hero — headline and the portrait with its hover state
+1. Hero — headline left; on the right the portrait hangs like a print taped
+   to the wall, tilted 5° with a paper shadow and a piece of masking tape.
+   On hover it winks, and the owner's claims appear hand-written around it
+   with curled arrows pointing at her, linking her channel, community,
+   Instagram and Pinterest
 2. Selected projects — screenshots at their own 8:5 proportion
 3. Process — `01`–`04`
 4. Services — three package cards
 5. Kind Words
 6. Get in touch — full-width band, then the footer directly under it
 
+The header lists Process before Work (the owner reads the menu offer-first),
+while the slides keep Work first.
+
 Implementation lives in `website/`: static HTML/CSS/JS with no framework.
 The customer stage remains on Cloudflare Workers; production is
 [ks-design.art](https://ks-design.art), served from an isolated Docker Compose
 project on the owner's `cz` server.
 
-The hero's rock-expression source is preserved at
-[`source-assets/portrait-rock-reference.png`](./source-assets/portrait-rock-reference.png).
-The published hover exports rigidly register that exact source to the fixed head
-position, preserving its open mouth, complete lower oval and elongated chin
-without morphing them toward the calm face. The crown, hair, headband, loose
-strands, body, shoulders, background and overall head placement stay fixed to
-the calm frame. The viewer-right ear also stays literally fixed to the calm
-frame. A narrow curved transition outside the outer cheek and jaw keeps the
-complete rock-expression lower oval and its elongating chin shadow intact, then
-fades into the fixed calm neck without a double contour, clothing leak or drift.
-Immediately outside that single jaw line, the hover frame must read as clean
-calm-frame background rather than a face-coloured halo or triangular matte.
-
-A second open-mouth exposure from the same shoot was measured against this pair
-and rejected; it is kept with the reasoning in
-[`source-assets/hover-candidates/`](./source-assets/hover-candidates). The
-published composite stays.
+The hero's hover swap uses the original composite pair: the wink frame
+registers the rock-expression source
+[`source-assets/portrait-rock-reference.png`](./source-assets/portrait-rock-reference.png)
+onto the fixed calm body (the production rules for that composite live in git
+history). A separate Why me slide built from the
+[`source-assets/hover-candidates/`](./source-assets/hover-candidates)
+exposure was tried on 2026-08-27–28 and retired the next day; the hover
+returned, now carrying the owner's claims as hand-written annotations in
+self-hosted Caveat (OFL, beside the other font licenses).
 
 ## Source of truth
 
@@ -53,8 +52,12 @@ published composite stays.
 | Telegram | [@ks_aquila](https://t.me/ks_aquila) | client |
 | LinkedIn | [kiaquila](https://www.linkedin.com/in/kiaquila) | client |
 | Instagram | [ks_aquila](https://www.instagram.com/ks_aquila) | client |
+| Pinterest | [ks_aquila](https://www.pinterest.com/ks_aquila/) | client, 2026-08-27 |
+| AI channel (RU audience) | [@vibecodesh](https://t.me/vibecodesh) | client, 2026-08-27 |
+| Mentored AI-engineers community | [invite link](https://t.me/+1k8AU1O9-o04MTRi) | client, 2026-08-27 |
+| Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert, aesthetics and authenticity | client, 2026-08-28 |
 | In web development since | 2017 | client |
-| Argentinian Spanish translation | Current `/es/` copy | client-approved on 2026-08-17 |
+| Argentinian Spanish translation | `/es/` copy | client-approved on 2026-08-17; the `whyMe` strings added 2026-08-27 await her sign-off (`localesAwaitingReview`) |
 
 Every string lives in [`website/src/content.js`](./website/src/content.js).
 Nothing on the page is written anywhere else.
@@ -98,12 +101,10 @@ alight.
   while the renderer omits the entire block until it is approved.
   Replace `kindWords.items` in `content.js` with real quotes and set
   `todo: false`.
-- **Three links have no home on the page.** The old "why me" block carried the
-  client's Pinterest, the `@vibecodesh` channel and the mentored Telegram
-  group. That block was replaced by the numbers-only panel over the portrait,
-  and the footer takes LinkedIn, Telegram and Instagram only — so those three
-  destinations are currently nowhere. They are still in git history; decide
-  whether they belong in the footer before launch.
+- **The Spanish `whyMe` strings await the owner's sign-off.** The claims are
+  the client's own (supplied 2026-08-27); the `es` translation of them is
+  listed in `localesAwaitingReview` (and pinned by a test) until she confirms
+  the wording.
 
 ## Production hosting
 

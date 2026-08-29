@@ -88,7 +88,7 @@
 /* The wordmark is typography, not a mark: bold lowercase, like an item name
    set on the menu card. */
 /* The wordmark follows the ember lab study's setting: tracked caps with the
-   brand-gold dot sitting on the baseline between the two words. */
+   cornflower dot sitting on the baseline between the two words. */
 .brand {
   display: inline-flex;
   align-items: center;
@@ -110,7 +110,7 @@
   width: 0.4em;
   height: 0.4em;
   border-radius: 50%;
-  background: var(--brand-gold);
+  background: var(--brand-dot);
   margin: 0 0.3em 0 0.01em;
 }
 

@@ -165,23 +165,37 @@ test("the years of experience are derived, never hardcoded", () => {
   const years = new Date().getUTCFullYear() - CAREER_START_YEAR;
   assert.equal(experienceYears(), years);
   assert.ok(
-    pages.enText.includes(`${years} years of web development experience`),
-    `expected the page to state ${years} years`
+    pages.enText.includes(`${years}+ years in web development`),
+    `expected the page to state ${years}+ years`
   );
   /* A literal "9" in the source would pass today and lie next January. */
   for (const lang of LOCALES) {
-    const yearsStat = content[lang].hero.portraitStats[0];
-    assert.equal(yearsStat.value, "%YEARS%");
+    assert.match(content[lang].hero.notes[0].text, /%YEARS%/);
   }
 });
 
-test("the hover panel carries only the sourced experience claim", () => {
+test("the hero annotations carry the owner's claims and destinations", () => {
+  /* Every note is client-supplied; the links are the owner's own channel,
+     community and feeds, each listed in `links` so the outbound test below
+     knows them. The Why me slide itself is gone (client decision,
+     2026-08-28): the claims are written over the portrait instead, and the
+     header goes straight to the sections — Process listed before Work,
+     offer-first. */
   for (const lang of LOCALES) {
-    const stats = content[lang].hero.portraitStats;
-    assert.equal(stats.length, 1, `${lang}: the panel must carry one sourced claim`);
-    assert.equal(stats[0].value, "%YEARS%");
-    const panel = pages[lang].match(/<div class="portrait-stats">[\s\S]*?<\/div>\s*<\/div>/)[0];
-    assert.doesNotMatch(panel, /<span class="stat-label"><\/span>/);
+    const html = pages[lang];
+    assert.equal(content[lang].hero.notes.length, 4);
+    for (const href of [
+      links.vibecodeChannel,
+      links.aiCommunity,
+      links.instagram,
+      links.pinterest
+    ]) {
+      assert.ok(html.includes(`href="${href}"`), `${lang}: missing link ${href}`);
+    }
+    assert.doesNotMatch(html, /id="why"|href="#why"/);
+    const nav = html.match(/<nav class="site-nav"[\s\S]*?<\/nav>/)[0];
+    const anchors = [...nav.matchAll(/href="#([a-z-]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(anchors, ["process", "work", "services", "contact"]);
   }
 });
 
@@ -212,7 +226,7 @@ test("each section is opened by its heading alone", () => {
     assert.doesNotMatch(pages[lang], /class="eyebrow"/);
     assert.doesNotMatch(pages[lang], /class="section-intro"/);
     for (const [, head] of pages[lang].matchAll(
-      /<div class="section-head">([\s\S]*?)<\/div>\s*<(?:ul|ol)/g
+      /<div class="section-head">((?:(?!<\/div>)[\s\S])*)<\/div>/g
     )) {
       const paragraphs = head.match(/<p\b/g) ?? [];
       assert.deepEqual(paragraphs, [], `${lang}: a section head still carries copy`);
@@ -263,6 +277,9 @@ test("Contact is reachable at every width and duplicated at none", () => {
 
 test("English is the default and Spanish is the prefixed second locale", () => {
   assert.deepEqual(Object.keys(languages), ["en", "es"]);
+  /* The owner approved the Spanish `whyMe` strings on 2026-08-28. A new or
+     reworded translation goes back on this list — and into this assertion —
+     until she signs it off. */
   assert.deepEqual(localesAwaitingReview, []);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");
@@ -328,6 +345,9 @@ test("the only external links are the approved destinations", () => {
       links.linkedin,
       links.telegram,
       links.instagram,
+      links.pinterest,
+      links.vibecodeChannel,
+      links.aiCommunity,
       links.work.chaijana,
       links.work.alexNeon,
       links.work.ember,
@@ -404,14 +424,14 @@ test("every in-page anchor resolves to a section that exists", () => {
   assert.match(pages.notFound, /href="\/#work"/);
 });
 
-test("the portrait exposes one person, not two images", () => {
+test("the portrait swaps frames and the annotations stay readable", () => {
   for (const key of LOCALES) {
     const start = pages[key].indexOf('<div class="portrait"');
-    const statsAt = pages[key].indexOf('<div class="portrait-stats"');
+    const notesAt = pages[key].indexOf('<div class="portrait-notes"');
     assert.ok(start !== -1, `${key}: portrait is missing`);
-    assert.ok(statsAt > start, `${key}: stats panel is missing`);
+    assert.ok(notesAt > start, `${key}: the notes layer is missing`);
 
-    const portrait = pages[key].slice(start, statsAt);
+    const portrait = pages[key].slice(start, notesAt);
     const alts = [...portrait.matchAll(/alt="([^"]*)"/g)].map((m) => m[1]);
     assert.equal(alts.length, 2, "expected two frames in the portrait");
     assert.equal(alts.filter(Boolean).length, 1, "exactly one frame may carry alt text");
@@ -420,16 +440,26 @@ test("the portrait exposes one person, not two images", () => {
     /* Keyboard users need the swap too. */
     assert.match(portrait, /tabindex="0"/);
 
-    /* The stats live OUTSIDE the role="img" element: descendants of an img
-       role are presentational, so numbers inside it would be unreadable to
-       assistive tech. The slice above ends where the stats begin, which is
-       itself the proof of the ordering. */
-    const statsBlock = pages[key].slice(statsAt, pages[key].indexOf("</section>", statsAt));
-    for (const stat of content[key].hero.portraitStats) {
-      assert.ok(
-        statsBlock.includes(stat.label ?? stat.value),
-        `${key}: stat "${stat.label ?? stat.value}" is missing from the panel`
-      );
+    /* The claims and their links live OUTSIDE the role="img" element:
+       descendants of an img role are presentational, so annotations nested
+       inside it would be silent for assistive tech. The slice above ends
+       where the notes begin, which is itself the proof of the ordering. */
+    const years = experienceYears();
+    const notes = pages[key].slice(notesAt, pages[key].indexOf("</section>", notesAt));
+    for (const note of content[key].hero.notes) {
+      /* The page escapes the copy, so the expectation must be escaped the
+         same way — an apostrophe arrives as &#039;, an ampersand as &amp;. */
+      const text = note.text
+        .replaceAll("%YEARS%", String(years))
+        .replaceAll("&", "&amp;")
+        .replaceAll("'", "&#039;");
+      assert.ok(notes.includes(text), `${key}: note "${note.text}" is missing`);
+      for (const link of note.links ?? []) {
+        assert.ok(
+          notes.includes(`href="${link.href}"`),
+          `${key}: note link "${link.label}" is missing`
+        );
+      }
     }
   }
 });
@@ -711,18 +741,20 @@ test("the stylesheet layers are concatenated in the declared order", () => {
   }
 });
 
-test("the palette stays achromatic apart from the brand-gold dot", () => {
+test("the palette stays achromatic apart from the cornflower dot pair", () => {
   /* The design is black-and-white by decision, like the printed menu it
      follows. Any saturated colour sneaking into the stylesheet — a blue link,
-     a brand gradient — should trip this before it ships. Neutral greys have
+     a stray accent — should trip this before it ships. Neutral greys have
      near-equal RGB channels; 12 covers the slightly warm greys in use.
-     The single sanctioned exception (client decision, 2026-08-19) is the
-     brand-gold wordmark dot — exactly that value and nothing else. */
-  const BRAND_GOLD = "e8a038";
-  assert.ok(!css.includes("--gradient"), "the old gradient token is back");
-  assert.ok(css.includes(`#${BRAND_GOLD}`), "the brand-gold dot token is gone");
+     The single sanctioned exception (client decision, 2026-08-28, replacing
+     the brand-gold amber of 2026-08-19) is the cornflower gradient of the
+     wordmark dot — exactly its two stops and nothing else. */
+  const BRAND_DOT = ["818cf8", "22d3ee"];
+  for (const stop of BRAND_DOT) {
+    assert.ok(css.includes(`#${stop}`), `the brand-dot stop #${stop} is gone`);
+  }
   for (const [, hex] of withoutComments(css).matchAll(/#([0-9a-f]{6})\b/gi)) {
-    if (hex.toLowerCase() === BRAND_GOLD) continue;
+    if (BRAND_DOT.includes(hex.toLowerCase())) continue;
     const channels = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
     const spread = Math.max(...channels) - Math.min(...channels);
     assert.ok(spread <= 12, `#${hex} is a chromatic colour (spread ${spread})`);
