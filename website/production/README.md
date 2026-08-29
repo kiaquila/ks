@@ -143,6 +143,10 @@ curl -I https://www.ks-design.art/
 ssh cz 'sudo docker compose -f /opt/ks-design-portfolio/production/docker-compose.yml ps'
 ```
 
-Cloudflare preview deployments for pull requests remain unchanged at
-`*-ks.ks-design.workers.dev`. The permanent Worker URL
-`ks.ks-design.workers.dev` remains disabled and is not a production fallback.
+Cloudflare Workers Builds is connected to `kiaquila/ks` with `main` as the
+production branch and `website` as the root directory. It runs `npm run build`,
+uses `npm run stage:deploy` for `main`, and uses
+`npx wrangler versions upload` for non-production branches. Pull-request
+previews are available at `*-ks.ks-design.workers.dev`. The permanent Worker
+URL `ks.ks-design.workers.dev` remains disabled and is not a production
+fallback.
