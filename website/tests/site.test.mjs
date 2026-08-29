@@ -927,9 +927,15 @@ test("the hero's note layer never swallows a click", () => {
   const zone = clean.match(/\.hero-portrait \{[^}]*position: absolute;[^}]*\}/);
   assert.ok(zone, "the desktop hero zone rule is missing");
   assert.match(zone[0], /pointer-events:\s*none/);
-  assert.match(clean, /\.portrait-box \{\s*pointer-events:\s*auto/);
+  assert.match(clean, /\.portrait-box \{[^}]*pointer-events:\s*auto/);
   assert.match(clean, /\.portrait-notes \{[^}]*pointer-events:\s*none/);
   assert.match(clean, /\.hero-copy \{\s*position: relative;\s*z-index: 1;/);
+
+  /* And the print stays above the revealed layer. A tap sets `data-active`,
+     which gives the full-zone layer pointer events; painted last, it would
+     take the second tap that is meant to switch the portrait back off, so
+     the toggle would only ever go one way. */
+  assert.match(clean, /\.portrait-box \{[^}]*position: relative;[^}]*z-index: 1;/);
 });
 
 test("the flowing hero reads photo, copy, notes — in that order", () => {

@@ -64,7 +64,14 @@
     pointer-events: none;
   }
 
+  /* Above the notes layer, not just clickable: once a tap reveals the notes
+     the layer covers the whole zone, and a second tap on the print would
+     land on it instead of on `[data-portrait]` — the touch toggle could be
+     switched on but never off. The layer keeps its own links interactive
+     everywhere the print is not. */
   .portrait-box {
+    position: relative;
+    z-index: 1;
     pointer-events: auto;
   }
 
