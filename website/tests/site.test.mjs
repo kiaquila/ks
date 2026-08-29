@@ -165,23 +165,37 @@ test("the years of experience are derived, never hardcoded", () => {
   const years = new Date().getUTCFullYear() - CAREER_START_YEAR;
   assert.equal(experienceYears(), years);
   assert.ok(
-    pages.enText.includes(`${years} years of web development experience`),
-    `expected the page to state ${years} years`
+    pages.enText.includes(`${years}+ years in web development`),
+    `expected the page to state ${years}+ years`
   );
   /* A literal "9" in the source would pass today and lie next January. */
   for (const lang of LOCALES) {
-    const yearsStat = content[lang].hero.portraitStats[0];
-    assert.equal(yearsStat.value, "%YEARS%");
+    assert.match(content[lang].hero.notes[0].text, /%YEARS%/);
   }
 });
 
-test("the hover panel carries only the sourced experience claim", () => {
+test("the hero annotations carry the owner's claims and destinations", () => {
+  /* Every note is client-supplied; the links are the owner's own channel,
+     community and feeds, each listed in `links` so the outbound test below
+     knows them. An interim "Why me" slide was tried and dropped (client
+     decision, 2026-08-28): the claims are written over the portrait
+     instead, and the header goes straight to the sections — Process listed
+     before Work, offer-first. */
   for (const lang of LOCALES) {
-    const stats = content[lang].hero.portraitStats;
-    assert.equal(stats.length, 1, `${lang}: the panel must carry one sourced claim`);
-    assert.equal(stats[0].value, "%YEARS%");
-    const panel = pages[lang].match(/<div class="portrait-stats">[\s\S]*?<\/div>\s*<\/div>/)[0];
-    assert.doesNotMatch(panel, /<span class="stat-label"><\/span>/);
+    const html = pages[lang];
+    assert.equal(content[lang].hero.notes.length, 4);
+    for (const href of [
+      links.vibecodeChannel,
+      links.aiCommunity,
+      links.instagram,
+      links.pinterest
+    ]) {
+      assert.ok(html.includes(`href="${href}"`), `${lang}: missing link ${href}`);
+    }
+    assert.doesNotMatch(html, /id="why"|href="#why"/);
+    const nav = html.match(/<nav class="site-nav"[\s\S]*?<\/nav>/)[0];
+    const anchors = [...nav.matchAll(/href="#([a-z-]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(anchors, ["process", "work", "services", "contact"]);
   }
 });
 
@@ -212,7 +226,7 @@ test("each section is opened by its heading alone", () => {
     assert.doesNotMatch(pages[lang], /class="eyebrow"/);
     assert.doesNotMatch(pages[lang], /class="section-intro"/);
     for (const [, head] of pages[lang].matchAll(
-      /<div class="section-head">([\s\S]*?)<\/div>\s*<(?:ul|ol)/g
+      /<div class="section-head">((?:(?!<\/div>)[\s\S])*)<\/div>/g
     )) {
       const paragraphs = head.match(/<p\b/g) ?? [];
       assert.deepEqual(paragraphs, [], `${lang}: a section head still carries copy`);
@@ -263,6 +277,9 @@ test("Contact is reachable at every width and duplicated at none", () => {
 
 test("English is the default and Spanish is the prefixed second locale", () => {
   assert.deepEqual(Object.keys(languages), ["en", "es"]);
+  /* The owner approved the Spanish hero annotations on 2026-08-28. A new or
+     reworded translation goes back on this list — and into this assertion —
+     until she signs it off. */
   assert.deepEqual(localesAwaitingReview, []);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");
@@ -328,6 +345,9 @@ test("the only external links are the approved destinations", () => {
       links.linkedin,
       links.telegram,
       links.instagram,
+      links.pinterest,
+      links.vibecodeChannel,
+      links.aiCommunity,
       links.work.chaijana,
       links.work.alexNeon,
       links.work.ember,
@@ -335,12 +355,25 @@ test("the only external links are the approved destinations", () => {
     ].map((url) => new URL(url).origin)
   );
 
+  /* Any absolute URL, not just http(s): a `javascript:` or `data:` href would
+     otherwise walk straight past a sweep that only looks for http. Local
+     paths and in-page fragments start with / or #, and mailto is the one
+     scheme the contact band is allowed to use. */
   for (const key of DOCUMENTS) {
-    for (const [, url] of pages[key].matchAll(/(?:href|src)="(https?:\/\/[^"]+)"/g)) {
-      const { origin } = new URL(url);
+    for (const [, url] of pages[key].matchAll(/(?:href|src)="([a-z][a-z0-9+.-]*:[^"]+)"/gi)) {
+      if (url.toLowerCase().startsWith(`mailto:${links.email}`)) continue;
+      const parsed = URL.parse ? URL.parse(url) : new URL(url);
+      assert.ok(parsed, `${key}: unparseable URL ${url}`);
+      assert.ok(
+        ["http:", "https:"].includes(parsed.protocol),
+        `${key}: ${parsed.protocol} is not an allowed scheme (${url})`
+      );
       /* Canonical and og:url point at this site's own origin. */
-      if (origin === "https://ks-design.art") continue;
-      assert.ok(approved.has(origin), `${key}: unapproved external origin ${origin}`);
+      if (parsed.origin === "https://ks-design.art") continue;
+      assert.ok(
+        approved.has(parsed.origin),
+        `${key}: unapproved external origin ${parsed.origin}`
+      );
     }
   }
 });
@@ -404,14 +437,14 @@ test("every in-page anchor resolves to a section that exists", () => {
   assert.match(pages.notFound, /href="\/#work"/);
 });
 
-test("the portrait exposes one person, not two images", () => {
+test("the portrait swaps frames and the annotations stay readable", () => {
   for (const key of LOCALES) {
     const start = pages[key].indexOf('<div class="portrait"');
-    const statsAt = pages[key].indexOf('<div class="portrait-stats"');
+    const notesAt = pages[key].indexOf('<div class="portrait-notes"');
     assert.ok(start !== -1, `${key}: portrait is missing`);
-    assert.ok(statsAt > start, `${key}: stats panel is missing`);
+    assert.ok(notesAt > start, `${key}: the notes layer is missing`);
 
-    const portrait = pages[key].slice(start, statsAt);
+    const portrait = pages[key].slice(start, notesAt);
     const alts = [...portrait.matchAll(/alt="([^"]*)"/g)].map((m) => m[1]);
     assert.equal(alts.length, 2, "expected two frames in the portrait");
     assert.equal(alts.filter(Boolean).length, 1, "exactly one frame may carry alt text");
@@ -420,22 +453,32 @@ test("the portrait exposes one person, not two images", () => {
     /* Keyboard users need the swap too. */
     assert.match(portrait, /tabindex="0"/);
 
-    /* The stats live OUTSIDE the role="img" element: descendants of an img
-       role are presentational, so numbers inside it would be unreadable to
-       assistive tech. The slice above ends where the stats begin, which is
-       itself the proof of the ordering. */
-    const statsBlock = pages[key].slice(statsAt, pages[key].indexOf("</section>", statsAt));
-    for (const stat of content[key].hero.portraitStats) {
-      assert.ok(
-        statsBlock.includes(stat.label ?? stat.value),
-        `${key}: stat "${stat.label ?? stat.value}" is missing from the panel`
-      );
+    /* The claims and their links live OUTSIDE the role="img" element:
+       descendants of an img role are presentational, so annotations nested
+       inside it would be silent for assistive tech. The slice above ends
+       where the notes begin, which is itself the proof of the ordering. */
+    const years = experienceYears();
+    const notes = pages[key].slice(notesAt, pages[key].indexOf("</section>", notesAt));
+    for (const note of content[key].hero.notes) {
+      /* The page escapes the copy, so the expectation must be escaped the
+         same way — an apostrophe arrives as &#039;, an ampersand as &amp;. */
+      const text = note.text
+        .replaceAll("%YEARS%", String(years))
+        .replaceAll("&", "&amp;")
+        .replaceAll("'", "&#039;");
+      assert.ok(notes.includes(text), `${key}: note "${note.text}" is missing`);
+      for (const link of note.links ?? []) {
+        assert.ok(
+          notes.includes(`href="${link.href}"`),
+          `${key}: note link "${link.label}" is missing`
+        );
+      }
     }
   }
 });
 
 test("the wordmark is still two words to a screen reader", () => {
-  /* The gold dot is decorative and hidden, so without a real separator the
+  /* The brand dot is decorative and hidden, so without a real separator the
      home link would be announced as one run-on word instead of the brand. */
   for (const key of DOCUMENTS) {
     const brand = pages[key].match(/<a class="brand"[\s\S]*?<\/a>/)[0];
@@ -659,7 +702,8 @@ test("every touch target clears 44 px", () => {
     [/\.brand\s*\{[^}]*\}/, "height"],
     [/\.site-nav a\s*\{[^}]*\}/, "height"],
     [/\.btn-compact\s*\{[^}]*\}/, "height"],
-    [/(?:^|\})\s*\.btn\s*\{[^}]*\}/, "height"]
+    [/(?:^|\})\s*\.btn\s*\{[^}]*\}/, "height"],
+    [/\.note-link\s*\{[^}]*\}/, "height"]
   ];
 
   for (const [selector, axes] of rules) {
@@ -711,18 +755,24 @@ test("the stylesheet layers are concatenated in the declared order", () => {
   }
 });
 
-test("the palette stays achromatic apart from the brand-gold dot", () => {
+test("the palette stays achromatic apart from the cornflower dot pair", () => {
   /* The design is black-and-white by decision, like the printed menu it
      follows. Any saturated colour sneaking into the stylesheet — a blue link,
-     a brand gradient — should trip this before it ships. Neutral greys have
+     a stray accent — should trip this before it ships. Neutral greys have
      near-equal RGB channels; 12 covers the slightly warm greys in use.
-     The single sanctioned exception (client decision, 2026-08-19) is the
-     brand-gold wordmark dot — exactly that value and nothing else. */
-  const BRAND_GOLD = "e8a038";
-  assert.ok(!css.includes("--gradient"), "the old gradient token is back");
-  assert.ok(css.includes(`#${BRAND_GOLD}`), "the brand-gold dot token is gone");
+     The single sanctioned exception (client decision, 2026-08-28, replacing
+     the brand-gold amber of 2026-08-19) is the cornflower gradient of the
+     wordmark dot — exactly its two stops and nothing else. */
+  const BRAND_DOT = ["818cf8", "22d3ee"];
+  /* The old gradient monogram is gone and must not come back; the dot's own
+     gradient lives in `--brand-dot`, so a `--gradient` token reappearing is
+     the monogram, not this. */
+  assert.ok(!css.includes("--gradient:"), "the old gradient token is back");
+  for (const stop of BRAND_DOT) {
+    assert.ok(css.includes(`#${stop}`), `the brand-dot stop #${stop} is gone`);
+  }
   for (const [, hex] of withoutComments(css).matchAll(/#([0-9a-f]{6})\b/gi)) {
-    if (hex.toLowerCase() === BRAND_GOLD) continue;
+    if (BRAND_DOT.includes(hex.toLowerCase())) continue;
     const channels = [0, 2, 4].map((i) => parseInt(hex.slice(i, i + 2), 16));
     const spread = Math.max(...channels) - Math.min(...channels);
     assert.ok(spread <= 12, `#${hex} is a chromatic colour (spread ${spread})`);
@@ -845,6 +895,109 @@ test("each locale prefix serves its own error page", () => {
   }
 });
 
+test("the hero notes stay inside the hand font's subset", () => {
+  /* Caveat ships as a subset — ASCII plus the Spanish lowercase accents the
+     notes set — to fit beside the two working families inside the woff2
+     budget. A glyph outside it silently falls back mid-word to a system
+     script, so the copy and the subset have to be checked against each
+     other. Widen the subset (and re-measure the budget) before writing a
+     character this rejects. */
+  const SUBSET = /^[\u0020-\u007E\u00E1\u00E9\u00ED\u00F1\u00F3\u00FA\u00FC]*$/;
+  for (const lang of LOCALES) {
+    for (const note of content[lang].hero.notes) {
+      assert.match(note.text, SUBSET, `${lang}: "${note.text}" needs a glyph Caveat lacks`);
+      for (const link of note.links ?? []) {
+        assert.match(link.label, SUBSET, `${lang}: "${link.label}" needs a glyph Caveat lacks`);
+      }
+    }
+  }
+  /* And the file the stylesheet asks for is the subset one. */
+  assert.match(css, /@font-face \{[^}]*"Caveat"[\s\S]*?caveat-latin\.woff2/);
+});
+
+test("the hero's note layer never swallows a click", () => {
+  /* The layer spans the whole hero zone, which reaches back under the copy.
+     When the zone took pointer events it ate a third of the "See the work"
+     button at laptop widths — a click there toggled the portrait instead.
+     The zone stays transparent to the pointer, the revealed layer takes
+     events back so the cursor can cross to a link without the set folding
+     away, and the copy is lifted above the layer so its buttons win either
+     way. All three rules are load-bearing together. */
+  const clean = withoutComments(css);
+  const zone = clean.match(/\.hero-portrait \{[^}]*position: absolute;[^}]*\}/);
+  assert.ok(zone, "the desktop hero zone rule is missing");
+  assert.match(zone[0], /pointer-events:\s*none/);
+  assert.match(clean, /\.portrait-box \{[^}]*pointer-events:\s*auto/);
+  assert.match(clean, /\.portrait-notes \{[^}]*pointer-events:\s*none/);
+  assert.match(clean, /\.hero-copy \{\s*position: relative;\s*z-index: 1;/);
+
+  /* And the print stays above the revealed layer. A tap sets `data-active`,
+     which gives the full-zone layer pointer events; painted last, it would
+     take the second tap that is meant to switch the portrait back off, so
+     the toggle would only ever go one way. */
+  assert.match(clean, /\.portrait-box \{[^}]*position: relative;[^}]*z-index: 1;/);
+});
+
+test("the flowing hero reads photo, copy, notes — in that order", () => {
+  /* `.hero-portrait` wraps the photo and the notes, so below the print's
+     breakpoint the wrapper would carry both to the top of the column and
+     the headline would land under the notes. It is dissolved with
+     `display: contents` there, and the photo alone is ordered first. */
+  const clean = withoutComments(css);
+  const flow = clean.slice(clean.indexOf("@media (max-width: 1099px)"));
+  assert.match(flow, /\.hero-portrait \{\s*display: contents;/);
+  assert.match(flow, /\.portrait-box \{\s*order: -1;/);
+  const notes = flow.match(/\.portrait-notes \{[^}]*\}/)[0];
+  assert.ok(!/order/.test(notes), "the notes follow the copy in document order");
+});
+
+test("the portrait's sizes attribute matches the box it renders in", () => {
+  /* Two boxes, one breakpoint: the flowing column below 1100px and the
+     print above it. A sizes hint that describes the wrong one makes the
+     browser pick a candidate for a box that does not exist — it rendered
+     soft on dense screens when this drifted. The breakpoint in the hint and
+     the breakpoint in the stylesheet have to be the same number. */
+  const clean = withoutComments(css);
+  for (const lang of LOCALES) {
+    const portrait = pages[lang].slice(
+      pages[lang].indexOf('<div class="portrait"'),
+      pages[lang].indexOf('<div class="portrait-notes"')
+    );
+    for (const [, sizes] of portrait.matchAll(/sizes="([^"]+)"/g)) {
+      assert.equal(sizes, "(max-width: 1099px) min(84vw, 416px), min(54svh, 36vw)");
+    }
+  }
+  /* The flowing width the hint promises is the one the stylesheet sets. */
+  const flow = clean.slice(clean.indexOf("@media (max-width: 1099px)"));
+  assert.match(flow, /\.portrait-box \{[^}]*max-width: min\(84vw, 26rem\)/);
+  const print = clean.slice(clean.indexOf("@media (min-width: 1100px)"));
+  assert.match(print, /\.portrait-box \{[^}]*width: min\(54svh, 36vw\)/);
+});
+
+test("the notes are readable copy below the print's breakpoint", () => {
+  /* Below 1100px there is no margin to scatter them into (and on a phone no
+     hover to reveal them with), so the notes are a plain list under the
+     portrait: visible without a pointer, and never over the face. The
+     floating, rotated, hover-revealed treatment is claimed inside the
+     1100px query — squeezing it into a narrow desktop put ink on the
+     sweater and across the face. */
+  const clean = withoutComments(css);
+  const base = clean.match(/(?:^|\})\s*\.portrait-notes \{[^}]*\}/)[0];
+  assert.match(base, /display: grid/);
+  assert.ok(!/position: absolute/.test(base), "the notes must flow on a phone");
+  assert.ok(!/opacity: 0/.test(base), "the notes must be visible without hover");
+  const desktop = clean.slice(clean.indexOf("@media (min-width: 1100px)", clean.indexOf(base)));
+  assert.match(desktop, /\.portrait-notes \{[^}]*position: absolute[^}]*opacity: 0/);
+  /* The tilt and the tape are the desktop print's, too: a rotated box in the
+     phone column would push its corners past the viewport edge. */
+  assert.match(
+    clean,
+    /@media \(min-width: 1100px\) \{\s*\.portrait-box \{\s*transform: rotate\(-5deg\)/
+  );
+  const tape = clean.match(/(?:^|\})\s*\.tape \{[^}]*\}/)[0];
+  assert.match(tape, /display: none/);
+});
+
 test("the shipped JavaScript stays within its budget", async () => {
   let raw = 0;
   let gzip = 0;
@@ -858,6 +1011,54 @@ test("the shipped JavaScript stays within its budget", async () => {
      ever hit, the answer is to remove behaviour, not to raise the number. */
   assert.ok(gzip <= 4 * 1024, `JS is ${gzip} B gzipped, over the 4 KB budget`);
   assert.ok(raw <= 12 * 1024, `JS is ${raw} B raw, over the 12 KB ceiling`);
+
+  /* The build strips the source's comments on the way into dist, so the
+     shipped figure above no longer bounds the behaviour that was written.
+     This second ceiling does: it measures the source, comments and all, and
+     keeps the "remove behaviour rather than raise the number" rule pointed
+     at the thing a person actually edits. Prose is cheap here — 6 KB leaves
+     room to explain a decision without leaving room for a framework. */
+  assert.ok(
+    gzipSync(Buffer.from(siteScript)).length <= 6 * 1024,
+    "the site script source is over its 6 KB gzipped ceiling"
+  );
+});
+
+test("the stripped script is still valid, complete JavaScript", async () => {
+  /* The comment strip is a regex, not a parser: it cannot tell a comment
+     from a `/*` inside a string or a regex literal, and a bad strip would
+     ship a syntactically broken file that the byte budget above would
+     happily accept. Two guards, because either alone can be fooled. */
+  const shipped = await readFile(join(dist, "assets/site.js"), "utf8");
+  assert.doesNotThrow(
+    () => new Function(shipped),
+    "dist/assets/site.js does not parse — the comment strip broke it"
+  );
+
+  /* The strip's own assumption: the source carries no line comments (they
+     would survive and could comment out live code once the block comments
+     around them collapse), and no string or regex literal contains a comment
+     opener for the regex to trip over. */
+  const withoutBlocks = siteScript.replace(/\/\*[\s\S]*?\*\//g, "");
+  assert.ok(
+    !/(^|[^:"'`\\])\/\//.test(withoutBlocks),
+    "site.js must comment in /* */ blocks only — // survives the build strip"
+  );
+  assert.ok(
+    !/["'`][^"'`\n]*\/\*/.test(withoutBlocks),
+    "a literal in site.js contains /*, which the build's strip would eat"
+  );
+
+  /* Every statement of the source survives: the strip may only remove
+     commentary, never code. */
+  const shipped_lines = shipped.split("\n").map((line) => line.trim());
+  for (const line of withoutBlocks.split("\n").map((l) => l.trim())) {
+    if (!line) continue;
+    assert.ok(
+      shipped_lines.includes(line),
+      `the build dropped a line of code: ${line.slice(0, 60)}`
+    );
+  }
 });
 
 test("every image referenced by the pages exists in dist", async () => {

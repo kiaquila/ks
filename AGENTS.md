@@ -14,16 +14,29 @@ rules, heavy tracked capitals. Everything below follows from that.
   near-black ink, a short grey ramp — no accent colour on links, buttons or any
   other UI. Hierarchy is carried by weight, tracking, rules and scale, the way
   it is on paper. The single sanctioned exception (client decision,
-  2026-08-19) is `--brand-gold` on the wordmark dot described below. A test
-  walks every hex colour in the compiled stylesheet, allows exactly that one
-  value, and fails any other whose RGB channels spread more than 12, so a stray
-  blue cannot slip in.
-- Type is two families, both already licensed in this repository: **Manrope**
-  for the wordmark, headings, navigation and body; **Playfair Display** for the
-  chapter numerals, the pull quotes and the italic line in the contact band —
-  nowhere else. Do not add a third family.
+  2026-08-28, replacing the brand-gold amber of 2026-08-19) is the
+  cornflower gradient `--brand-dot` on the wordmark dot described below. A
+  test walks every hex colour in the compiled stylesheet, allows exactly the
+  gradient's two stops, and fails any other whose RGB channels spread more
+  than 12, so a stray accent cannot slip in.
+- Type is two working families, both already licensed in this repository:
+  **Manrope** for the wordmark, headings, navigation and body; **Playfair
+  Display** for the chapter numerals, the pull quotes and the italic line in
+  the contact band — nowhere else. The single sanctioned exception (client
+  decision, 2026-08-28) is **Caveat**, the hand-written voice of the hero
+  portrait's hover annotations and of nothing else; see "The hero portrait".
+  Do not add a fourth family.
 - Headings are uppercase with open tracking (`0.06em`–`0.09em`), not tight
   display type.
+- **The header is set in two voices, not one.** The wordmark leads at
+  `0.78rem`/`0.14em`; the navigation links and the language switch follow a
+  step below at `0.72rem`/`0.09em` (client pick, 2026-08-28 — the earlier row
+  set every item at the wordmark's size, and the links competed with the mark
+  instead of pointing at the page). The collapsed mobile menu is a separate
+  context: it takes the same `0.09em` tracking but keeps its own larger
+  `0.9rem`, because a full-screen menu is read at arm's length. The switch's
+  underline is measured against its word — `1.45rem` for two caps at this
+  setting — so re-measure `.lang-current::after` if that type moves again.
 - **A section is opened by its heading and nothing else.** The small-caps label
   over a rule and the lead paragraph beneath both restated the heading, so all
   three of them said one thing three times; the label and the lead are gone and
@@ -43,20 +56,25 @@ rules, heavy tracked capitals. Everything below follows from that.
 - The process numerals grow slightly on hover. Any motion added here stays at
   that scale: a transform on one element, killed by `prefers-reduced-motion`.
 - The wordmark is **typography, not an image**: `ks·design` set in Manrope as
-  tracked uppercase at the nav's type size, with a gold dot on the baseline
-  between the two words — nearer the KS than the DESIGN in a 1:2 proportion
-  (client decision, 2026-08-19; the dot replaced the hyphen of the earlier
-  bold lowercase `ks-design`). The dot uses `--brand-gold`, the page's only
-  chromatic token, and a test allows exactly that hex and no other colour.
-  There is still no logo image, and the old gradient monogram is gone and
-  should not come back. Running text and footer credits keep plain
-  `ks-design`; the mark is a header-only device. The favicon carries the same
-  treatment as a type-set `KS.` with dark-scheme inversion, plus a baked PNG
-  because Safari ignores SVG favicons.
+  tracked uppercase at `0.78rem`/`0.14em` — a step above the navigation
+  beside it, so the header has one voice and one echo — with a cornflower dot
+  on the baseline between the two words — nearer the KS than the DESIGN in a 1:2
+  proportion (position: client decision, 2026-08-19; the dot replaced the
+  hyphen of the earlier bold lowercase `ks-design`). The dot uses
+  `--brand-dot`, an indigo-to-cyan gradient at 135° (client decision,
+  2026-08-28, picked from a 20-variant show as «Васильковый»; it replaced
+  the flat `--brand-gold`), the page's only chromatic device, and a test
+  allows exactly its two hexes and no other colour. There is still no logo
+  image, and the old gradient monogram is gone and should not come back.
+  Running text and footer credits keep plain `ks-design`; the mark is a
+  header-only device. The favicon carries the same treatment as a type-set
+  `KS.` with dark-scheme inversion, plus a baked PNG because Safari ignores
+  SVG favicons; both carry the gradient dot.
 - The footer is **one horizontal row directly under the contact band**, and the
   pair is anchored to the bottom of the last slide: copyright hard left, a pin
   icon and the location centred on the page, social icons with no labels hard
-  right (LinkedIn, Telegram, Instagram). Its outer grid columns are `1fr` so the
+  right (LinkedIn and Telegram — Instagram and Pinterest live in the hero's
+  hand-written annotations instead, client decision 2026-08-28). Its outer grid columns are `1fr` so the
   middle one centres on the page rather than on the copyright. It carries no
   rule on top — the black band above it already divides the page, and the band
   must not be pushed away from it by a spacer row.
@@ -109,6 +127,19 @@ Below that it is an ordinary flowing document.
 - Static, no framework: `src/content.js` (copy), `src/render.js` (markup),
   five style layers `src/styles/{tokens,base,layout,components,sections}.css`
   concatenated in that order, and one classic script `src/js/site.js`.
+- **The build strips the script's block comments when copying it into dist**,
+  because they are written for the reader of `src/` and the visitor should
+  not download them. Three consequences, all test-enforced: comment in
+  `/* */` blocks only (a `//` line survives the strip and could comment out
+  live code once a block around it collapses); no string or regex literal may
+  contain `/*` (the strip is a regex, not a parser, and would eat from there
+  to the next `*/`); and the shipped file is parsed and diffed against the
+  source line by line, so a broken or truncated strip fails the suite rather
+  than shipping.
+- **The JS budget is two numbers now.** The shipped bytes keep the 4 KB
+  gzipped budget, and the source — comments and all — has its own 6 KB
+  ceiling, so "remove behaviour rather than raise the number" still points at
+  the thing a person edits. Neither number may be raised to fit a feature.
 - **The layers are concatenated, so a media query in an earlier layer loses to a
   plain rule in a later one.** A component's responsive rules belong in that
   component's layer. This has already bitten once: `.header-cta { display:none }`
@@ -168,50 +199,67 @@ Below that it is an ordinary flowing document.
 
 ## The hero portrait
 
-- Two frames cross-fade in the same box: `assets/portrait/calm-*` and
-  `assets/portrait/wink-*`. The hover expression comes from the client's exact
-  reference in `source-assets/portrait-rock-reference.png`. Register that source
-  rigidly to the fixed head position, then keep its complete face — from the
-  brows through the open mouth, lower oval and elongated chin — at the source
-  proportions. Do not morph its jaw toward the shorter calm-frame jaw. The head
-  position, crown, hair, headband, loose strands, neck, shoulders, clothes,
-  background and crop stay fixed to the calm frame. The viewer-right ear,
-  earring and adjacent edge hair remain literal calm-frame pixels in the hover
-  export. Transfer the hover face through the full lower oval and its elongated
-  chin shadow, with the smooth outer seam running outside that contour and
-  fading into the fixed calm neck before the garment. Do not scale or stretch
-  the face to meet the ear, and do not import the reference garment edge.
-  Immediately outside the single hover jaw line, keep a clean calm-background
-  field with only the natural 1–2 px edge antialiasing: no second skin edge,
-  translucent halo or triangular matte before the shoulder.
-  Moving the fixed regions between frames breaks the illusion of a single
-  continuous shot.
-- Take the hover jaw line from the registered reference itself rather than from
-  whatever survives around a defect. Reconstructing it by joining the intact
-  ends across a damaged stretch cuts the jaw short, because the surviving ends
-  sit inboard of the true edge.
-- Where a face feature crosses the seam into the fixed calm neck — the crease
-  below the chin — the two sources place it a few pixels apart. Carry the hover
-  segment across to meet the calm one and keep the feature's depth changing
-  smoothly along its whole length. A sideways step, or a break in depth at the
-  meeting point, reads as a defect even when each segment alone looks right.
-- Remove the source photo's narrow dark sliver at the extreme bottom-right from
-  both exported frames so that defect neither remains visible nor flickers.
-- The portrait URLs carry a `?v=N` cache-buster (the `version` option of
-  `picture()` in `src/render.js`). Bump it whenever the exported frames'
-  pixels change under the same file names, or browsers and CDNs keep showing
-  the previous export.
-- The frame is `aspect-ratio: 776 / 971`, the exact aspect of the source pair,
-  and the images are `object-fit: cover` with no `object-position` shift. Zero
-  crop means zero drift between the two states.
-- The cross-fade is ~140 ms on purpose. Slower reads as a slideshow dissolve;
-  at this speed the eye reads a cut, which is the requested gif feel.
-- On hover a frosted panel rises over the **sweater, never the face** — it is
-  anchored to the bottom of the frame. It carries the selling numbers only.
-- The panel is a **sibling** of `.portrait`, not a child. `.portrait` is
-  `role="img"`, and descendants of an `img` role are presentational, so numbers
-  nested inside it would be silent for assistive tech. A test asserts the
-  ordering.
+- Two frames cross-fade in the same box on hover: `assets/portrait/calm-*`
+  and `assets/portrait/wink-*` — the original composite pair, restored on
+  2026-08-28 after a two-day experiment with a separate Why me slide. The
+  wink frame is the composite described in `README.md` (the rock-expression
+  face registered onto the calm body); its production rules live in git
+  history with the retired experiments. Both frames sit at `?v=2`: their
+  pixels are the ones production has always served.
+- The cross-fade is ~140 ms on purpose: at that speed the eye reads a cut —
+  the requested gif feel — not a slideshow dissolve. Touch toggles the swap
+  through `data-active` (set by the script), keyboard through focus.
+- **From 1100px up the hero is the "taped print"** (client pick from a
+  20-variant show, 2026-08-28): a plain white page, the copy nudged slightly
+  right, and the photograph hanging on the right like a print stuck to the
+  wall — the whole `.portrait-box` tilted **5° counter-clockwise**, a soft
+  paper drop shadow on `.portrait`, and a `.tape` span of semi-translucent
+  masking tape over the top edge (it lands on the photographed wall, never
+  the hair). The print sits at `left: 30%` of the `.hero-portrait` zone
+  (which spans the right 62% of the slide), `top: 13svh`, and is
+  **width-driven**: `min(54svh, 36vw)`, so it never grows into the headline
+  on a wide window nor spills past the right edge on a narrow one. Keep the
+  `sizes` attribute in `render.js` equal to that width. There is no
+  background field: the page's own white is the wall.
+- **Below 1100px the hero flows instead**: portrait first, then the copy,
+  then the notes as a plain hand-written list under the photo — no tilt, no
+  tape, no shadow, nothing revealed by hover. The scattered treatment needs
+  a column of white beside the print for the notes to live in, and a narrow
+  desktop has none: squeezing them in put ink on the black sweater and
+  across the face. A test pins both halves of this split.
+- **The stage and the portrait are direct children of the slide, never of
+  `.container`.** The entrance reveal transforms the container, and a
+  transformed ancestor becomes the containing block of absolutely-positioned
+  descendants — the photo would ride the reveal and anchor to the wrong box.
+  This bit once; do not move the portrait back inside.
+- **Three rules keep the hover honest, and they only work together**: the
+  `.hero-portrait` zone takes no pointer events (it reaches back under the
+  copy, and as a live sheet it ate a third of "See the work" at laptop
+  widths); the revealed `.portrait-notes` layer takes them back, so the
+  cursor can cross the white between print and link without the set folding
+  away; and `.hero-copy` is lifted to `z-index: 1` so its buttons win
+  wherever the layer overlaps them. A test asserts all three.
+- On hover the frosted stats panel of old is replaced by **hand-written
+  annotations** (`.portrait-notes`): the owner's claims in Caveat, ink on the
+  white around the print — "%YEARS%+ years in web development" and "AI
+  expert" with its join-links in the pocket under the headline, "I do
+  non-generic AI web design" and the aesthetics claim with its follow-links
+  on the right air — each with a small curled arrow pointing at her, each
+  link with its own transition arrow. The arrows are children of their note,
+  so they travel with the text they belong to. The layer sits OUTSIDE
+  `role="img"`, where the claims and links would be silent for assistive
+  tech; links are real 44px targets, and the touch-target test names
+  `.note-link` explicitly. Keep notes off the face and off the dark sweater —
+  ink dies there.
+- Caveat is the **one sanctioned third family** (client decision,
+  2026-08-28): a single static 600 weight, subset to ASCII plus the Spanish
+  lowercase accents the notes set, self-hosted like the other faces with its
+  OFL text beside it. It exists for the annotations only — never for UI or
+  running text. A test walks every note string against the subset, because a
+  missing glyph falls back to a system script mid-word rather than failing
+  loudly. **The font budget is now nearly spent** — 202 940 B of 204 800 —
+  so widening that subset means re-subsetting another face or raising the
+  budget deliberately, not quietly.
 
 ## Dependencies
 
@@ -287,8 +335,8 @@ the achromatic palette, grey contrast against AA, the accessibility structure,
 and the script budget. Do not weaken a test to make a change pass.
 
 Visually: 360 px and 1280 px+, both locales, keyboard focus, the portrait
-swap on hover and on tap, the carousel at every breakpoint,
-`prefers-reduced-motion`, and a console with no errors.
+swap with its annotations on hover and on tap, the carousel at every
+breakpoint, `prefers-reduced-motion`, and a console with no errors.
 
 ### Two traps when verifying this project
 

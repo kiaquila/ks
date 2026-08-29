@@ -21,6 +21,11 @@ export const links = {
   linkedin: "https://www.linkedin.com/in/kiaquila",
   telegram: "https://t.me/ks_aquila",
   instagram: "https://www.instagram.com/ks_aquila",
+  pinterest: "https://www.pinterest.com/ks_aquila/",
+  /* The owner's AI channel for the Russian-speaking audience (@vibecodesh)
+     and the invite link of the AI-engineers community she mentors. */
+  vibecodeChannel: "https://t.me/vibecodesh",
+  aiCommunity: "https://t.me/+1k8AU1O9-o04MTRi",
   email: "krisredlips@gmail.com",
   work: {
     chaijana: "https://chaijana.ks-design.workers.dev",
@@ -43,8 +48,9 @@ export const languages = {
 /** Locales whose copy is a translation the owner has not signed off on yet.
  *  The build names them on every run, the way unfinished sections are named,
  *  so a draft translation cannot quietly become the published wording. The
- *  owner approved the current Spanish copy on 2026-08-17 and the ember and
- *  misha work cards on 2026-08-19. */
+ *  owner approved the Spanish copy on 2026-08-17, the ember and misha work
+ *  cards on 2026-08-19, and the hero annotations (`hero.notes`) on
+ *  2026-08-28. */
 export const localesAwaitingReview = [];
 
 /** One social card per language — sharing a page with a card that carries
@@ -78,10 +84,27 @@ export const content = {
       primary: "Start a project",
       secondary: "See the work",
       portraitAlt: "Kristina Aquila, portrait",
-      /* Lives on the frosted panel that rises over the portrait on hover. A
-         stat with no label is a single claim, not a number and a caption. */
-      portraitStats: [
-        { value: "%YEARS%", label: "years of web development experience" }
+      /* Hand-written annotations that appear over the portrait on hover, in
+         place of the retired stats panel (client decision, 2026-08-28). A
+         claim is one line; a destination is an underlined link beneath its
+         claim. All hrefs come from `links` above. */
+      notes: [
+        { text: "%YEARS%+ years in web development" },
+        { text: "I do non-generic AI web design" },
+        {
+          text: "AI expert",
+          links: [
+            { label: "join my TG channel (RU)", href: links.vibecodeChannel },
+            { label: "join my AI engineers community (RU)", href: links.aiCommunity }
+          ]
+        },
+        {
+          text: "I value aesthetics & authenticity",
+          links: [
+            { label: "follow my Instagram", href: links.instagram },
+            { label: "follow my Pinterest", href: links.pinterest }
+          ]
+        }
       ]
     },
     work: {
@@ -209,8 +232,7 @@ export const content = {
       location: "Buenos Aires, Argentina (GMT-3)",
       social: {
         linkedin: "LinkedIn",
-        telegram: "Telegram",
-        instagram: "Instagram"
+        telegram: "Telegram"
       }
     },
     footer: { copyright: "© Kristina Aquila" },
@@ -245,8 +267,23 @@ export const content = {
       primary: "Hablemos del proyecto",
       secondary: "Ver los trabajos",
       portraitAlt: "Kristina Aquila, retrato",
-      portraitStats: [
-        { value: "%YEARS%", label: "años de experiencia en desarrollo web" }
+      notes: [
+        { text: "%YEARS%+ años en desarrollo web" },
+        { text: "hago diseño web con IA, nada genérico" },
+        {
+          text: "experta en IA",
+          links: [
+            { label: "sumate a mi canal de TG (RU)", href: links.vibecodeChannel },
+            { label: "sumate a mi comunidad de ingenieros de IA (RU)", href: links.aiCommunity }
+          ]
+        },
+        {
+          text: "valoro la estética y la autenticidad",
+          links: [
+            { label: "seguime en Instagram", href: links.instagram },
+            { label: "seguime en Pinterest", href: links.pinterest }
+          ]
+        }
       ]
     },
     work: {
@@ -379,8 +416,7 @@ export const content = {
       location: "Buenos Aires, Argentina (GMT-3)",
       social: {
         linkedin: "LinkedIn",
-        telegram: "Telegram",
-        instagram: "Instagram"
+        telegram: "Telegram"
       }
     },
     footer: { copyright: "© Kristina Aquila" },
