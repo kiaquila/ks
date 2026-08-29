@@ -6,13 +6,16 @@
        the gradient dot stays the same on either. Favicons cannot load
        webfonts, so the stack leans on the system's closest grotesk. -->
   <style>
-    /* Sized so the two caps plus the dot fill the 64px square: at a tab's
-       16px anything smaller reads as a smudge, anything larger clips the S.
-       The baseline sits so the cap height is centred rather than hanging
-       low in the box. */
+    /* The mark runs edge to edge: at a crowded tab strip's 16px, any
+       margin left in the box reads as a shrunken icon (client pick,
+       2026-08-29). The caps stepped 38px -> 37px to buy the grown dot its
+       air inside the same square; the baseline sits so the cap height is
+       centred rather than hanging low in the box. The raster renditions
+       are baked FROM this file — regenerate them with
+       scripts/make-icons.mjs whenever this geometry moves. */
     text {
       font-family: ui-sans-serif, -apple-system, "Helvetica Neue", Arial, sans-serif;
-      font-size: 38px;
+      font-size: 37px;
       font-weight: 700;
       letter-spacing: 0;
       fill: #0b0b0c;
@@ -28,6 +31,6 @@
       <stop offset="1" stop-color="#22d3ee"/>
     </linearGradient>
   </defs>
-  <text x="27" y="46" text-anchor="middle">KS</text>
-  <circle cx="60" cy="42" r="4" fill="url(#dot)"/>
+  <text x="24.6" y="45.4" text-anchor="middle">KS</text>
+  <circle cx="58.8" cy="40.2" r="5.2" fill="url(#dot)"/>
 </svg>

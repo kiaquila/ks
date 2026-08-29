@@ -28,15 +28,18 @@ rules, heavy tracked capitals. Everything below follows from that.
   Do not add a fourth family.
 - Headings are uppercase with open tracking (`0.06em`–`0.09em`), not tight
   display type.
-- **The header is set in two voices, not one.** The wordmark leads at
-  `0.78rem`/`0.14em`; the navigation links and the language switch follow a
-  step below at `0.72rem`/`0.09em` (client pick, 2026-08-28 — the earlier row
-  set every item at the wordmark's size, and the links competed with the mark
-  instead of pointing at the page). The collapsed mobile menu is a separate
-  context: it takes the same `0.09em` tracking but keeps its own larger
-  `0.9rem`, because a full-screen menu is read at arm's length. The switch's
-  underline is measured against its word — `1.45rem` for two caps at this
-  setting — so re-measure `.lang-current::after` if that type moves again.
+- **The header is set in two voices, not one.** The wordmark and the
+  navigation links share `0.78rem`/`0.14em` (client pick, 2026-08-29,
+  reversing the one-step-down trial of 2026-08-28: at `0.72rem` the links
+  read too quiet next to the mark); the language switch alone stays a step
+  below at `0.72rem`/`0.09em` — it is a utility, not a signpost. The
+  collapsed mobile menu is a separate context: it takes the switch's
+  `0.09em` tracking but keeps its own larger `0.9rem`, because a
+  full-screen menu is read at arm's length. On phones the switch sits
+  against the hamburger at the right edge (auto margin on
+  `.header-actions`), not mid-row. The switch's underline is measured
+  against its word — `1.45rem` for two caps at this setting — so re-measure
+  `.lang-current::after` if that type moves again.
 - **A section is opened by its heading and nothing else.** The small-caps label
   over a rule and the lead paragraph beneath both restated the heading, so all
   three of them said one thing three times; the label and the lead are gone and
@@ -68,8 +71,23 @@ rules, heavy tracked capitals. Everything below follows from that.
   image, and the old gradient monogram is gone and should not come back.
   Running text and footer credits keep plain `ks-design`; the mark is a
   header-only device. The favicon carries the same treatment as a type-set
-  `KS.` with dark-scheme inversion, plus a baked PNG because Safari ignores
-  SVG favicons; both carry the gradient dot.
+  `KS.` (run edge to edge — at a crowded tab strip's 16px, any margin
+  reads as a shrunken icon) in three files, all with the gradient dot: the
+  SVG with dark-scheme inversion for modern engines; a `/favicon.ico` at
+  the site root (16/32/48, dark caps on TRANSPARENCY — the mark carries no
+  plate, client decision 2026-08-29) because browsers ask for that path on
+  their own and a 404 there costs the tab its icon; and the apple-touch
+  PNG, the one rendition that keeps a white plate, because iOS composes
+  home-screen icons on arbitrary wallpapers. **The SVG is deliberately the
+  only `rel="icon"` link.** Declaring the ico too made Chrome choose it —
+  even against `sizes="any"` on the SVG — and a static raster cannot flip
+  white in a dark theme; engines without SVG favicons find the root file
+  by convention on their own. The two declared links carry the same `?v=`
+  and it is bumped whenever those icons' pixels change — browsers cache
+  favicons far past the page. The root ico has no version to bump (the
+  path is the convention), so a returning legacy visitor may hold the old
+  one until their cache expires; that is the accepted cost of the
+  convention.
 - The footer is **one horizontal row directly under the contact band**, and the
   pair is anchored to the bottom of the last slide: copyright hard left, a pin
   icon and the location centred on the page, social icons with no labels hard
@@ -205,17 +223,30 @@ Below that it is an ordinary flowing document.
   pixels are the ones production has always served.
 - The cross-fade is ~140 ms on purpose: at that speed the eye reads a cut —
   the requested gif feel — not a slideshow dissolve. Touch toggles the swap
-  through `data-active` (set by the script), keyboard through focus.
+  through `data-active` (set by the script), keyboard through focus. The
+  script drops the tap's own focus when it toggles off: a tap also focuses
+  the frame, and `:focus-within` would otherwise hold the swap on and make
+  the second tap look dead.
 - **From 1100px up the hero is the "taped print"** (client pick from a
   20-variant show, 2026-08-28): a plain white page, the copy nudged slightly
   right, and the photograph hanging on the right like a print stuck to the
   wall — the whole `.portrait-box` tilted **5° counter-clockwise**, a soft
   paper drop shadow on `.portrait`, and a `.tape` span of semi-translucent
   masking tape over the top edge (it lands on the photographed wall, never
-  the hair). The print sits at `left: 30%` of the `.hero-portrait` zone
-  (which spans the right 62% of the slide), `top: 13svh`, and is
-  **width-driven**: `min(54svh, 36vw)`, so it never grows into the headline
-  on a wide window nor spills past the right edge on a narrow one. Keep the
+  the hair). The print hangs at `left: 35%` of the `.hero-portrait` zone
+  (which spans the right 62% of the slide), `top: calc(20svh - 10px)`
+  (nudged right and down from 30%/13svh, then 10px back up — both client
+  picks, 2026-08-29), and is
+  **width-driven**: `--print-w: min(54svh, calc(42vw - 220px))`, with
+  `left: min(35%, calc(100% - var(--print-w) - 232px))`. The third width
+  term and the capped left are the air guarantee for the two right-hand
+  notes: on 1280×800-class laptops the 54svh print used to reach the
+  viewport edge and clip their text. Both caps are plain `min()` terms, so
+  they bite together as the viewport tightens — the print slides left of
+  its preferred hang AND gives up width at the same time, rather than ever
+  touching the notes. 35% / 54svh are ceilings, not fixtures: the print
+  returns to them as soon as the viewport affords the air (on tall wide
+  windows the left cap still trims a few percent). Keep the
   `sizes` attribute in `render.js` equal to that width. There is no
   background field: the page's own white is the wall.
 - **Below 1100px the hero flows instead**: portrait first, then the copy,
@@ -278,6 +309,15 @@ cannot drift from the design:
 node website/scripts/make-og.mjs
 ```
 
+The raster favicons are derived from `assets/favicon.svg` the same way —
+headless Chrome for the pixels, sips for the small sizes (macOS, like the
+screenshot recipes below). Rerun whenever the SVG's geometry moves; the ico
+and the apple-touch plate must never be edited by hand:
+
+```bash
+node website/scripts/make-icons.mjs
+```
+
 Portfolio card screenshots, from the live stages. Every card is 1200×750 and
 800×500 in both JPEG and WebP, so a new shot must be taken at the section's
 8:5 proportion rather than cropped into it:
@@ -331,7 +371,9 @@ screenshots' fixed proportion, approved outbound links, local-only assets, the n
 the achromatic palette, grey contrast against AA, the accessibility structure,
 and the script budget. Do not weaken a test to make a change pass.
 
-Visually: 360 px and 1280 px+, both locales, keyboard focus, the portrait
+Visually: 360 px, the 1100–1500 px band (where the air-guaranteed print is
+at its smallest — the notes must clear it, and the print must still read
+as the hero), and 1280 px+, both locales, keyboard focus, the portrait
 swap with its annotations on hover and on tap, the carousel at every
 breakpoint, `prefers-reduced-motion`, and a console with no errors.
 

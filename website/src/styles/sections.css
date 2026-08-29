@@ -77,12 +77,29 @@
 
   /* Width-driven so the print never grows into the headline on a wide
      window and never spills past the right edge on a narrow one; height
-     follows the source aspect. */
+     follows the source aspect. Nudged right and down from the first hang
+     (30% / 13svh, client pick 2026-08-29).
+
+     The third width term and the capped `left` are the air guarantee: the
+     two right-hand notes need ~230px of white beside the print, and on
+     wide-but-flat screens they have it, but on 1280×800-class laptops the
+     54svh print left them nothing and the paper clipped their text. Both
+     caps are plain min() terms and bite together as the viewport tightens:
+     the print slides left of its preferred 35% hang AND gives up width at
+     the same time, rather than ever touching the notes. 35% / 54svh are
+     ceilings, not fixtures — the print returns to them as soon as the
+     viewport affords the air (on tall wide windows the left cap still
+     trims a few percent). */
   .portrait-box {
+    /* Two terms only: 54svh keeps the print inside the slide's height, and
+       the vw term is the air guarantee. A 36vw width cap used to sit
+       between them, but 42vw - 220px is smaller than 36vw on every
+       viewport under 3667px — the term could never win, so it is gone. */
+    --print-w: min(54svh, calc(42vw - 220px));
     position: absolute;
-    left: 30%;
-    top: 13svh;
-    width: min(54svh, 36vw);
+    left: min(35%, calc(100% - var(--print-w) - 232px));
+    top: calc(20svh - 10px);
+    width: var(--print-w);
     aspect-ratio: 776 / 971;
   }
 }

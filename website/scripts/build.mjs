@@ -49,6 +49,10 @@ async function copyAssets() {
   for (const file of ["favicon.svg", "apple-touch-icon.png", ...Object.values(ogImages)]) {
     await cp(join(root, "assets", file), join(dist, "assets", file));
   }
+  /* At the root, not under /assets: browsers request /favicon.ico by
+     convention without reading the page, and a 404 there costs the tab its
+     icon in engines that fall back to it. */
+  await cp(join(root, "assets", "favicon.ico"), join(dist, "favicon.ico"));
 }
 
 /** Surfaces copy the client has not supplied yet, so an unfinished section

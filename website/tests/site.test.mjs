@@ -964,14 +964,21 @@ test("the portrait's sizes attribute matches the box it renders in", () => {
       pages[lang].indexOf('<div class="portrait-notes"')
     );
     for (const [, sizes] of portrait.matchAll(/sizes="([^"]+)"/g)) {
-      assert.equal(sizes, "(max-width: 1099px) min(84vw, 416px), min(54svh, 36vw)");
+      assert.equal(
+        sizes,
+        "(max-width: 1099px) min(84vw, 416px), min(54svh, calc(42vw - 220px))"
+      );
     }
   }
   /* The flowing width the hint promises is the one the stylesheet sets. */
   const flow = clean.slice(clean.indexOf("@media (max-width: 1099px)"));
   assert.match(flow, /\.portrait-box \{[^}]*max-width: min\(84vw, 26rem\)/);
   const print = clean.slice(clean.indexOf("@media (min-width: 1100px)"));
-  assert.match(print, /\.portrait-box \{[^}]*width: min\(54svh, 36vw\)/);
+  assert.match(
+    print,
+    /\.portrait-box \{[^}]*--print-w: min\(54svh, calc\(42vw - 220px\)\)/
+  );
+  assert.match(print, /\.portrait-box \{[^}]*width: var\(--print-w\)/);
 });
 
 test("the notes are readable copy below the print's breakpoint", () => {
@@ -996,6 +1003,36 @@ test("the notes are readable copy below the print's breakpoint", () => {
   );
   const tape = clean.match(/(?:^|\})\s*\.tape \{[^}]*\}/)[0];
   assert.match(tape, /display: none/);
+});
+
+test("the favicon set ships whole and the SVG stays the only icon link", async () => {
+  /* Three renditions, one contract. The SVG is deliberately the only
+     rel="icon" the pages declare: a declared ico beat it in Chrome even
+     against sizes="any", and a static raster cannot flip white in a dark
+     theme. The ico still ships at the DIST ROOT because engines without
+     SVG favicons request /favicon.ico by convention, unprompted — a 404
+     there costs the tab its icon. Nothing on the pages references the ico,
+     so the images-exist-in-dist test cannot see it; this one does. */
+  assert.ok((await stat(join(dist, "favicon.ico"))).size > 0);
+  for (const key of DOCUMENTS) {
+    const icons = pages[key].match(/<link rel="icon"[^>]*>/g) ?? [];
+    assert.equal(icons.length, 1, `${key}: the SVG must stay the only rel="icon"`);
+    const svgVersion = icons[0].match(/href="\/assets\/favicon\.svg\?v=(\d+)"/)?.[1];
+    assert.ok(svgVersion, `${key}: the icon link must be the versioned SVG`);
+    assert.match(icons[0], /type="image\/svg\+xml"/);
+    /* One bump covers the set: a retouch that bumps one link and not the
+       other leaves returning visitors with mismatched icons. */
+    assert.match(
+      pages[key],
+      new RegExp(
+        `<link rel="apple-touch-icon" href="/assets/apple-touch-icon\\.png\\?v=${svgVersion}">`
+      )
+    );
+  }
+  /* The inversion is the reason the SVG wins that contract: a tab on a dark
+     theme flips the caps white while the gradient dot stays. */
+  const favicon = await readFile(join(dist, "assets", "favicon.svg"), "utf8");
+  assert.match(favicon, /@media \(prefers-color-scheme: dark\)/);
 });
 
 test("the shipped JavaScript stays within its budget", async () => {

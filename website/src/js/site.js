@@ -271,6 +271,11 @@
       /* Pointer devices already swap on hover; a click there would fight it. */
       if (canHover.matches) return;
       portrait.toggleAttribute("data-active");
+      /* A tap also focuses the frame, and `:focus-within` would then hold
+         the swap on regardless of the attribute — the second tap seemed to
+         do nothing. Switching off therefore drops the tap's focus too, so
+         the taps read on/off/on the way a toggle should. */
+      if (!portrait.hasAttribute("data-active")) portrait.blur();
     });
 
     /* The frame is focusable so the swap is reachable from the keyboard, which

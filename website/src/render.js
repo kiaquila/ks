@@ -138,7 +138,7 @@ function hero(copy, years) {
      with sections.css, or the browser picks a candidate for a box that does
      not exist and the print renders soft on a dense screen. */
   const portraitSizes =
-    "(max-width: 1099px) min(84vw, 416px), min(54svh, 36vw)";
+    "(max-width: 1099px) min(84vw, 416px), min(54svh, calc(42vw - 220px))";
   const frames = ["calm", "wink"]
     .map((state, index) =>
       picture({
@@ -427,12 +427,21 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
   <meta property="og:image:height" content="630">
   <meta name="theme-color" content="#ffffff">
   <meta name="color-scheme" content="light">
-  <!-- ?v=2 is the cornflower dot (2026-08-28). Browsers cache a favicon far
-       past the page that asked for it, so a recoloured icon needs a new URL
-       or returning visitors keep the gold one; bump this whenever the icon's
-       pixels change. -->
-  <link rel="icon" href="/assets/favicon.svg?v=2" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=2">
+  <!-- Browsers cache a favicon far past the page that asked for it, so a
+       redrawn icon needs a new URL or returning visitors keep the old one;
+       bump ?v= whenever any icon's pixels change.
+
+       The SVG is deliberately the ONLY rel="icon" here. A /favicon.ico
+       still ships at the site root — engines without SVG-favicon support
+       ask for that path on their own, and a 404 there left some tabs with
+       no icon at all (2026-08-29) — but linking it proved worse than the
+       convention: Chrome kept choosing the declared ico (even against
+       sizes="any" on the SVG), and the ico is a static raster that cannot
+       flip white in a dark theme. With only the SVG declared, every
+       SVG-capable engine takes the icon that inverts, and everything older
+       falls back to the root file by itself. -->
+  <link rel="icon" href="/assets/favicon.svg?v=5" type="image/svg+xml" sizes="any">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=5">
   ${fontPreloads}
   <link rel="stylesheet" href="/assets/styles.css">
   ${extraHead}
