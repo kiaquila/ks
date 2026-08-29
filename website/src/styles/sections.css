@@ -83,12 +83,19 @@
      The third width term and the capped `left` are the air guarantee: the
      two right-hand notes need ~230px of white beside the print, and on
      wide-but-flat screens they have it, but on 1280×800-class laptops the
-     54svh print left them nothing and the paper clipped their text. So the
-     print first slides left of its preferred 35% hang, then gives up width,
-     rather than ever touching the notes. On the client's own wide screen
-     both caps are slack and the numbers are exactly 35% / 54svh. */
+     54svh print left them nothing and the paper clipped their text. Both
+     caps are plain min() terms and bite together as the viewport tightens:
+     the print slides left of its preferred 35% hang AND gives up width at
+     the same time, rather than ever touching the notes. 35% / 54svh are
+     ceilings, not fixtures — the print returns to them as soon as the
+     viewport affords the air (on tall wide windows the left cap still
+     trims a few percent). */
   .portrait-box {
-    --print-w: min(54svh, 36vw, calc(42vw - 220px));
+    /* Two terms only: 54svh keeps the print inside the slide's height, and
+       the vw term is the air guarantee. A 36vw width cap used to sit
+       between them, but 42vw - 220px is smaller than 36vw on every
+       viewport under 3667px — the term could never win, so it is gone. */
+    --print-w: min(54svh, calc(42vw - 220px));
     position: absolute;
     left: min(35%, calc(100% - var(--print-w) - 232px));
     top: calc(20svh - 10px);

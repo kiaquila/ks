@@ -82,9 +82,12 @@ rules, heavy tracked capitals. Everything below follows from that.
   only `rel="icon"` link.** Declaring the ico too made Chrome choose it —
   even against `sizes="any"` on the SVG — and a static raster cannot flip
   white in a dark theme; engines without SVG favicons find the root file
-  by convention on their own. Both links carry the same `?v=` and it is
-  bumped whenever any icon's pixels change — browsers cache favicons far
-  past the page.
+  by convention on their own. The two declared links carry the same `?v=`
+  and it is bumped whenever those icons' pixels change — browsers cache
+  favicons far past the page. The root ico has no version to bump (the
+  path is the convention), so a returning legacy visitor may hold the old
+  one until their cache expires; that is the accepted cost of the
+  convention.
 - The footer is **one horizontal row directly under the contact band**, and the
   pair is anchored to the bottom of the last slide: copyright hard left, a pin
   icon and the location centred on the page, social icons with no labels hard
@@ -234,14 +237,16 @@ Below that it is an ordinary flowing document.
   (which spans the right 62% of the slide), `top: calc(20svh - 10px)`
   (nudged right and down from 30%/13svh, then 10px back up — both client
   picks, 2026-08-29), and is
-  **width-driven**: `--print-w: min(54svh, 36vw, calc(42vw - 220px))`, with
+  **width-driven**: `--print-w: min(54svh, calc(42vw - 220px))`, with
   `left: min(35%, calc(100% - var(--print-w) - 232px))`. The third width
   term and the capped left are the air guarantee for the two right-hand
   notes: on 1280×800-class laptops the 54svh print used to reach the
-  viewport edge and clip their text, so the print now slides left of its
-  preferred hang first and gives up width second, rather than ever touching
-  them. On wide screens both caps are slack and the numbers are exactly
-  35% / 54svh. Keep the
+  viewport edge and clip their text. Both caps are plain `min()` terms, so
+  they bite together as the viewport tightens — the print slides left of
+  its preferred hang AND gives up width at the same time, rather than ever
+  touching the notes. 35% / 54svh are ceilings, not fixtures: the print
+  returns to them as soon as the viewport affords the air (on tall wide
+  windows the left cap still trims a few percent). Keep the
   `sizes` attribute in `render.js` equal to that width. There is no
   background field: the page's own white is the wall.
 - **Below 1100px the hero flows instead**: portrait first, then the copy,
@@ -304,6 +309,15 @@ cannot drift from the design:
 node website/scripts/make-og.mjs
 ```
 
+The raster favicons are derived from `assets/favicon.svg` the same way —
+headless Chrome for the pixels, sips for the small sizes (macOS, like the
+screenshot recipes below). Rerun whenever the SVG's geometry moves; the ico
+and the apple-touch plate must never be edited by hand:
+
+```bash
+node website/scripts/make-icons.mjs
+```
+
 Portfolio card screenshots, from the live stages. Every card is 1200×750 and
 800×500 in both JPEG and WebP, so a new shot must be taken at the section's
 8:5 proportion rather than cropped into it:
@@ -357,7 +371,9 @@ screenshots' fixed proportion, approved outbound links, local-only assets, the n
 the achromatic palette, grey contrast against AA, the accessibility structure,
 and the script budget. Do not weaken a test to make a change pass.
 
-Visually: 360 px and 1280 px+, both locales, keyboard focus, the portrait
+Visually: 360 px, the 1100–1500 px band (where the air-guaranteed print is
+at its smallest — the notes must clear it, and the print must still read
+as the hero), and 1280 px+, both locales, keyboard focus, the portrait
 swap with its annotations on hover and on tap, the carousel at every
 breakpoint, `prefers-reduced-motion`, and a console with no errors.
 

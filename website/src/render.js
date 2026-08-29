@@ -138,7 +138,7 @@ function hero(copy, years) {
      with sections.css, or the browser picks a candidate for a box that does
      not exist and the print renders soft on a dense screen. */
   const portraitSizes =
-    "(max-width: 1099px) min(84vw, 416px), min(54svh, 36vw, calc(42vw - 220px))";
+    "(max-width: 1099px) min(84vw, 416px), min(54svh, calc(42vw - 220px))";
   const frames = ["calm", "wink"]
     .map((state, index) =>
       picture({

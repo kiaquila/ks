@@ -8,10 +8,11 @@
   <style>
     /* The mark runs edge to edge: at a crowded tab strip's 16px, any
        margin left in the box reads as a shrunken icon (client pick,
-       2026-08-29 — sized up from the earlier 36px/2px-margin cut). The
-       baseline sits so the cap height is centred rather than hanging low
-       in the box; the dot was grown r4 -> r5.2 with its own air after the
-       S a step earlier the same day. */
+       2026-08-29). The caps stepped 38px -> 37px to buy the grown dot its
+       air inside the same square; the baseline sits so the cap height is
+       centred rather than hanging low in the box. The raster renditions
+       are baked FROM this file — regenerate them with
+       scripts/make-icons.mjs whenever this geometry moves. */
     text {
       font-family: ui-sans-serif, -apple-system, "Helvetica Neue", Arial, sans-serif;
       font-size: 37px;
