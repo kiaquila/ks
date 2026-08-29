@@ -125,8 +125,9 @@ merged, fully checked pull request reaches `main`. GitHub Environment
 configuration, server access, verification, cache purge, and recovery steps
 are documented in
 [`website/production/README.md`](./website/production/README.md). Cloudflare
-Workers remains PR-preview-only; its permanent `ks.ks-design.workers.dev` route
-is disabled.
+Workers Builds creates pull-request previews from this repository at
+`*-ks.ks-design.workers.dev`; its permanent `ks.ks-design.workers.dev` route is
+disabled.
 
 ## Checks
 
