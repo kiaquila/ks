@@ -218,10 +218,11 @@ Below that it is an ordinary flowing document.
 The only dependency is `wrangler`, and it is needed for deployment, never for
 `npm run build` or the tests — those use Node builtins alone.
 
-`package.json` pins `undici` to `7.29.0` through `overrides` because wrangler
-resolves `7.28.0`, which the repository's OSV scan flags. Drop it once
-wrangler's own range moves past the advisory, and regenerate the lockfile with
-`npm install --package-lock-only`.
+Wrangler `4.124.0` resolves Miniflare's direct `undici` `7.29.0` dependency,
+so the earlier `package.json` override has been retired. Keep it unpinned so
+future Wrangler updates can take their upstream security fixes; regenerate the
+lockfile with `npm install --package-lock-only` when dependency resolution
+changes.
 
 ## Regenerating assets
 
