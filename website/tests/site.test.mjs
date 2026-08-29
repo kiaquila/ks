@@ -932,6 +932,42 @@ test("the hero's note layer never swallows a click", () => {
   assert.match(clean, /\.hero-copy \{\s*position: relative;\s*z-index: 1;/);
 });
 
+test("the flowing hero reads photo, copy, notes — in that order", () => {
+  /* `.hero-portrait` wraps the photo and the notes, so below the print's
+     breakpoint the wrapper would carry both to the top of the column and
+     the headline would land under the notes. It is dissolved with
+     `display: contents` there, and the photo alone is ordered first. */
+  const clean = withoutComments(css);
+  const flow = clean.slice(clean.indexOf("@media (max-width: 1099px)"));
+  assert.match(flow, /\.hero-portrait \{\s*display: contents;/);
+  assert.match(flow, /\.portrait-box \{\s*order: -1;/);
+  const notes = flow.match(/\.portrait-notes \{[^}]*\}/)[0];
+  assert.ok(!/order/.test(notes), "the notes follow the copy in document order");
+});
+
+test("the portrait's sizes attribute matches the box it renders in", () => {
+  /* Two boxes, one breakpoint: the flowing column below 1100px and the
+     print above it. A sizes hint that describes the wrong one makes the
+     browser pick a candidate for a box that does not exist — it rendered
+     soft on dense screens when this drifted. The breakpoint in the hint and
+     the breakpoint in the stylesheet have to be the same number. */
+  const clean = withoutComments(css);
+  for (const lang of LOCALES) {
+    const portrait = pages[lang].slice(
+      pages[lang].indexOf('<div class="portrait"'),
+      pages[lang].indexOf('<div class="portrait-notes"')
+    );
+    for (const [, sizes] of portrait.matchAll(/sizes="([^"]+)"/g)) {
+      assert.equal(sizes, "(max-width: 1099px) min(84vw, 416px), min(54svh, 36vw)");
+    }
+  }
+  /* The flowing width the hint promises is the one the stylesheet sets. */
+  const flow = clean.slice(clean.indexOf("@media (max-width: 1099px)"));
+  assert.match(flow, /\.portrait-box \{[^}]*max-width: min\(84vw, 26rem\)/);
+  const print = clean.slice(clean.indexOf("@media (min-width: 1100px)"));
+  assert.match(print, /\.portrait-box \{[^}]*width: min\(54svh, 36vw\)/);
+});
+
 test("the notes are readable copy below the print's breakpoint", () => {
   /* Below 1100px there is no margin to scatter them into (and on a phone no
      hover to reveal them with), so the notes are a plain list under the

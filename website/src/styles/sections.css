@@ -82,11 +82,15 @@
 
 /* Below 1100px the hero flows: the portrait first — the face is the hook,
    and it is what makes the page feel like a person rather than a template —
-   then the copy, then the notes as a list under the photo. The taped print
-   needs a column of white beside it for the notes to live in; a narrow
-   desktop does not have one, and squeezing them in put ink on the sweater
-   and the face. The photo is a sibling of the container, so the visual order
-   is the slide's own flex order. */
+   then the copy, then the notes as a list under it. The taped print needs a
+   column of white beside it for the notes to live in; a narrow desktop does
+   not have one, and squeezing them in put ink on the sweater and the face.
+
+   `.hero-portrait` wraps the photo and the notes together, because on the
+   deck they share one positioning context. Here that wrapper would carry
+   both of its children to the top of the column, pushing the headline below
+   the notes; `display: contents` dissolves it so the photo and the notes
+   take their own places in the slide's flex order instead. */
 @media (max-width: 1099px) {
   .hero {
     display: flex;
@@ -95,9 +99,19 @@
   }
 
   .hero-portrait {
+    display: contents;
+  }
+
+  .portrait-box {
     order: -1;
     width: 100%;
     max-width: min(84vw, 26rem);
+    align-self: center;
+  }
+
+  .portrait-notes {
+    width: 100%;
+    max-width: min(84vw, 34rem);
     align-self: center;
   }
 

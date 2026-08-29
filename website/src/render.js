@@ -133,11 +133,12 @@ function header(lang, copy, anchorBase = "") {
 function hero(copy, years) {
   /* Two stacked frames that cross-fade on hover. The calm frame carries the
      alt text; the second is decorative, so a screen reader is told about one
-     person, not two. The sizes attribute mirrors the CSS width of the print
-     — keep the two in step, or the browser picks a candidate for a box that
-     does not exist. */
+     person, not two. The sizes attribute mirrors the CSS width of the photo
+     on both sides of the 1100px breakpoint — keep the three numbers in step
+     with sections.css, or the browser picks a candidate for a box that does
+     not exist and the print renders soft on a dense screen. */
   const portraitSizes =
-    "(max-width: 899px) min(84vw, 420px), min(54svh, 36vw)";
+    "(max-width: 1099px) min(84vw, 416px), min(54svh, 36vw)";
   const frames = ["calm", "wink"]
     .map((state, index) =>
       picture({
