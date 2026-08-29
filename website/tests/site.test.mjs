@@ -964,14 +964,21 @@ test("the portrait's sizes attribute matches the box it renders in", () => {
       pages[lang].indexOf('<div class="portrait-notes"')
     );
     for (const [, sizes] of portrait.matchAll(/sizes="([^"]+)"/g)) {
-      assert.equal(sizes, "(max-width: 1099px) min(84vw, 416px), min(54svh, 36vw)");
+      assert.equal(
+        sizes,
+        "(max-width: 1099px) min(84vw, 416px), min(54svh, 36vw, calc(42vw - 220px))"
+      );
     }
   }
   /* The flowing width the hint promises is the one the stylesheet sets. */
   const flow = clean.slice(clean.indexOf("@media (max-width: 1099px)"));
   assert.match(flow, /\.portrait-box \{[^}]*max-width: min\(84vw, 26rem\)/);
   const print = clean.slice(clean.indexOf("@media (min-width: 1100px)"));
-  assert.match(print, /\.portrait-box \{[^}]*width: min\(54svh, 36vw\)/);
+  assert.match(
+    print,
+    /\.portrait-box \{[^}]*--print-w: min\(54svh, 36vw, calc\(42vw - 220px\)\)/
+  );
+  assert.match(print, /\.portrait-box \{[^}]*width: var\(--print-w\)/);
 });
 
 test("the notes are readable copy below the print's breakpoint", () => {

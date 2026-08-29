@@ -77,12 +77,22 @@
 
   /* Width-driven so the print never grows into the headline on a wide
      window and never spills past the right edge on a narrow one; height
-     follows the source aspect. */
+     follows the source aspect. Nudged right and down from the first hang
+     (30% / 13svh, client pick 2026-08-29).
+
+     The third width term and the capped `left` are the air guarantee: the
+     two right-hand notes need ~230px of white beside the print, and on
+     wide-but-flat screens they have it, but on 1280×800-class laptops the
+     54svh print left them nothing and the paper clipped their text. So the
+     print first slides left of its preferred 35% hang, then gives up width,
+     rather than ever touching the notes. On the client's own wide screen
+     both caps are slack and the numbers are exactly 35% / 54svh. */
   .portrait-box {
+    --print-w: min(54svh, 36vw, calc(42vw - 220px));
     position: absolute;
-    left: 30%;
-    top: 13svh;
-    width: min(54svh, 36vw);
+    left: min(35%, calc(100% - var(--print-w) - 232px));
+    top: calc(20svh - 10px);
+    width: var(--print-w);
     aspect-ratio: 776 / 971;
   }
 }

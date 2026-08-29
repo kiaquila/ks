@@ -210,14 +210,21 @@
   text-wrap: balance;
 }
 
+/* Indented a step to the right of their claim, the way sub-items hang under
+   a heading in a hand-written list (client pick, 2026-08-29). */
 .note-links {
   display: grid;
   justify-items: start;
+  margin-left: 0.9em;
 }
 
 /* Hand-written but still a link: underlined, its own transition arrow, and a
-   full 44px row to tap. */
+   full 44px row to tap. Each row hangs off a bullet — drawn as generated
+   content so the dot never enters the note strings, whose glyphs are walked
+   against the Caveat subset; positioned absolutely so the link's underline
+   cannot propagate onto it. */
 .note-link {
+  position: relative;
   display: inline-flex;
   align-items: center;
   gap: 0.35rem;
@@ -229,6 +236,15 @@
   text-underline-offset: 0.18em;
   text-decoration-color: var(--ink-soft);
   transition: text-decoration-color var(--dur-fast) var(--ease);
+}
+
+.note-link::before {
+  content: "\2022";
+  position: absolute;
+  left: -0.75em;
+  top: 50%;
+  transform: translateY(-50%);
+  text-decoration: none;
 }
 
 .note-link:hover,
@@ -279,9 +295,13 @@
     pointer-events: auto;
   }
 
+  /* A touch smaller than the flowing list's setting: scattered around the
+     print the notes are margin scribbles, not copy (client pick,
+     2026-08-29). */
   .note {
     position: absolute;
     max-width: 15ch;
+    font-size: clamp(1.15rem, 0.98rem + 0.6vw, 1.55rem);
     text-shadow: 0 0 10px rgb(255 255 255 / 0.65);
     transform: rotate(var(--tilt, 0deg));
   }
@@ -296,27 +316,39 @@
      AI-expert block sits in the white pocket under the headline, and the
      aesthetics block on the right air beside the print — never over the dark
      sweater, where ink dies. */
+  /* Every note stepped right/down from the 2026-08-28 scatter to follow
+     the print's new hang (client pick, 2026-08-29): the top pair dropped
+     ~2.5rem below the header band, the bottom pair ~4–7svh lower. */
+  /* The +30px pull toward the print (client pick, 2026-08-29) is scaled by
+     the viewport: the full step on the client's ~2000px screen, fading to
+     nothing by 1280px, where the air-guaranteed print already sits close
+     enough that a fixed step would push the second line into its corner. */
   .note-1 {
-    top: calc(var(--header-h) + 1rem);
-    left: 4%;
+    top: calc(var(--header-h) + 3.4rem);
+    left: calc(7% + max(0px, 4.2vw - 54px));
     --tilt: -3deg;
   }
 
   .note-2 {
-    top: calc(var(--header-h) + 1.25rem);
+    top: calc(var(--header-h) + 3.9rem);
     right: 4%;
     --tilt: 2deg;
   }
 
+  /* A hair wider than the old 12ch: the links hang indented under the
+     claim now, and at 12ch each one broke onto three lines. The +15px
+     step right (client pick, 2026-08-29) scales with the viewport the way
+     note-1's does: full on the client's ~2000px screen, gone by 1280px,
+     where the air-guaranteed print leaves no spare inches. */
   .note-3 {
-    top: 59svh;
-    left: 10%;
-    max-width: 12ch;
+    top: 66.5svh;
+    left: calc(9.5% + max(0px, 2.1vw - 27px));
+    max-width: 14ch;
     --tilt: -2deg;
   }
 
   .note-4 {
-    top: 33svh;
+    top: 40svh;
     right: 3.5%;
     max-width: 13ch;
     --tilt: 2deg;
@@ -327,35 +359,54 @@
     text-align: right;
   }
 
+  /* Right-aligned, so the left margin cannot indent it; the nudge right is a
+     translate instead, and stays a nudge — the links must not leave the
+     white air for the print. */
   .note-4 .note-links {
     justify-items: end;
+    margin-left: 0;
+    transform: translateX(0.5em);
   }
 
   /* Each arrow is a child of its note, so it travels with the text it
      belongs to: curling out of the block toward the print, never across the
      note's own lines. */
+  /* Shifted toward the print and steepened (client sketch, 2026-08-29;
+     the -45px/+15px step back left and down is the same day's second
+     pass): it leaves the claim's last word and dives down-right at the
+     paper's top corner, stopping a hand's width short of it. */
   .note-arrow-1 {
-    left: 52%;
-    top: calc(100% + 4px);
-    transform: rotate(26deg);
+    left: calc(72% - 45px);
+    top: calc(100% + 23px);
+    transform: rotate(50deg);
   }
 
   .note-arrow-2 {
-    left: -14%;
-    top: 84%;
+    left: calc(-14% + 5px);
+    top: calc(84% + 5px);
     transform: scaleX(-1) rotate(18deg);
   }
 
+  /* Beside the claim, never over it (client sketch, 2026-08-29): the
+     arrow stands just right of "AI expert" and points steeply up at her.
+     The scaleY flip turns the arc over — it bows up and away from the
+     print (client's second pass the same day), rising like a bracket and
+     hooking right at the top. */
   .note-arrow-3 {
-    right: -50px;
-    top: 2%;
-    transform: scaleY(-1) rotate(-10deg);
+    right: -14px;
+    top: calc(2% - 49px);
+    transform: rotate(-15deg) scaleY(-1);
   }
 
+  /* Moved off the note's shoulder to its left flank (client pick,
+     2026-08-29): it runs through the air between the print and the note.
+     The 185° set turns the earlier arc over — it now vaults upward, bowed
+     up (client's second pass the same day), coming down at the print's
+     right edge. */
   .note-arrow-4 {
-    left: -34px;
-    top: -32px;
-    transform: scaleX(-1) rotate(10deg);
+    left: -42px;
+    top: calc(26% - 22px);
+    transform: rotate(155deg);
   }
 }
 
