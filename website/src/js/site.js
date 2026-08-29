@@ -39,16 +39,11 @@
 
   /* --- the language switch keeps your place ------------------------------- */
 
-  /* Switching language halfway down the page used to land the reader back at
-     the top, which loses the thing they were reading. The section ids are the
-     same in every locale, so the switch only needs the id of the slide the
-     reader is on appended to its href.
-
-     It is resolved when the reader reaches for the switch rather than on every
-     scroll frame: that costs nothing while reading, survives a background tab
-     where animation frames are suspended, and is equally current for a click,
-     a middle-click and a keyboard activation. The markup is untouched, so with
-     no script at all the switch is the plain link it always was. */
+  /* Switching language mid-page used to land the reader back at the top. The
+     section ids are the same in every locale, so the switch only needs the
+     current slide's id appended to its href — resolved when the reader
+     reaches for it, not on every scroll frame, so it costs nothing while
+     reading and survives a background tab. */
   const langSwitch = document.querySelector(".lang-switch");
   if (langSwitch && slides.length) {
     const roots = new Map(
@@ -58,9 +53,8 @@
       ])
     );
     const stamp = () => {
-      /* The slide crossing the middle of the viewport is the one being read —
-         at a snap point that is unambiguous, and mid-scroll it matches what
-         fills most of the screen. The hero has no id, and lands at the top. */
+      /* The slide crossing the middle of the viewport is the one being
+         read. The hero has no id, and lands at the top. */
       const middle = window.innerHeight / 2;
       let current = "";
       for (const slide of slides) {
@@ -78,12 +72,11 @@
       langSwitch.addEventListener(type, stamp);
     }
 
-    /* And the arrival. A cross-document fragment is scrolled to through the
-       root's `scroll-behavior: smooth`, which is an animation — a tab that is
-       not yet visible suspends it, and the reader lands at the top of the page
-       after all. Repeating the jump without animation makes the landing
-       deterministic. The id is matched against the page's own slides rather
-       than passed to a selector, so a hand-typed fragment cannot become one. */
+    /* And the arrival: the browser's own fragment scroll is animated, and a
+       tab that is not yet visible suspends it, so the reader lands at the top
+       after all. Repeating the jump without animation makes it deterministic.
+       The id is matched against the page's slides rather than handed to a
+       selector, so a hand-typed fragment cannot become one. */
     const land = () => {
       const wanted = location.hash.slice(1);
       if (!wanted) return;
@@ -114,9 +107,8 @@
     nav.setAttribute("data-collapsed", "");
 
     /* Taking the closed menu out of the tab order is the stylesheet's job —
-       see the `visibility` rule in layout.css. The script only tracks the open
-       state and moves focus, so there is no JS-held copy of the breakpoint to
-       fall out of step with the CSS. */
+       see the `visibility` rule in layout.css — so no JS-held copy of the
+       breakpoint can fall out of step with the CSS. */
     const setOpen = (open, restoreToggleFocus = true) => {
       /* Focus must leave before the subtree becomes unfocusable, or it is
          stranded on an element nothing can reach again. */
@@ -130,9 +122,8 @@
     toggle.addEventListener("click", () => {
       const open = !nav.hasAttribute("data-open");
       setOpen(open);
-      /* The nav sits before the toggle in the document, so Tab from the button
-         would carry on past the menu it just opened. Moving focus to the first
-         link puts the keyboard where the eye already is. */
+      /* The nav sits before the toggle, so Tab from the button would carry
+         on past the menu it just opened. */
       if (open) nav.querySelector("a")?.focus();
     });
 
@@ -147,9 +138,8 @@
       }
     });
 
-    /* Keep state tidy in both directions. On narrowing, focus must leave a
-       desktop nav link as CSS hides the collapsed menu; on widening the nav
-       stays visible, so moving focus to the now-hidden toggle would be wrong. */
+    /* Both directions: narrowing must move focus off a nav link the CSS is
+       about to hide; widening must not move it to the hidden toggle. */
     window
       .matchMedia("(min-width: 900px)")
       .addEventListener("change", (event) => {
@@ -177,10 +167,9 @@
       return card.getBoundingClientRect().width + gap;
     };
 
-    /* Chrome refuses to start a smooth programmatic scroll inside a nested
-       scroller while the document itself snaps (the deck), so the glide is
-       animated by hand. The target lands exactly on a card boundary, which
-       is also where the snap points are. */
+    /* Chrome refuses a smooth programmatic scroll inside a nested scroller
+       while the document itself snaps, so the glide is animated by hand onto
+       a card boundary — which is where the snap points are. */
     const glide = (direction) => {
       const size = step();
       const max = track.scrollWidth - track.clientWidth;
@@ -202,8 +191,7 @@
       requestAnimationFrame(tick);
     };
 
-    /* The arrows sit on the vertical centre of the screenshots, not of the
-       whole card — the shot is what they page through. */
+    /* The arrows sit on the shots' centre, not the whole card's. */
     const alignArrows = () => {
       const shot = track.querySelector(".work-shot");
       if (!shot) return;
@@ -216,8 +204,8 @@
 
     const sync = () => {
       const max = track.scrollWidth - track.clientWidth;
-      /* With only a couple of projects the track does not overflow at all, and
-         two permanently dead arrows read as breakage. */
+      /* With few projects the track does not overflow, and two dead arrows
+         read as breakage. */
       const overflows = max > 4;
       prev.hidden = !overflows;
       next.hidden = !overflows;
@@ -244,8 +232,8 @@
       { passive: true }
     );
 
-    /* Card widths are percentages of the track, so a resize changes both the
-       page size and whether the track overflows at all. */
+    /* Card widths are percentages, so a resize changes both the page size
+       and whether the track overflows. */
     if ("ResizeObserver" in window) {
       new ResizeObserver(sync).observe(track);
     } else {
@@ -293,8 +281,8 @@
       portrait.toggleAttribute("data-active");
     });
 
-    /* Leaving the portrait clears the toggled state — unless focus moved into
-       the notes themselves, which :focus-within keeps visible either way. */
+    /* Leaving the portrait clears the toggled state; focus inside the notes
+       keeps them up through :focus-within anyway. */
     portrait.addEventListener("blur", () => {
       portrait.removeAttribute("data-active");
     });

@@ -1008,57 +1008,22 @@ test("the shipped JavaScript stays within its budget", async () => {
     gzip += gzipSync(bytes).length;
   }
   /* The page is static and the script is pure enhancement; if this budget is
-     ever hit, the answer is to remove behaviour, not to raise the number. */
+     ever hit, the answer is to remove behaviour — or prose — not to raise the
+     number. The shipped file is the source file, so this one figure bounds
+     both. */
   assert.ok(gzip <= 4 * 1024, `JS is ${gzip} B gzipped, over the 4 KB budget`);
   assert.ok(raw <= 12 * 1024, `JS is ${raw} B raw, over the 12 KB ceiling`);
-
-  /* The build strips the source's comments on the way into dist, so the
-     shipped figure above no longer bounds the behaviour that was written.
-     This second ceiling does: it measures the source, comments and all, and
-     keeps the "remove behaviour rather than raise the number" rule pointed
-     at the thing a person actually edits. Prose is cheap here — 6 KB leaves
-     room to explain a decision without leaving room for a framework. */
-  assert.ok(
-    gzipSync(Buffer.from(siteScript)).length <= 6 * 1024,
-    "the site script source is over its 6 KB gzipped ceiling"
-  );
 });
 
-test("the stripped script is still valid, complete JavaScript", async () => {
-  /* The comment strip is a regex, not a parser: it cannot tell a comment
-     from a `/*` inside a string or a regex literal, and a bad strip would
-     ship a syntactically broken file that the byte budget above would
-     happily accept. Two guards, because either alone can be fooled. */
+test("the script ships exactly as it was written", async () => {
+  /* Production verifies the deployed `assets/site.js` against `src/js/site.js`
+     by sha256, so any transformation in the build — a comment strip, a
+     minifier — deploys green and then fails the release with no message at
+     all. It cost one production deploy to learn: keep the copy a copy. It is
+     also the honest reading of the budget, since the bytes a visitor
+     downloads are then exactly the bytes a maintainer edits. */
   const shipped = await readFile(join(dist, "assets/site.js"), "utf8");
-  assert.doesNotThrow(
-    () => new Function(shipped),
-    "dist/assets/site.js does not parse — the comment strip broke it"
-  );
-
-  /* The strip's own assumption: the source carries no line comments (they
-     would survive and could comment out live code once the block comments
-     around them collapse), and no string or regex literal contains a comment
-     opener for the regex to trip over. */
-  const withoutBlocks = siteScript.replace(/\/\*[\s\S]*?\*\//g, "");
-  assert.ok(
-    !/(^|[^:"'`\\])\/\//.test(withoutBlocks),
-    "site.js must comment in /* */ blocks only — // survives the build strip"
-  );
-  assert.ok(
-    !/["'`][^"'`\n]*\/\*/.test(withoutBlocks),
-    "a literal in site.js contains /*, which the build's strip would eat"
-  );
-
-  /* Every statement of the source survives: the strip may only remove
-     commentary, never code. */
-  const shipped_lines = shipped.split("\n").map((line) => line.trim());
-  for (const line of withoutBlocks.split("\n").map((l) => l.trim())) {
-    if (!line) continue;
-    assert.ok(
-      shipped_lines.includes(line),
-      `the build dropped a line of code: ${line.slice(0, 60)}`
-    );
-  }
+  assert.equal(shipped, siteScript, "dist/assets/site.js is not a copy of the source");
 });
 
 test("every image referenced by the pages exists in dist", async () => {

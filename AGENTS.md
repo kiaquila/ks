@@ -127,19 +127,16 @@ Below that it is an ordinary flowing document.
 - Static, no framework: `src/content.js` (copy), `src/render.js` (markup),
   five style layers `src/styles/{tokens,base,layout,components,sections}.css`
   concatenated in that order, and one classic script `src/js/site.js`.
-- **The build strips the script's block comments when copying it into dist**,
-  because they are written for the reader of `src/` and the visitor should
-  not download them. Three consequences, all test-enforced: comment in
-  `/* */` blocks only (a `//` line survives the strip and could comment out
-  live code once a block around it collapses); no string or regex literal may
-  contain `/*` (the strip is a regex, not a parser, and would eat from there
-  to the next `*/`); and the shipped file is parsed and diffed against the
-  source line by line, so a broken or truncated strip fails the suite rather
-  than shipping.
-- **The JS budget is two numbers now.** The shipped bytes keep the 4 KB
-  gzipped budget, and the source — comments and all — has its own 6 KB
-  ceiling, so "remove behaviour rather than raise the number" still points at
-  the thing a person edits. Neither number may be raised to fit a feature.
+- **`assets/site.js` ships byte for byte as it was written.** The build only
+  copies it: no strip, no minify. The production deploy verifies the
+  deployed file against `src/js/site.js` by sha256, so any transformation
+  passes CI, deploys, and then fails the release with no message — a comment
+  strip did exactly that on 2026-08-29 and cost a red deploy. A test asserts
+  the shipped file equals the source.
+- JavaScript budget: **4 KB gzipped**, and because the shipped file is the
+  source file, that one number bounds both what a visitor downloads and what
+  a maintainer writes. If it is ever hit, remove behaviour — or prose — never
+  raise the number and never ship something other than the source.
 - **The layers are concatenated, so a media query in an earlier layer loses to a
   plain rule in a later one.** A component's responsive rules belong in that
   component's layer. This has already bitten once: `.header-cta { display:none }`
