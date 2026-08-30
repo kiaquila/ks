@@ -205,6 +205,36 @@ test("the OSV scan reports findings and fails the workflow", () => {
   assert.match(workflow, /--fail-on-vuln=true/);
 });
 
+test("the production deploy explains every check it fails", () => {
+  /* The post-deploy verification ran on bare `test` comparisons once. When
+     the sha256 guard tripped on 2026-08-29 the job went red without printing
+     a single line: the site was deployed and healthy, the failure said
+     nothing, and the cause had to be reconstructed by reading the workflow.
+     Every check now names itself and prints expected against actual — a
+     guard that cannot say why it fired costs more than the fault it
+     catches. */
+  const workflow = readFileSync(
+    join(templateRoot, ".github/workflows/ks-production-deploy.yml"),
+    "utf8"
+  );
+  const step = workflow.slice(workflow.indexOf("Deploy, validate, purge"));
+  assert.match(step, /verify\(\) \{/, "the verification helper is gone");
+  assert.match(step, /expected '\$expected', got '\$actual'/);
+  assert.ok(
+    (step.match(/^\s+verify "/gm) ?? []).length >= 3,
+    "the served pages and the redirect must each go through verify"
+  );
+
+  /* A comparison run as a bare command is the silent shape: `set -e` takes
+     the exit code and prints nothing. Conditions inside `if` are fine —
+     those branch into a message. */
+  const silent = step
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => /^test\s/.test(line) || /^\[\[.*\]\]$/.test(line));
+  assert.deepEqual(silent, [], "these checks fail without saying anything");
+});
+
 test("configuration paths cannot escape the repository", () => {
   withFixture({}, (root) => {
     const path = join(root, "web-design.config.json");

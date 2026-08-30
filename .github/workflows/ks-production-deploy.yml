@@ -180,8 +180,31 @@ jobs:
             echo "A newer eligible KS deployment has already reached cz."
             exit 0
           fi
-          [[ "$CLOUDFLARE_ZONE_ID" =~ ^[a-f0-9]{32}$ ]]
-          test -n "$CLOUDFLARE_API_TOKEN"
+          # Every check below names itself before it runs and, when it trips,
+          # prints what it expected against what it got. This block used to be
+          # a run of bare `test` comparisons, and when the sha256 guard failed
+          # on 2026-08-29 the step exited 1 without printing a single line —
+          # a deployed, healthy site with a silent red job, and the cause had
+          # to be reconstructed by reading the workflow. A check that cannot
+          # say why it failed costs more than the one it guards against.
+          verify() {
+            local what="$1" expected="$2" actual="$3"
+            if [[ "$actual" != "$expected" ]]; then
+              echo "::error::$what: expected '$expected', got '$actual'"
+              exit 1
+            fi
+            printf '  ok  %s: %s\n' "$what" "$actual"
+          }
+
+          echo "Purging the Cloudflare cache for the deployed revision."
+          if [[ ! "$CLOUDFLARE_ZONE_ID" =~ ^[a-f0-9]{32}$ ]]; then
+            echo "::error::CLOUDFLARE_ZONE_ID is not a 32-character hex zone id (it is ${#CLOUDFLARE_ZONE_ID} characters). Set it on the production environment."
+            exit 1
+          fi
+          if [[ -z "$CLOUDFLARE_API_TOKEN" ]]; then
+            echo "::error::CLOUDFLARE_API_TOKEN is empty. Set the secret on the production environment."
+            exit 1
+          fi
           response="$RUNNER_TEMP/cloudflare-purge.json"
           curl --fail-with-body --silent --show-error \
             --request POST \
@@ -190,22 +213,29 @@ jobs:
             --data '{"purge_everything":true}' \
             --output "$response" \
             "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache"
-          python3 -c 'import json,sys; assert json.load(open(sys.argv[1]))["success"] is True' "$response"
+          if ! python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("success") is True else 1)' "$response"; then
+            echo "::error::Cloudflare did not report the purge as successful. Its response follows."
+            cat "$response"
+            exit 1
+          fi
+          echo "  ok  cache purged"
+
+          echo "Verifying https://ks-design.art serves revision $REVISION."
           root_status="$(
             curl --fail --silent --show-error --retry 5 --retry-all-errors \
               --output /dev/null --write-out '%{http_code}' https://ks-design.art/
           )"
-          test "$root_status" = "200"
+          verify "the English page at /" "200" "$root_status"
           spanish_status="$(
             curl --fail --silent --show-error --retry 5 --retry-all-errors \
               --output /dev/null --write-out '%{http_code}' https://ks-design.art/es/
           )"
-          test "$spanish_status" = "200"
+          verify "the Spanish page at /es/" "200" "$spanish_status"
           legacy_english_redirect="$(
             curl --fail --silent --show-error --retry 5 --retry-all-errors \
               --output /dev/null --write-out '%{redirect_url}' https://ks-design.art/en/
           )"
-          test "$legacy_english_redirect" = "https://ks-design.art/"
+          verify "the retired /en/ redirect" "https://ks-design.art/" "$legacy_english_redirect"
           production_asset="$RUNNER_TEMP/production-site.js"
           curl --fail --silent --show-error --retry 5 --retry-all-errors \
             --header 'Cache-Control: no-cache' \
@@ -213,4 +243,8 @@ jobs:
             "https://ks-design.art/assets/site.js?revision=$REVISION"
           expected="$(sha256sum website/src/js/site.js | cut -d ' ' -f 1)"
           actual="$(sha256sum "$production_asset" | cut -d ' ' -f 1)"
-          test "$actual" = "$expected"
+          if [[ "$actual" != "$expected" ]]; then
+            echo "::error::/assets/site.js is not the file in website/src/js/site.js: expected sha256 $expected, got $actual. The build copies the script byte for byte, so a transform added to scripts/build.mjs — or a stale cache — breaks this."
+            exit 1
+          fi
+          printf '  ok  /assets/site.js matches its source: %s\n' "$expected"
