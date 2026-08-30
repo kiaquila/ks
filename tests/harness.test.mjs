@@ -233,6 +233,20 @@ test("the production deploy explains every check it fails", () => {
     .map((line) => line.trim())
     .filter((line) => /^test\s/.test(line) || /^\[\[.*\]\]$/.test(line));
   assert.deepEqual(silent, [], "these checks fail without saying anything");
+
+  /* And `--fail` is the other silent shape, one layer down: on a 404 or a
+     500 curl exits nonzero inside the substitution and `set -e` ends the
+     step before `verify` can name the page and print the status it got. A
+     request whose status is the thing being checked must be allowed to
+     return that status. Requests that only fetch (the purge, the script)
+     keep `--fail` and are wrapped in a message of their own. */
+  for (const [request] of step.matchAll(/curl[\s\S]*?\n(?=\s*(?:\)|fi|verify|echo|expected))/g)) {
+    if (!/write-out '%\{(?:http_code|redirect_url)\}'/.test(request)) continue;
+    assert.ok(
+      !/--fail\b/.test(request),
+      `a status-compared request carries --fail, so verify never runs:\n${request.trim()}`
+    );
+  }
 });
 
 test("configuration paths cannot escape the repository", () => {

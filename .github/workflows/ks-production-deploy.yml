@@ -206,13 +206,17 @@ jobs:
             exit 1
           fi
           response="$RUNNER_TEMP/cloudflare-purge.json"
-          curl --fail-with-body --silent --show-error \
+          if ! curl --fail-with-body --silent --show-error \
             --request POST \
             --header "Authorization: Bearer $CLOUDFLARE_API_TOKEN" \
             --header "Content-Type: application/json" \
             --data '{"purge_everything":true}' \
             --output "$response" \
-            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache"
+            "https://api.cloudflare.com/client/v4/zones/$CLOUDFLARE_ZONE_ID/purge_cache"; then
+            echo "::error::The Cloudflare purge request failed. Its response, if any, follows."
+            cat "$response" 2>/dev/null || true
+            exit 1
+          fi
           if ! python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("success") is True else 1)' "$response"; then
             echo "::error::Cloudflare did not report the purge as successful. Its response follows."
             cat "$response"
@@ -220,27 +224,46 @@ jobs:
           fi
           echo "  ok  cache purged"
 
+          # These three requests carry no `--fail`: the status IS what is
+          # being checked, and `--fail` would abort the step under `set -e`
+          # before `verify` could name the page and print what it got — the
+          # silence this block exists to remove. `--retry` still covers the
+          # transient 5xx a just-restarted origin can serve, and a request
+          # that cannot complete at all still fails curl, so each one says
+          # which URL it could not reach.
           echo "Verifying https://ks-design.art serves revision $REVISION."
-          root_status="$(
-            curl --fail --silent --show-error --retry 5 --retry-all-errors \
+          if ! root_status="$(
+            curl --silent --show-error --retry 5 --retry-all-errors \
               --output /dev/null --write-out '%{http_code}' https://ks-design.art/
-          )"
+          )"; then
+            echo "::error::Could not reach https://ks-design.art/ at all."
+            exit 1
+          fi
           verify "the English page at /" "200" "$root_status"
-          spanish_status="$(
-            curl --fail --silent --show-error --retry 5 --retry-all-errors \
+          if ! spanish_status="$(
+            curl --silent --show-error --retry 5 --retry-all-errors \
               --output /dev/null --write-out '%{http_code}' https://ks-design.art/es/
-          )"
+          )"; then
+            echo "::error::Could not reach https://ks-design.art/es/ at all."
+            exit 1
+          fi
           verify "the Spanish page at /es/" "200" "$spanish_status"
-          legacy_english_redirect="$(
-            curl --fail --silent --show-error --retry 5 --retry-all-errors \
+          if ! legacy_english_redirect="$(
+            curl --silent --show-error --retry 5 --retry-all-errors \
               --output /dev/null --write-out '%{redirect_url}' https://ks-design.art/en/
-          )"
+          )"; then
+            echo "::error::Could not reach https://ks-design.art/en/ at all."
+            exit 1
+          fi
           verify "the retired /en/ redirect" "https://ks-design.art/" "$legacy_english_redirect"
           production_asset="$RUNNER_TEMP/production-site.js"
-          curl --fail --silent --show-error --retry 5 --retry-all-errors \
+          if ! curl --fail --silent --show-error --retry 5 --retry-all-errors \
             --header 'Cache-Control: no-cache' \
             --output "$production_asset" \
-            "https://ks-design.art/assets/site.js?revision=$REVISION"
+            "https://ks-design.art/assets/site.js?revision=$REVISION"; then
+            echo "::error::Could not fetch https://ks-design.art/assets/site.js — the deployed site is not serving the script."
+            exit 1
+          fi
           expected="$(sha256sum website/src/js/site.js | cut -d ' ' -f 1)"
           actual="$(sha256sum "$production_asset" | cut -d ' ' -f 1)"
           if [[ "$actual" != "$expected" ]]; then
