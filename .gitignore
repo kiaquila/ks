@@ -9,3 +9,7 @@ coverage/
 .next/
 .wrangler/
 .omc/
+
+# Working git worktrees live inside the repo (see the user CLAUDE.md rule)
+# and are never content of it.
+worktrees/
