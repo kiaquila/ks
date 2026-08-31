@@ -228,9 +228,11 @@ Below that it is an ordinary flowing document.
   the frame, and `:focus-within` would otherwise hold the swap on and make
   the second tap look dead.
 - **From 1100px up the hero is the "taped print"** (client pick from a
-  20-variant show, 2026-08-28): a plain white page, the copy nudged slightly
-  right, and the photograph hanging on the right like a print stuck to the
-  wall — the whole `.portrait-box` tilted **5° counter-clockwise**, a soft
+  20-variant show, 2026-08-28): a plain white page, the wordmark hung 15px
+  into the gutter with the headline aligned to its left edge (client pick,
+  2026-08-29, replacing the earlier nudge right; below 1100px both stay on
+  the container edge), and the photograph hanging on the right like a print
+  stuck to the wall — the whole `.portrait-box` tilted **5° counter-clockwise**, a soft
   paper drop shadow on `.portrait`, and a `.tape` span of semi-translucent
   masking tape over the top edge (it lands on the photographed wall, never
   the hair). The print hangs at `left: 35%` of the `.hero-portrait` zone
@@ -274,7 +276,17 @@ Below that it is an ordinary flowing document.
   non-generic AI web design" and the aesthetics claim with its follow-links
   on the right air — each with a small curled arrow pointing at her, each
   link with its own transition arrow. The arrows are children of their note,
-  so they travel with the text they belong to. The layer sits OUTSIDE
+  so they travel with the text they belong to. The Spanish page hangs its
+  own set of them: the client walked all three linked-note arrows in
+  passes (2026-08-29 … 2026-08-31) — arcs turned over, spun and shifted so
+  each tail leaves its Spanish claim and clears the longer Spanish
+  follow-links — while the English page keeps its original picks. The
+  exact `html[lang="es"]` offsets live with their history in
+  `components.css`; re-walk them with the client rather than deriving
+  them. The swap's `:hover` rules are gated behind `@media (hover: hover)`:
+  a touch browser emulates a sticky hover on tap, and an ungated rule held
+  the wink frame up after the script had toggled `data-active` off — the
+  second tap looked dead. The layer sits OUTSIDE
   `role="img"`, where the claims and links would be silent for assistive
   tech; links are real 44px targets, and the touch-target test names
   `.note-link` explicitly. Keep notes off the face and off the dark sweater —
