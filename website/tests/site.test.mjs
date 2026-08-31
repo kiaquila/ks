@@ -1027,6 +1027,19 @@ test("the favicon set ships whole and the SVG stays the only icon link", async (
     const image = ico.subarray(entry.readUInt32LE(12));
     assert.notEqual(image.readUInt32BE(0), 0x89504e47, "favicon.ico: PNG-in-ICO entry");
     assert.equal(image.readUInt32LE(0), 40, "favicon.ico: entry is not a classic DIB");
+    /* On those pre-alpha renderers a masked pixel is (dest AND 1) XOR
+       colour, so its XOR bytes must be zero or the background shows
+       through as coloured speckles along the mark's edge. */
+    const side = entry[0] || 256;
+    const maskStride = (((side + 7) >> 3) + 3) & ~3;
+    for (let y = 0; y < side; y++) {
+      for (let x = 0; x < side; x++) {
+        const masked = image[40 + side * side * 4 + y * maskStride + (x >> 3)] & (0x80 >> (x & 7));
+        if (!masked) continue;
+        const xor = image.readUInt32LE(40 + (y * side + x) * 4);
+        assert.equal(xor, 0, `favicon.ico: ${side}px entry has ink under the AND mask`);
+      }
+    }
   }
   assert.deepEqual(entrySizes, [16, 32, 48]);
   for (const key of DOCUMENTS) {

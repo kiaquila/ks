@@ -142,11 +142,17 @@ function bmpEntry({ width, height, rgba }) {
     const src = (height - 1 - y) * width * 4;
     const dst = y * width * 4;
     for (let x = 0; x < width; x++) {
-      xor[dst + x * 4] = rgba[src + x * 4 + 2];
-      xor[dst + x * 4 + 1] = rgba[src + x * 4 + 1];
-      xor[dst + x * 4 + 2] = rgba[src + x * 4];
-      xor[dst + x * 4 + 3] = rgba[src + x * 4 + 3];
-      if (rgba[src + x * 4 + 3] < 128) and[y * maskStride + (x >> 3)] |= 0x80 >> (x & 7);
+      if (rgba[src + x * 4 + 3] < 128) {
+        /* A masked pixel's XOR bytes must stay zero: a pre-alpha renderer
+           draws (dest AND mask) XOR colour, so any ink left here XORs the
+           background into coloured speckles along the mark's edge. */
+        and[y * maskStride + (x >> 3)] |= 0x80 >> (x & 7);
+      } else {
+        xor[dst + x * 4] = rgba[src + x * 4 + 2];
+        xor[dst + x * 4 + 1] = rgba[src + x * 4 + 1];
+        xor[dst + x * 4 + 2] = rgba[src + x * 4];
+        xor[dst + x * 4 + 3] = rgba[src + x * 4 + 3];
+      }
     }
   }
   return Buffer.concat([header, xor, and]);
