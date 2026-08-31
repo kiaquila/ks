@@ -3,25 +3,29 @@
    renditions can never drift apart: the SVG is the source of truth, and
    this script derives the other two whenever its geometry moves.
 
-   - assets/favicon.ico: 16/32/48 classic BMP-in-ICO, dark caps on
-     TRANSPARENCY — the mark carries no plate (client decision, 2026-08-29).
-     Served at the site root for engines that ask for /favicon.ico by
-     convention. The entries are BMP, not PNG-in-ICO, on purpose: this
-     file's only audience is engines without SVG-favicon support (every
-     modern engine takes the declared SVG), and those are exactly the
-     parsers that predate or mishandle PNG entries — a PNG-in-ICO cut of
-     this file left such tabs with no icon at all (2026-08-31). BMP entries
-     are the format's original baseline that every ICO parser reads.
-   - assets/apple-touch-icon.png: 512x512 on a white plate, because iOS
-     composes home-screen icons on arbitrary wallpapers and does not honour
-     transparency.
+   - assets/favicon.ico: 16/32/48 classic BMP-in-ICO of the mark as it is —
+     white ks on the opaque gradient plate, transparent only outside the
+     rounded corners (client pick, 2026-08-31). Served at the site root for
+     engines that ask for /favicon.ico by convention. The entries are BMP,
+     not PNG-in-ICO, on purpose: this file's only audience is engines
+     without SVG-favicon support (every modern engine takes the declared
+     SVG), and those are exactly the parsers that predate or mishandle PNG
+     entries — a PNG-in-ICO cut of this file left such tabs with no icon at
+     all (2026-08-31). BMP entries are the format's original baseline that
+     every ICO parser reads.
+   - assets/apple-touch-icon.png: 512x512 with the corner radius stripped,
+     because iOS applies its own mask to home-screen icons — corners baked
+     into the art would leave background-coloured bites inside Apple's
+     rounding. The plate is opaque, so the white underlay of the old
+     transparent mark is gone with the mark that needed it.
 
    Like make-og.mjs, the renderer is headless Chrome, so the icons carry
-   exactly the pixels a browser would draw — with two traps pinned here:
-   headless inherits the OS dark scheme, so the text fill is forced with
-   !important or the caps silently flip white; and Chrome clamps its window
-   to 500px, so everything renders at 512 and the small sizes are scaled
-   down with sips (macOS-only, like the documented screenshot recipes). */
+   exactly the pixels a browser would draw — with one trap pinned here:
+   Chrome clamps its window to 500px, so everything renders at 512 and the
+   small sizes are scaled down with sips (macOS-only, like the documented
+   screenshot recipes). The old second trap — headless inheriting the OS
+   dark scheme and flipping the text fill — died with the theme-dependent
+   favicon: the plated mark is scheme-less, and assertPlated() keeps it so. */
 
 import { execFileSync } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
@@ -35,27 +39,31 @@ const SIZES = [16, 32, 48];
 
 const source = await readFile(join(root, "assets", "favicon.svg"), "utf8");
 
-/** The raster variants must not follow the renderer's theme, so the dark
- *  media block goes and the light fill is pinned. Both edits assert, so a
- *  reshaped favicon.svg fails loudly here instead of baking a wrong icon. */
-function flatten(svg) {
-  const withoutDark = svg.replace(
-    /@media \(prefers-color-scheme: dark\) \{[^}]*\{[^}]*\}\s*\}/,
-    ""
-  );
-  if (withoutDark === svg) throw new Error("favicon.svg: dark block not found");
-  const pinned = withoutDark.replace("fill: #0b0b0c;", "fill: #0b0b0c !important;");
-  if (pinned === withoutDark) throw new Error("favicon.svg: light fill not found");
-  return pinned;
+/** The rasters are baked from the SVG as-is, so the only guard needed is
+ *  that the SVG still holds the plated, scheme-less shape this script (and
+ *  the headless renderer) relies on: an opaque plate, baked letter paths,
+ *  and no theme dependence for headless Chrome's inherited OS scheme to
+ *  trip. A reshaped favicon.svg fails loudly here instead of baking a
+ *  wrong icon. */
+function assertPlated(svg) {
+  /* The SVG's comment block narrates the mark's history, so the checks
+     read the markup only — a comment is allowed to say "<text>". */
+  const markup = svg.replace(/<!--[^]*?-->/g, "");
+  if (markup.includes("prefers-color-scheme"))
+    throw new Error("favicon.svg: grew a theme dependence — rethink this script");
+  if (markup.includes("<text"))
+    throw new Error("favicon.svg: letters must be baked paths, not <text>");
+  if (!markup.includes('rx="14"'))
+    throw new Error("favicon.svg: plate radius not found");
+  return svg;
 }
 
-function plated(svg) {
-  const withPlate = svg.replace(
-    "<text",
-    '<rect width="64" height="64" fill="#ffffff"/>\n  <text'
-  );
-  if (withPlate === svg) throw new Error("favicon.svg: text element not found");
-  return withPlate;
+/** iOS composes its own corner mask over apple-touch icons, so that
+ *  rendition runs the plate edge to edge: the baked radius goes. */
+function fullBleed(svg) {
+  const square = svg.replace(' rx="14"', "");
+  if (square === svg) throw new Error("favicon.svg: plate radius not found");
+  return square;
 }
 
 const page = (svg) => `<!doctype html>
@@ -189,8 +197,8 @@ const work = await mkdtemp(join(tmpdir(), "ks-icons-"));
 try {
   const flatHtml = join(work, "flat.html");
   const plateHtml = join(work, "plate.html");
-  await writeFile(flatHtml, page(flatten(source)), "utf8");
-  await writeFile(plateHtml, page(plated(flatten(source))), "utf8");
+  await writeFile(flatHtml, page(assertPlated(source)), "utf8");
+  await writeFile(plateHtml, page(fullBleed(assertPlated(source))), "utf8");
 
   const flat512 = join(work, "flat-512.png");
   const plate512 = join(work, "plate-512.png");

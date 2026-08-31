@@ -70,23 +70,31 @@ rules, heavy tracked capitals. Everything below follows from that.
   allows exactly its two hexes and no other colour. There is still no logo
   image, and the old gradient monogram is gone and should not come back.
   Running text and footer credits keep plain `ks-design`; the mark is a
-  header-only device. The favicon carries the same treatment as a type-set
-  `KS.` (run edge to edge — at a crowded tab strip's 16px, any margin
-  reads as a shrunken icon) in three files, all with the gradient dot: the
-  SVG with dark-scheme inversion for modern engines; a `/favicon.ico` at
-  the site root (16/32/48, dark caps on TRANSPARENCY — the mark carries no
-  plate, client decision 2026-08-29) because browsers ask for that path on
-  their own and a 404 there costs the tab its icon — its entries are
-  classic BMP, never PNG-in-ICO: the file's only readers are the engines
-  without SVG favicons, exactly the parsers that mishandle PNG entries,
-  and a PNG cut left such tabs with no icon (2026-08-31; a test pins the
-  format); and the apple-touch
-  PNG, the one rendition that keeps a white plate, because iOS composes
-  home-screen icons on arbitrary wallpapers. **The SVG is deliberately the
-  only `rel="icon"` link.** Declaring the ico too made Chrome choose it —
-  even against `sizes="any"` on the SVG — and a static raster cannot flip
-  white in a dark theme; engines without SVG favicons find the root file
-  by convention on their own. The two declared links carry the same `?v=`
+  header-only device. The favicon is its own device (client pick,
+  2026-08-31, variant 20 of a 20-variant show; it replaced the type-set
+  transparent `KS.` of 2026-08-29): white lowercase `ks` — a nod to the
+  original lowercase mark — on an OPAQUE plate of the `--brand-dot`
+  gradient with a 14/64 corner radius. The letters are BAKED OUTLINES of
+  Manrope wght 700, the wordmark's own face, extracted from the repo's
+  `manrope-latin.woff2`: a favicon cannot load webfonts, and the old
+  `<text>` in a system stack rasterized to mush at a tab's 16px in every
+  engine differently. The opaque plate is why the SVG carries no
+  dark-scheme flip any more — the icon reads the same on light and dark
+  tab strips, and both `make-icons.mjs` and the favicon test assert the
+  file stays scheme-less and path-set. Three files: the SVG for modern
+  engines; a `/favicon.ico` at the site root (16/32/48) because browsers
+  ask for that path on their own and a 404 there costs the tab its icon —
+  its entries are classic BMP, never PNG-in-ICO: the file's only readers
+  are the engines without SVG favicons, exactly the parsers that mishandle
+  PNG entries, and a PNG cut left such tabs with no icon (2026-08-31; a
+  test pins the format); and the apple-touch PNG, rendered full-bleed with
+  the corner radius stripped, because iOS applies its own mask to
+  home-screen icons (the white underlay of old died with the transparent
+  mark that needed it). **The SVG is deliberately the only `rel="icon"`
+  link.** Declaring the ico too made Chrome choose it — even against
+  `sizes="any"` on the SVG — over the crisp vector; engines without SVG
+  favicons find the root file by convention on their own. The two declared
+  links carry the same `?v=`
   and it is bumped whenever those icons' pixels change — browsers cache
   favicons far past the page. The root ico has no version to bump (the
   path is the convention), so a returning legacy visitor may hold the old
@@ -334,7 +342,7 @@ node website/scripts/make-og.mjs
 The raster favicons are derived from `assets/favicon.svg` the same way —
 headless Chrome for the pixels, sips for the small sizes (macOS, like the
 screenshot recipes below). Rerun whenever the SVG's geometry moves; the ico
-and the apple-touch plate must never be edited by hand:
+and the apple-touch PNG must never be edited by hand:
 
 ```bash
 node website/scripts/make-icons.mjs

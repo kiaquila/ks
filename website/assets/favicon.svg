@@ -1,36 +1,33 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="ks">
-  <!-- The wordmark's monogram set as type, not a drawn mark, in the tracked
-       caps the wordmark uses, with the cornflower-gradient dot sitting on
-       the baseline after the letters. No background plate: the letters flip
-       black/white with the browser theme, so the tab icon reads on both;
-       the gradient dot stays the same on either. Favicons cannot load
-       webfonts, so the stack leans on the system's closest grotesk. -->
-  <style>
-    /* The mark runs edge to edge: at a crowded tab strip's 16px, any
-       margin left in the box reads as a shrunken icon (client pick,
-       2026-08-29). The caps stepped 38px -> 37px to buy the grown dot its
-       air inside the same square; the baseline sits so the cap height is
-       centred rather than hanging low in the box. The raster renditions
-       are baked FROM this file — regenerate them with
-       scripts/make-icons.mjs whenever this geometry moves. */
-    text {
-      font-family: ui-sans-serif, -apple-system, "Helvetica Neue", Arial, sans-serif;
-      font-size: 37px;
-      font-weight: 700;
-      letter-spacing: 0;
-      fill: #0b0b0c;
-    }
-    @media (prefers-color-scheme: dark) {
-      text { fill: #ffffff; }
-    }
-  </style>
+  <!-- White lowercase ks on the cornflower-gradient plate (client pick,
+       2026-08-31, variant 20 of the favicon show; it replaced the type-set
+       transparent "KS." of 2026-08-29). Two decisions live here:
+
+       The letters are BAKED OUTLINES of Manrope wght 700 — the wordmark's
+       own face and weight — extracted from assets/fonts/manrope-latin.woff2
+       with fontTools. The old favicon set its caps as <text> in a system
+       stack (favicons cannot load webfonts), and at a tab's 16px every
+       engine rasterized its own substitute into mush; paths make the mark
+       identical everywhere. The lowercase is deliberate — a nod to the
+       original ks-design lowercase mark.
+
+       The plate is the page's one chromatic device, --brand-dot's
+       135-degree indigo-to-cyan, and it is OPAQUE: the icon reads the same
+       on light and dark tab strips, so the SVG carries no dark-scheme
+       media query any more (make-icons.mjs and the favicon test both
+       assert that stays true). The 14/64 corner radius survives legibly
+       at 16px; only the corners outside it are transparent.
+
+       The raster renditions are baked FROM this file — regenerate them with
+       scripts/make-icons.mjs whenever this geometry moves, and bump the
+       links' ?v= in src/render.js. -->
   <defs>
-    <!-- 135° like --brand-dot: indigo top-left into cyan bottom-right. -->
-    <linearGradient id="dot" x1="0" y1="0" x2="1" y2="1">
+    <linearGradient id="plate" x1="0" y1="0" x2="1" y2="1">
       <stop offset="0" stop-color="#818cf8"/>
       <stop offset="1" stop-color="#22d3ee"/>
     </linearGradient>
   </defs>
-  <text x="24.6" y="45.4" text-anchor="middle">KS</text>
-  <circle cx="58.8" cy="40.2" r="5.2" fill="url(#dot)"/>
+  <rect width="64" height="64" rx="14" fill="url(#plate)"/>
+  <path fill="#ffffff" d="M10 47.67 10.04 15.67H15.46V35.23L24.23 23.67H30.92L21.61 35.67L31.72 47.67H24.63L15.46 36.11V47.67Z"/>
+  <path fill="#ffffff" d="M44.11 48.33Q39.65 48.33 36.88 46.33Q34.11 44.33 33.5 40.71L38.97 39.87Q39.38 41.65 40.83 42.66Q42.28 43.68 44.48 43.68Q46.4 43.68 47.46 42.92Q48.52 42.16 48.52 40.82Q48.52 40.01 48.13 39.51Q47.73 39.01 46.43 38.54Q45.12 38.07 42.41 37.35Q39.4 36.57 37.62 35.64Q35.84 34.72 35.06 33.45Q34.28 32.19 34.28 30.38Q34.28 28.14 35.45 26.48Q36.63 24.82 38.75 23.91Q40.87 23.01 43.73 23.01Q46.52 23.01 48.69 23.87Q50.86 24.74 52.19 26.34Q53.53 27.93 53.82 30.09L48.36 31.07Q48.16 29.54 46.97 28.65Q45.78 27.76 43.82 27.65Q41.93 27.55 40.77 28.22Q39.61 28.9 39.61 30.11Q39.61 30.82 40.08 31.3Q40.55 31.79 41.95 32.27Q43.36 32.75 46.16 33.46Q49.04 34.21 50.76 35.15Q52.47 36.09 53.24 37.4Q54 38.71 54 40.57Q54 44.19 51.37 46.26Q48.74 48.33 44.11 48.33Z"/>
 </svg>
