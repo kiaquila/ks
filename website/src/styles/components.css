@@ -440,25 +440,26 @@
     transform: rotate(155deg);
   }
 
-  /* The Spanish page turns two of the arcs over (client pick, 2026-08-29);
-     the English page keeps the day's earlier picks. Beside "hago diseño
-     web con IA" the arc bows up instead of sagging, spun a further 90°
-     counter-clockwise the same day so its tail leaves the claim itself.
-     Beside "valoro la estética" it bows down instead of vaulting and sits
-     100px lower and 20px right of the English hang — the second 50px step
-     down with the step right took it clear of the follow-links line. */
+  /* The Spanish page hangs its own arrow set (client passes, 2026-08-29 …
+     2026-08-31); the English page keeps its original picks. Three of the
+     four arcs turned over, spun or shifted so each tail leaves its
+     Spanish claim and clears the longer Spanish follow-links. */
   html[lang="es"] .note-arrow-2 {
     /* The leading turn is the client's: first -90° so the tail leaves the
        claim, then walked back 10° clockwise with a 15px lift on the next
-       pass (2026-08-31). */
+       pass (2026-08-31). Net value: rotate(118deg), determinant +1 — this
+       arrow is UNMIRRORED, unlike the English one, whose scaleX(-1)
+       flips its handedness. */
     top: calc(84% - 10px);
     transform: rotate(-80deg) scaleY(-1) scaleX(-1) rotate(18deg);
   }
 
   html[lang="es"] .note-arrow-4 {
     /* Walked in three client passes (2026-08-29 … 2026-08-31): 20px right
-       of the English hang, 113px below it, and the flipped arc turned a
-       further 15° counter-clockwise. */
+       of the English hang and 135px below it (26% + 113px against the
+       English 26% − 22px), the flipped arc turned a further 15°
+       counter-clockwise — the last 35px step down with that turn took it
+       clear of the follow-links line. */
     left: -22px;
     top: calc(26% + 113px);
     transform: rotate(-15deg) scaleY(-1) rotate(155deg);
