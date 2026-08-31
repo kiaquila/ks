@@ -1057,10 +1057,32 @@ test("the favicon set ships whole and the SVG stays the only icon link", async (
       )
     );
   }
-  /* The inversion is the reason the SVG wins that contract: a tab on a dark
-     theme flips the caps white while the gradient dot stays. */
+  /* The mark is white lowercase ks on the opaque brand-gradient plate
+     (client pick, 2026-08-31): it reads the same on light and dark tab
+     strips, so the SVG must not regrow a theme dependence — and the
+     letters are baked Manrope outlines, never <text>, because a favicon
+     cannot load webfonts and a system-stack substitute rasterized to mush
+     at a tab's 16px. The checks read the markup only: the file's comment
+     block narrates this history and may name what the markup must not
+     hold. */
   const favicon = await readFile(join(dist, "assets", "favicon.svg"), "utf8");
-  assert.match(favicon, /@media \(prefers-color-scheme: dark\)/);
+  const faviconMarkup = favicon.replace(/<!--[^]*?-->/g, "");
+  assert.doesNotMatch(faviconMarkup, /prefers-color-scheme/);
+  assert.doesNotMatch(faviconMarkup, /<text/);
+  assert.match(faviconMarkup, /rx="14"/);
+  assert.match(faviconMarkup, /#818cf8/);
+  assert.match(faviconMarkup, /#22d3ee/);
+  /* Browsers load the linked SVG through a STRICT XML parser, and XML
+     forbids "--" inside a comment — a comment that spelled a CSS custom
+     property's name once broke the whole icon while every text-reading
+     test stayed green. */
+  for (const comment of favicon.match(/<!--[^]*?-->/g) ?? []) {
+    assert.doesNotMatch(
+      comment.slice(4, -3),
+      /--/,
+      "favicon.svg: '--' inside an XML comment breaks the icon in strict SVG parsing"
+    );
+  }
 });
 
 test("the shipped JavaScript stays within its budget", async () => {

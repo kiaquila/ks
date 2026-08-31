@@ -436,12 +436,11 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
        ask for that path on their own, and a 404 there left some tabs with
        no icon at all (2026-08-29) — but linking it proved worse than the
        convention: Chrome kept choosing the declared ico (even against
-       sizes="any" on the SVG), and the ico is a static raster that cannot
-       flip white in a dark theme. With only the SVG declared, every
-       SVG-capable engine takes the icon that inverts, and everything older
-       falls back to the root file by itself. -->
-  <link rel="icon" href="/assets/favicon.svg?v=5" type="image/svg+xml" sizes="any">
-  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=5">
+       sizes="any" on the SVG) over the crisp vector. With only the SVG
+       declared, every SVG-capable engine takes the rendition that scales,
+       and everything older falls back to the root file by itself. -->
+  <link rel="icon" href="/assets/favicon.svg?v=6" type="image/svg+xml" sizes="any">
+  <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=6">
   ${fontPreloads}
   <link rel="stylesheet" href="/assets/styles.css">
   ${extraHead}
