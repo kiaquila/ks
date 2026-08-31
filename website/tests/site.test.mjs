@@ -1072,6 +1072,17 @@ test("the favicon set ships whole and the SVG stays the only icon link", async (
   assert.match(faviconMarkup, /rx="14"/);
   assert.match(faviconMarkup, /#818cf8/);
   assert.match(faviconMarkup, /#22d3ee/);
+  /* Browsers load the linked SVG through a STRICT XML parser, and XML
+     forbids "--" inside a comment — a comment that spelled a CSS custom
+     property's name once broke the whole icon while every text-reading
+     test stayed green. */
+  for (const comment of favicon.match(/<!--[^]*?-->/g) ?? []) {
+    assert.doesNotMatch(
+      comment.slice(4, -3),
+      /--/,
+      "favicon.svg: '--' inside an XML comment breaks the icon in strict SVG parsing"
+    );
+  }
 });
 
 test("the shipped JavaScript stays within its budget", async () => {

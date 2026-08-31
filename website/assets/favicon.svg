@@ -11,8 +11,9 @@
        identical everywhere. The lowercase is deliberate — a nod to the
        original ks-design lowercase mark.
 
-       The plate is the page's one chromatic device, --brand-dot's
-       135-degree indigo-to-cyan, and it is OPAQUE: the icon reads the same
+       The plate is the page's one chromatic device — the brand dot's
+       135-degree indigo-to-cyan (an XML comment cannot spell the token's
+       real double-dashed name) — and it is OPAQUE: the icon reads the same
        on light and dark tab strips, so the SVG carries no dark-scheme
        media query any more (make-icons.mjs and the favicon test both
        assert that stays true). The 14/64 corner radius survives legibly
