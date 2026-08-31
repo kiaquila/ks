@@ -171,16 +171,29 @@
 
 /* `data-active` is set by the script for touch, where there is no hover at
    all; pointer devices need no script for this to work. */
-.hero-portrait:hover .portrait-wink,
 .hero-portrait:focus-within .portrait-wink,
 .hero-portrait:has([data-active]) .portrait-wink {
   opacity: 1;
 }
 
-.hero-portrait:hover .portrait-calm,
 .hero-portrait:focus-within .portrait-calm,
 .hero-portrait:has([data-active]) .portrait-calm {
   opacity: 0;
+}
+
+/* The hover pair is gated to devices that can actually hover. A touch
+   browser emulates `:hover` on tap and holds it until the next tap lands
+   somewhere else, so an ungated rule kept the wink frame up after the
+   script's toggle had switched `data-active` off — the second tap looked
+   dead and the portrait stuck on the wink. */
+@media (hover: hover) {
+  .hero-portrait:hover .portrait-wink {
+    opacity: 1;
+  }
+
+  .hero-portrait:hover .portrait-calm {
+    opacity: 0;
+  }
 }
 
 /* The hand-written annotations: the owner's claims, scribbled around the
@@ -297,7 +310,6 @@
      to cross the white between the print and a note without the whole set
      folding away under the cursor. It only ever covers the copy while it is
      revealed, and the copy sits above it either way. */
-  .hero-portrait:hover .portrait-notes,
   .hero-portrait:focus-within .portrait-notes,
   .hero-portrait:has([data-active]) .portrait-notes {
     opacity: 1;
@@ -331,7 +343,10 @@
      ~2.5rem below the header band, the bottom pair ~4–7svh lower. */
   .note-1 {
     top: calc(var(--header-h) + 3.4rem);
-    left: calc(7% + var(--pull));
+    /* The +10px is the client's step right for the whole block, arrow
+       included — the arrow is a child of the note, so it rides along
+       (client pick, 2026-08-29). */
+    left: calc(7% + var(--pull) + 10px);
     --tilt: -3deg;
   }
 
@@ -368,8 +383,20 @@
      white air for the print. */
   .note-4 .note-links {
     justify-items: end;
+    justify-content: end;
     margin-left: 0;
     transform: translateX(0.5em);
+  }
+
+  /* One line per destination. Wrapped, the link box grows to the note's
+     full column and its bullet hangs on that box's far left edge — a
+     hand's width away from the right-aligned words it marks. At
+     max-content the box shrinks to its words and the bullet sits against
+     them; the auto track grows with the box, and `justify-content: end`
+     above sends that overflow into the white air on the note's left
+     rather than past the viewport edge on its right. */
+  .note-4 .note-link {
+    width: max-content;
   }
 
   /* Each arrow is a child of its note, so it travels with the text it
@@ -411,6 +438,56 @@
     left: -42px;
     top: calc(26% - 22px);
     transform: rotate(155deg);
+  }
+
+  /* The Spanish page hangs its own arrow set (client passes, 2026-08-29 …
+     2026-08-31); the English page keeps its original picks. Three of the
+     four arcs turned over, spun or shifted so each tail leaves its
+     Spanish claim and clears the longer Spanish follow-links. */
+  html[lang="es"] .note-arrow-2 {
+    /* The leading turn is the client's: first -90° so the tail leaves the
+       claim, then walked back 10° clockwise with a 15px lift on the next
+       pass (2026-08-31). Net value: rotate(118deg), determinant +1 — this
+       arrow is UNMIRRORED, unlike the English one, whose scaleX(-1)
+       flips its handedness. */
+    top: calc(84% - 10px);
+    transform: rotate(-80deg) scaleY(-1) scaleX(-1) rotate(18deg);
+  }
+
+  html[lang="es"] .note-arrow-4 {
+    /* Walked in three client passes (2026-08-29 … 2026-08-31): 20px right
+       of the English hang and 135px below it (26% + 113px against the
+       English 26% − 22px), the flipped arc turned a further 15°
+       counter-clockwise — the last 35px step down with that turn took it
+       clear of the follow-links line. */
+    left: -22px;
+    top: calc(26% + 113px);
+    transform: rotate(-15deg) scaleY(-1) rotate(155deg);
+  }
+
+  /* Beside the Spanish "experta en IA": the English arrow's -15° turned
+     10° clockwise, and lifted 15px above the English hang (client pick,
+     2026-08-31). */
+  html[lang="es"] .note-arrow-3 {
+    top: calc(2% - 64px);
+    transform: rotate(-5deg) scaleY(-1);
+  }
+
+  /* The Spanish "experta en IA" block sits 25px above the English hang
+     (client pick, 2026-08-29). */
+  html[lang="es"] .note-3 {
+    top: calc(66.5svh - 25px);
+  }
+}
+
+/* The notes' hover reveal is gated the same way as the frame swap above:
+   sticky touch `:hover` must not hold the layer open after the script's
+   toggle has closed it. Focus and `data-active` stay ungated. */
+@media (min-width: 1100px) and (hover: hover) {
+  .hero-portrait:hover .portrait-notes {
+    opacity: 1;
+    transform: none;
+    pointer-events: auto;
   }
 }
 

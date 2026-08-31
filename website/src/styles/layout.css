@@ -114,6 +114,17 @@
   margin: 0 0.3em 0 0.01em;
 }
 
+/* From the taped-print breakpoint the wordmark hangs 15px into the gutter,
+   and the hero headline in sections.css aligns to its left edge — the two
+   move together (client pick, 2026-08-29). Phones keep the mark on the
+   container edge: their gutter is barely 20px, and the mark would sit on
+   the viewport's rim. */
+@media (min-width: 1100px) {
+  .brand {
+    margin-left: -15px;
+  }
+}
+
 .site-nav ul {
   display: flex;
   align-items: center;
