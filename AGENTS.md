@@ -76,7 +76,11 @@ rules, heavy tracked capitals. Everything below follows from that.
   SVG with dark-scheme inversion for modern engines; a `/favicon.ico` at
   the site root (16/32/48, dark caps on TRANSPARENCY — the mark carries no
   plate, client decision 2026-08-29) because browsers ask for that path on
-  their own and a 404 there costs the tab its icon; and the apple-touch
+  their own and a 404 there costs the tab its icon — its entries are
+  classic BMP, never PNG-in-ICO: the file's only readers are the engines
+  without SVG favicons, exactly the parsers that mishandle PNG entries,
+  and a PNG cut left such tabs with no icon (2026-08-31; a test pins the
+  format); and the apple-touch
   PNG, the one rendition that keeps a white plate, because iOS composes
   home-screen icons on arbitrary wallpapers. **The SVG is deliberately the
   only `rel="icon"` link.** Declaring the ico too made Chrome choose it —
