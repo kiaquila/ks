@@ -48,7 +48,7 @@ Caveat (OFL, beside the other font licenses).
 | --- | --- | --- |
 | Owner | Kristina Aquila | client |
 | Location | Buenos Aires, Argentina | client |
-| Email | `krisredlips@gmail.com` | client |
+| Email | `ks@ks-design.art` | client, 2026-08-31 |
 | Telegram | [@ks_aquila](https://t.me/ks_aquila) | client |
 | LinkedIn | [kiaquila](https://www.linkedin.com/in/kiaquila) | client |
 | Instagram | [ks_aquila](https://www.instagram.com/ks_aquila) | client |
@@ -68,9 +68,9 @@ Quoted by the client, in US dollars:
 
 | Service | Price |
 | --- | --- |
-| Landing page | 500 |
-| Website, 5+ pages | 1 500 |
-| Illustrations | from 25 per image |
+| Landing page | 1 000 |
+| Website, 5+ pages | 3 000 |
+| Illustrations | from 75 per image |
 
 Menu build and dish photo retouching were on this list and have been taken off
 it. The Chaijaná case study still says a menu and its dish photography were

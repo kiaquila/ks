@@ -134,8 +134,8 @@ test("every process step appears in order", () => {
 
 test("the price list is rendered exactly as quoted", () => {
   const expected = {
-    en: ["USD 500", "USD 1,500", "from USD 25"],
-    es: ["USD 500", "USD 1.500", "desde USD 25"]
+    en: ["USD 1,000", "USD 3,000", "from USD 75"],
+    es: ["USD 1.000", "USD 3.000", "desde USD 75"]
   };
   for (const [lang, prices] of Object.entries(expected)) {
     for (const price of prices) {
