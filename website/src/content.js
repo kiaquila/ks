@@ -26,7 +26,7 @@ export const links = {
      and the invite link of the AI-engineers community she mentors. */
   vibecodeChannel: "https://t.me/vibecodesh",
   aiCommunity: "https://t.me/+1k8AU1O9-o04MTRi",
-  email: "krisredlips@gmail.com",
+  email: "ks@ks-design.art",
   work: {
     chaijana: "https://chaijana.ks-design.workers.dev",
     alexNeon: "https://alex-neon.ks-design.workers.dev",
@@ -180,15 +180,15 @@ export const content = {
       title: "Services",
       currencyNote: "Prices are in US dollars.",
       items: [
-        { name: "Landing page", price: "USD 500", note: "A single-page site, done end to end." },
+        { name: "Landing page", price: "USD 1,000", note: "A single-page site, done end to end." },
         {
           name: "Website, 5+ pages",
-          price: "USD 1,500",
+          price: "USD 3,000",
           note: "A multi-page site with one consistent structure."
         },
         {
           name: "Illustrations",
-          price: "from USD 25",
+          price: "from USD 75",
           note: "Illustration work, priced per image."
         }
       ]
@@ -363,15 +363,15 @@ export const content = {
       title: "Servicios",
       currencyNote: "Los precios están en dólares estadounidenses.",
       items: [
-        { name: "Landing", price: "USD 500", note: "Un sitio de una página, de punta a punta." },
+        { name: "Landing", price: "USD 1.000", note: "Un sitio de una página, de punta a punta." },
         {
           name: "Sitio de 5+ páginas",
-          price: "USD 1.500",
+          price: "USD 3.000",
           note: "Un sitio de varias páginas con una estructura consistente."
         },
         {
           name: "Ilustraciones",
-          price: "desde USD 25",
+          price: "desde USD 75",
           note: "Creación de ilustraciones, precio por imagen."
         }
       ]
