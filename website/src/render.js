@@ -223,7 +223,13 @@ function work(copy) {
               alt: item.alt,
               widths: [800, 1200],
               height: 675,
-              sizes: "(max-width: 719px) 86vw, (max-width: 1099px) 44vw, 36vw",
+              /* Above 900px the hint is the filmstrip's featured frame: the
+                 height cap of sections.css (60svh less header and zones,
+                 ×16/9) or the container less the arrow lanes and four
+                 thumbnails, whichever is smaller. Below, the scroller's two
+                 cards; on phones, one. */
+              sizes:
+                "(min-width: 900px) min(calc((60vh - 11rem) * 1.7778), calc(min(76rem, 100vw) - 2 * clamp(1.25rem, 0.6rem + 2.6vw, 3rem) - 9rem - 4 * (clamp(4.5rem, 7vw, 6.25rem) + 0.875rem))), (max-width: 719px) 86vw, 44vw",
               /* v2: every card re-shot from 8:5 to 16:9 under the same file
                  names (2026-09-11); a cached 8:5 file would fill the new box
                  at the wrong ratio. */

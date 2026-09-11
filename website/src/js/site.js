@@ -196,12 +196,13 @@
     };
 
     /* A thumbnail brings its project to the centre; the centre one opens
-       the site. */
+       the site. The flow follows the side the thumbnail is seen on, not its
+       index: past the end of the list the two disagree. */
     cards.forEach((card, i) => {
       card.addEventListener("click", (event) => {
         if (!strip.matches || i === active) return;
         event.preventDefault();
-        go(i, i > active ? 1 : -1);
+        go(i, slot[i] > 0 ? 1 : -1);
       });
     });
 
