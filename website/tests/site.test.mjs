@@ -181,6 +181,7 @@ test("the service scope is rendered as visible bullet lists", () => {
     /domain|paid fonts|subscriptions/i
   );
   assert.match(css, /\.service-features \{[^}]*list-style:\s*disc/);
+  assert.match(css, /\.hosting-note \{[^}]*color:\s*var\(--ink\)/);
 });
 
 test("the retired packages are gone from the price list", () => {

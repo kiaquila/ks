@@ -488,6 +488,12 @@
   font-size: var(--step-small);
 }
 
+/* This disclaimer sits directly over the services gradient, so it needs the
+   darkest ink rather than the muted grey used for secondary metadata. */
+.hosting-note {
+  color: var(--ink);
+}
+
 @media (max-width: 1023px) {
   .service-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
