@@ -174,24 +174,25 @@ test("the years of experience are derived, never hardcoded", () => {
   }
 });
 
-test("the hero annotations carry the owner's claims and destinations", () => {
-  /* Every note is client-supplied; the links are the owner's own channel,
-     community and feeds, each listed in `links` so the outbound test below
-     knows them. An interim "Why me" slide was tried and dropped (client
-     decision, 2026-08-28): the claims are written over the portrait
-     instead, and the header goes straight to the sections — Process listed
-     before Work, offer-first. */
+test("the hero annotations carry claims only; the feeds live in the footer", () => {
+  /* Every note is client-supplied. The notes fold away as the pointer
+     leaves the print, so the links they once carried could not be reached;
+     they are plain bullets now, and Instagram and GitHub sit in the footer
+     after LinkedIn and Telegram (client decision, 2026-09-11). An interim
+     "Why me" slide was tried and dropped (client decision, 2026-08-28): the
+     claims are written over the portrait instead, and the header goes
+     straight to the sections — Process listed before Work, offer-first. */
   for (const lang of LOCALES) {
     const html = pages[lang];
     assert.equal(content[lang].hero.notes.length, 4);
-    for (const href of [
-      links.vibecodeChannel,
-      links.aiCommunity,
-      links.instagram,
-      links.pinterest
-    ]) {
-      assert.ok(html.includes(`href="${href}"`), `${lang}: missing link ${href}`);
-    }
+    const layer = html.slice(
+      html.indexOf('<div class="portrait-notes"'),
+      html.indexOf("</section>", html.indexOf('<div class="portrait-notes"'))
+    );
+    assert.doesNotMatch(layer, /<a\b/, `${lang}: a link inside the hero notes cannot be reached`);
+    const footer = html.match(/<div class="footer-social">([\s\S]*?)<\/div>/)[1];
+    const hrefs = [...footer.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(hrefs, [links.linkedin, links.telegram, links.instagram, links.github]);
     assert.doesNotMatch(html, /id="why"|href="#why"/);
     const nav = html.match(/<nav class="site-nav"[\s\S]*?<\/nav>/)[0];
     const anchors = [...nav.matchAll(/href="#([a-z-]+)"/g)].map((m) => m[1]);
@@ -360,9 +361,7 @@ test("the only external links are the approved destinations", () => {
       links.linkedin,
       links.telegram,
       links.instagram,
-      links.pinterest,
-      links.vibecodeChannel,
-      links.aiCommunity,
+      links.github,
       links.work.chaijana,
       links.work.alexNeon,
       links.work.ember,
@@ -484,11 +483,8 @@ test("the portrait swaps frames and the annotations stay readable", () => {
         .replaceAll("&", "&amp;")
         .replaceAll("'", "&#039;");
       assert.ok(notes.includes(text), `${key}: note "${note.text}" is missing`);
-      for (const link of note.links ?? []) {
-        assert.ok(
-          notes.includes(`href="${link.href}"`),
-          `${key}: note link "${link.label}" is missing`
-        );
+      for (const item of note.items ?? []) {
+        assert.ok(notes.includes(item), `${key}: note item "${item}" is missing`);
       }
     }
   }
@@ -722,8 +718,7 @@ test("every touch target clears 44 px", () => {
     [/\.brand\s*\{[^}]*\}/, "height"],
     [/\.site-nav a\s*\{[^}]*\}/, "height"],
     [/\.btn-compact\s*\{[^}]*\}/, "height"],
-    [/(?:^|\})\s*\.btn\s*\{[^}]*\}/, "height"],
-    [/\.note-link\s*\{[^}]*\}/, "height"]
+    [/(?:^|\})\s*\.btn\s*\{[^}]*\}/, "height"]
   ];
 
   for (const [selector, axes] of rules) {
@@ -926,8 +921,8 @@ test("the hero notes stay inside the hand font's subset", () => {
   for (const lang of LOCALES) {
     for (const note of content[lang].hero.notes) {
       assert.match(note.text, SUBSET, `${lang}: "${note.text}" needs a glyph Caveat lacks`);
-      for (const link of note.links ?? []) {
-        assert.match(link.label, SUBSET, `${lang}: "${link.label}" needs a glyph Caveat lacks`);
+      for (const item of note.items ?? []) {
+        assert.match(item, SUBSET, `${lang}: "${item}" needs a glyph Caveat lacks`);
       }
     }
   }

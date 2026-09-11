@@ -224,54 +224,38 @@
 }
 
 /* Indented a step to the right of their claim, the way sub-items hang under
-   a heading in a hand-written list (client pick, 2026-08-29). */
-.note-links {
+   a heading in a hand-written list (client pick, 2026-08-29). Plain text, not
+   links: the notes fold away as the pointer leaves the print, so nothing out
+   here could be reached (client decision, 2026-09-11). */
+.note-items {
   display: grid;
   justify-items: start;
-  margin-left: 0.9em;
+  gap: 0.3em;
+  margin: 0.35em 0 0 0.9em;
+  padding: 0;
+  list-style: none;
 }
 
-/* Hand-written but still a link: underlined, its own transition arrow, and a
-   full 44px row to tap. Each row hangs off a bullet — DRAWN as a disc, not
-   set as a glyph: U+2022 is outside the Caveat subset, and a character here
-   would silently render in whatever cursive the system falls back to — the
-   exact failure the subset test exists to catch, which it cannot see inside
-   a stylesheet. Positioned absolutely so the link's underline cannot
-   propagate onto it. */
-.note-link {
+/* Each row hangs off a bullet — DRAWN as a disc, not set as a glyph: U+2022
+   is outside the Caveat subset, and a character here would silently render
+   in whatever cursive the system falls back to — the exact failure the
+   subset test exists to catch, which it cannot see inside a stylesheet. */
+.note-item {
   position: relative;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-height: 2.75rem;
   font-size: 0.82em;
   line-height: 1.05;
-  text-decoration: underline;
-  text-decoration-thickness: 1.5px;
-  text-underline-offset: 0.18em;
-  text-decoration-color: var(--ink-soft);
-  transition: text-decoration-color var(--dur-fast) var(--ease);
 }
 
-.note-link::before {
+.note-item::before {
   content: "";
   position: absolute;
   left: -0.7em;
-  top: 50%;
+  top: 0.55em;
   width: 0.26em;
   height: 0.26em;
   border-radius: 50%;
   background: currentColor;
   transform: translateY(-50%);
-}
-
-.note-link:hover,
-.note-link:focus-visible {
-  text-decoration-color: currentColor;
-}
-
-.note-go {
-  flex-shrink: 0;
 }
 
 /* The curled arrows point from a note at the print, so they exist only where
@@ -366,8 +350,10 @@
     --tilt: -2deg;
   }
 
+  /* 17px below the 2026-08-29 hang now that its follow-links are gone; the
+     Spanish claim drops further, see below (client pick, 2026-09-11). */
   .note-4 {
-    top: 40svh;
+    top: calc(40svh + 17px);
     right: 3.5%;
     max-width: 13ch;
     --tilt: 2deg;
@@ -376,27 +362,6 @@
   .note-2,
   .note-4 {
     text-align: right;
-  }
-
-  /* Right-aligned, so the left margin cannot indent it; the nudge right is a
-     translate instead, and stays a nudge — the links must not leave the
-     white air for the print. */
-  .note-4 .note-links {
-    justify-items: end;
-    justify-content: end;
-    margin-left: 0;
-    transform: translateX(0.5em);
-  }
-
-  /* One line per destination. Wrapped, the link box grows to the note's
-     full column and its bullet hangs on that box's far left edge — a
-     hand's width away from the right-aligned words it marks. At
-     max-content the box shrinks to its words and the bullet sits against
-     them; the auto track grows with the box, and `justify-content: end`
-     above sends that overflow into the white air on the note's left
-     rather than past the viewport edge on its right. */
-  .note-4 .note-link {
-    width: max-content;
   }
 
   /* Each arrow is a child of its note, so it travels with the text it
@@ -434,9 +399,13 @@
      vaulting upward — the arc bowed up, coming down at the print's right
      edge. The angle landed at 155° after the client walked it in three
      passes the same day. */
+  /* The arrow stays where the client walked it while the claim above drops:
+     its offset is pinned to the old hang (26% of the block with links, less
+     22px ≈ 0.93em) minus the note's own step down, in em so it scales with
+     the hand-written type rather than with the now-shorter block. */
   .note-arrow-4 {
     left: -42px;
-    top: calc(26% - 22px);
+    top: calc(0.93em - 17px);
     transform: rotate(155deg);
   }
 
@@ -459,9 +428,11 @@
        of the English hang and 135px below it (26% + 113px against the
        English 26% − 22px), the flipped arc turned a further 15°
        counter-clockwise — the last 35px step down with that turn took it
-       clear of the follow-links line. */
+       clear of the follow-links line. With the links gone the arrow holds
+       that spot (26% + 113px of the old block ≈ 6.1em) while the claim
+       drops 45px toward it (2026-09-11). */
     left: -22px;
-    top: calc(26% + 113px);
+    top: calc(6.1em - 45px);
     transform: rotate(-15deg) scaleY(-1) rotate(155deg);
   }
 
@@ -477,6 +448,12 @@
      (client pick, 2026-08-29). */
   html[lang="es"] .note-3 {
     top: calc(66.5svh - 25px);
+  }
+
+  /* The Spanish aesthetics claim drops 45px below the English 40svh hang,
+     toward its arrow, which held its place (client pick, 2026-09-11). */
+  html[lang="es"] .note-4 {
+    top: calc(40svh + 45px);
   }
 }
 

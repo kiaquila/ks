@@ -21,11 +21,7 @@ export const links = {
   linkedin: "https://www.linkedin.com/in/kiaquila",
   telegram: "https://t.me/ks_aquila",
   instagram: "https://www.instagram.com/ks_aquila",
-  pinterest: "https://www.pinterest.com/ks_aquila/",
-  /* The owner's AI channel for the Russian-speaking audience (@vibecodesh)
-     and the invite link of the AI-engineers community she mentors. */
-  vibecodeChannel: "https://t.me/vibecodesh",
-  aiCommunity: "https://t.me/+1k8AU1O9-o04MTRi",
+  github: "https://github.com/kiaquila",
   email: "ks@ks-design.art",
   work: {
     chaijana: "https://chaijana.ks-design.workers.dev",
@@ -88,25 +84,17 @@ export const content = {
       portraitAlt: "Kristina Aquila, portrait",
       /* Hand-written annotations that appear over the portrait on hover, in
          place of the retired stats panel (client decision, 2026-08-28). A
-         claim is one line; a destination is an underlined link beneath its
-         claim. All hrefs come from `links` above. */
+         claim is one line; `items` are plain bullets beneath it. The notes
+         carry no links (client decision, 2026-09-11): they fold away as the
+         pointer leaves the print, so a link out there could not be reached. */
       notes: [
         { text: "%YEARS%+ years in web development" },
         { text: "I do non-generic AI web design" },
         {
           text: "AI expert",
-          links: [
-            { label: "join my TG channel (RU)", href: links.vibecodeChannel },
-            { label: "join my AI engineers community (RU)", href: links.aiCommunity }
-          ]
+          items: ["leading my TG channel (RU)", "leading an AI engineers community"]
         },
-        {
-          text: "I value aesthetics & authenticity",
-          links: [
-            { label: "follow my Instagram", href: links.instagram },
-            { label: "follow my Pinterest", href: links.pinterest }
-          ]
-        }
+        { text: "I value aesthetics & authenticity" }
       ]
     },
     work: {
@@ -256,7 +244,9 @@ export const content = {
       location: "Buenos Aires, Argentina (GMT-3)",
       social: {
         linkedin: "LinkedIn",
-        telegram: "Telegram"
+        telegram: "Telegram",
+        instagram: "Instagram",
+        github: "GitHub"
       }
     },
     footer: { copyright: "© Kristina Aquila" },
@@ -296,18 +286,9 @@ export const content = {
         { text: "hago diseño web con IA, nada genérico" },
         {
           text: "experta en IA",
-          links: [
-            { label: "sumate a mi canal de TG (RU)", href: links.vibecodeChannel },
-            { label: "sumate a mi comunidad de ingenieros de IA (RU)", href: links.aiCommunity }
-          ]
+          items: ["lidero mi canal de TG (RU)", "lidero una comunidad de ingenieros de IA"]
         },
-        {
-          text: "valoro la estética y la autenticidad",
-          links: [
-            { label: "seguime en Instagram", href: links.instagram },
-            { label: "seguime en Pinterest", href: links.pinterest }
-          ]
-        }
+        { text: "valoro la estética y la autenticidad" }
       ]
     },
     work: {
@@ -462,7 +443,9 @@ export const content = {
       location: "Buenos Aires, Argentina (GMT-3)",
       social: {
         linkedin: "LinkedIn",
-        telegram: "Telegram"
+        telegram: "Telegram",
+        instagram: "Instagram",
+        github: "GitHub"
       }
     },
     footer: { copyright: "© Kristina Aquila" },

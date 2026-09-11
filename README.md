@@ -52,10 +52,11 @@ Caveat (OFL, beside the other font licenses).
 | Telegram | [@ks_aquila](https://t.me/ks_aquila) | client |
 | LinkedIn | [kiaquila](https://www.linkedin.com/in/kiaquila) | client |
 | Instagram | [ks_aquila](https://www.instagram.com/ks_aquila) | client |
+| GitHub | [kiaquila](https://github.com/kiaquila) | client, 2026-09-11 |
 | Pinterest | [ks_aquila](https://www.pinterest.com/ks_aquila/) | client, 2026-08-27 |
 | AI channel (RU audience) | [@vibecodesh](https://t.me/vibecodesh) | client, 2026-08-27 |
 | Mentored AI-engineers community | [invite link](https://t.me/+1k8AU1O9-o04MTRi) | client, 2026-08-27 |
-| Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert, aesthetics and authenticity | client, 2026-08-28 |
+| Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert (leading a TG channel and an AI engineers community), aesthetics and authenticity; no links | client, 2026-08-28; links dropped 2026-09-11 |
 | In web development since | 2017 | client |
 | Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the new Dream Board and Fathom cards await local review |
 

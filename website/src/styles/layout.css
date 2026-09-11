@@ -298,10 +298,13 @@
   flex-shrink: 0;
 }
 
+/* Each 20px glyph sits in a 44px target, so 12px of padding on either side
+   already reads as spacing; the 4px gap brings the glyphs 28px apart, 0.7 of
+   the old 40px (client pick, 2026-09-11), without shrinking the targets. */
 .footer-social {
   display: flex;
   justify-content: flex-end;
-  gap: var(--space-sm);
+  gap: 0.25rem;
 }
 
 /* A 20px glyph with padding came to 37.6px; these sit on phones like anything

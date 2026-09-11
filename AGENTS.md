@@ -105,8 +105,9 @@ rules, heavy tracked capitals. Everything below follows from that.
 - The footer is **one horizontal row directly under the contact band**, and the
   pair is anchored to the bottom of the last slide: copyright hard left, a pin
   icon and the location centred on the page, social icons with no labels hard
-  right (LinkedIn and Telegram — Instagram and Pinterest live in the hero's
-  hand-written annotations instead, client decision 2026-08-28). Its outer grid columns are `1fr` so the
+  right (LinkedIn, Telegram, Instagram, GitHub — client decision 2026-09-11;
+  Instagram and Pinterest used to hang off the hero notes, but the notes fold
+  away as the pointer leaves the print, so no link there could be reached). Its outer grid columns are `1fr` so the
   middle one centres on the page rather than on the copyright. It carries no
   rule on top — the black band above it already divides the page, and the band
   must not be pushed away from it by a spacer row.
@@ -286,15 +287,17 @@ Below that it is an ordinary flowing document.
 - On hover the frosted stats panel of old is replaced by **hand-written
   annotations** (`.portrait-notes`): the owner's claims in Caveat, ink on the
   white around the print — "%YEARS%+ years in web development" and "AI
-  expert" with its join-links in the pocket under the headline, "I do
-  non-generic AI web design" and the aesthetics claim with its follow-links
-  on the right air — each with a small curled arrow pointing at her, each
-  link with its own transition arrow. The arrows are children of their note,
+  expert" with two plain bullets in the pocket under the headline, "I do
+  non-generic AI web design" and the aesthetics claim on the right air —
+  each with a small curled arrow pointing at her. **The notes carry no
+  links** (client decision, 2026-09-11): the layer folds away as the pointer
+  leaves the print, so a link out there could never be clicked; a test fails
+  on any `<a>` inside it. The arrows are children of their note,
   so they travel with the text they belong to. The Spanish page hangs its
   own set of them: the client walked three of the four arrows in passes
   (2026-08-29 … 2026-08-31) — arcs turned over, spun and shifted so each
-  tail leaves its Spanish claim and clears the longer Spanish
-  follow-links — while the English page keeps its original picks. The
+  tail leaves its Spanish claim and clears the Spanish follow-links of the
+  time (the arrows held their spots when the links went) — while the English page keeps its original picks. The
   exact `html[lang="es"]` offsets live with their history in
   `components.css`; re-walk them with the client rather than deriving
   them. The swap's `:hover` rules are gated behind `@media (hover: hover)`:
@@ -307,9 +310,7 @@ Below that it is an ordinary flowing document.
   predicate is the invariant (two predicates disagreeing is exactly the
   bug this fixed), and trading passive hover away on that hardware is the
   accepted cost (2026-08-31). The layer sits OUTSIDE
-  `role="img"`, where the claims and links would be silent for assistive
-  tech; links are real 44px targets, and the touch-target test names
-  `.note-link` explicitly. Keep notes off the face and off the dark sweater —
+  `role="img"`, where the claims would be silent for assistive tech. Keep notes off the face and off the dark sweater —
   ink dies there.
 - Caveat is the **one sanctioned third family** (client decision,
   2026-08-28): a single static 600 weight, subset to ASCII plus the Spanish
