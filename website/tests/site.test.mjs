@@ -594,6 +594,15 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   const stripRules = clean.match(/\.carousel\[data-strip\][^{]*\{/g) ?? [];
   assert.ok(stripRules.length >= 10, "the filmstrip rules are missing");
   assert.doesNotMatch(clean, /(?:^|\})\s*\[data-s=/, "a slot rule outside data-strip would style the scroller");
+  /* Every rule in the strip's media block names the attribute, the container
+     clip included — an unguarded `.work > .container` would reach the no-JS
+     scroller too. */
+  const block = clean.slice(clean.indexOf(".carousel[data-strip] {"));
+  const stripMedia = block.slice(0, block.indexOf("\n}\n") + 3);
+  for (const selector of stripMedia.match(/(?:^|\})\s*([^{}@]+)\{/g) ?? []) {
+    assert.match(selector, /data-strip/, `unguarded rule on the strip: ${selector.trim()}`);
+  }
+  assert.match(clean, /\.work > \.container:has\(\.carousel\[data-strip\]\) \{\s*overflow-x: clip/);
   assert.match(siteScript, /toggleAttribute\("data-strip", strip\.matches\)/);
   assert.match(siteScript, /matchMedia\("\(min-width: 900px\)"\)/);
   for (const lang of LOCALES) {

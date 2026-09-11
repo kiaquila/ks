@@ -309,8 +309,9 @@
 @media (min-width: 900px) {
   /* The card in the wings sits past the track; the section's container
      clips it, so it cannot widen the page, while the lift keeps its
-     vertical air. */
-  .work > .container {
+     vertical air. Gated on the strip like everything else here, so the
+     no-JS scroller is left exactly as shipped. */
+  .work > .container:has(.carousel[data-strip]) {
     overflow-x: clip;
   }
 
