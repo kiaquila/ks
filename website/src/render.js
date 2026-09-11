@@ -223,7 +223,11 @@ function work(copy) {
               alt: item.alt,
               widths: [800, 1200],
               height: 675,
-              sizes: "(max-width: 719px) 86vw, (max-width: 1099px) 44vw, 36vw"
+              sizes: "(max-width: 719px) 86vw, (max-width: 1099px) 44vw, 36vw",
+              /* v2: every card re-shot from 8:5 to 16:9 under the same file
+                 names (2026-09-11); a cached 8:5 file would fill the new box
+                 at the wrong ratio. */
+              version: 2
             })}</span>
             <span class="work-meta">
               <span class="work-kind">${escapeHtml(item.kind)} · ${escapeHtml(item.year)}</span>

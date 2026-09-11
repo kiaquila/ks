@@ -16,13 +16,13 @@ lead paragraph under it repeated what the heading already said.
 1. Hero — headline left; on the right the portrait hangs like a print taped
    to the wall, tilted 5° with a paper shadow and a piece of masking tape.
    On hover it winks, and the owner's claims appear hand-written around it
-   with curled arrows pointing at her, linking her channel, community,
-   Instagram and Pinterest
+   with curled arrows pointing at her — plain text, no links
 2. Selected projects — screenshots at their own 16:9 proportion
 3. Process — `01`–`04`
 4. Services — three package cards
 5. Kind Words
-6. Get in touch — full-width band, then the footer directly under it
+6. Get in touch — full-width band, then the footer directly under it with
+   LinkedIn, Telegram, Instagram and GitHub
 
 The header lists Process before Work (the owner reads the menu offer-first),
 while the slides keep Work first.
@@ -58,7 +58,7 @@ Caveat (OFL, beside the other font licenses).
 | Mentored AI-engineers community | [invite link](https://t.me/+1k8AU1O9-o04MTRi) | client, 2026-08-27 |
 | Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert (leading a TG channel and an AI engineers community), aesthetics and authenticity; no links | client, 2026-08-28; links dropped 2026-09-11 |
 | In web development since | 2017 | client |
-| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the new Dream Board and Fathom cards await local review |
+| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11 |
 
 Every string lives in [`website/src/content.js`](./website/src/content.js).
 Nothing on the page is written anywhere else.

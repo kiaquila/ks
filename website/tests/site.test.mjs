@@ -294,9 +294,10 @@ test("Contact is reachable at every width and duplicated at none", () => {
 
 test("English is the default and Spanish is the prefixed second locale", () => {
   assert.deepEqual(Object.keys(languages), ["en", "es"]);
-  /* The new Dream Board and Fathom work cards are awaiting the owner's local
-     preview. Once approved, this goes back to an empty list. */
-  assert.deepEqual(localesAwaitingReview, ["es"]);
+  /* The owner approved the Dream Board and Fathom cards on 2026-09-11. A new
+     or reworded translation goes back on this list — and into this
+     assertion — until she signs it off. */
+  assert.deepEqual(localesAwaitingReview, []);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");
   assert.match(pages.en, /<html lang="en">/);
@@ -569,6 +570,13 @@ test("the work previews are shown at the screenshots' own proportion", async () 
   );
   for (const lang of LOCALES) {
     assert.match(pages[lang], /width="1200" height="675"/);
+    /* The 16:9 re-shoot kept the file names, so every card URL carries the
+       version that busts the cached 8:5 files. */
+    const shots = [...pages[lang].matchAll(/\/assets\/work\/[a-z-]+-\d+\.(?:jpg|webp)(\?v=\d+)?/g)];
+    assert.ok(shots.length > 0, `${lang}: no work screenshots found`);
+    for (const [url, version] of shots) {
+      assert.equal(version, "?v=2", `${lang}: ${url} is not cache-busted`);
+    }
   }
 
   /* On the deck the slide still fits one screen — by narrowing the cards, never

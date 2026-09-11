@@ -47,9 +47,10 @@ export const languages = {
  *  The build names them on every run, the way unfinished sections are named,
  *  so a draft translation cannot quietly become the published wording. The
  *  owner approved the original Spanish copy on 2026-08-17, the ember and misha
- *  work cards on 2026-08-19, and the hero annotations (`hero.notes`) on
- *  2026-08-28. The new Dream Board and Fathom cards await local review. */
-export const localesAwaitingReview = ["es"];
+ *  work cards on 2026-08-19, the hero annotations (`hero.notes`) on
+ *  2026-08-28, and the Dream Board and Fathom cards with the reworded hero
+ *  bullets on 2026-09-11. */
+export const localesAwaitingReview = [];
 
 /** One social card per language — sharing a page with a card that carries
  *  another language's headline is a mixed-language preview. Rendered by
