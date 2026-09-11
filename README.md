@@ -70,7 +70,7 @@ Quoted by the client, in US dollars:
 | Service | Price |
 | --- | --- |
 | Landing page | 1 000 |
-| Website, 5+ pages | 3 000 |
+| Website, 5+ pages | from 3 000 |
 | Illustrations | from 75 per image |
 
 Menu build and dish photo retouching were on this list and have been taken off
