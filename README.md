@@ -55,7 +55,7 @@ Caveat (OFL, beside the other font licenses).
 | GitHub | [kiaquila](https://github.com/kiaquila) | client, 2026-09-11 |
 | Pinterest | [ks_aquila](https://www.pinterest.com/ks_aquila/) | client, 2026-08-27 |
 | AI channel (RU audience) | [@vibecodesh](https://t.me/vibecodesh) | client, 2026-08-27 |
-| Mentored AI-engineers community | [invite link](https://t.me/+1k8AU1O9-o04MTRi) | client, 2026-08-27 |
+| Mentored AI-engineers community | Client-confirmed; no public link on the site | client, 2026-08-27; link retired 2026-09-11 |
 | Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert (leading a TG channel and an AI engineers community), aesthetics and authenticity; no links | client, 2026-08-28; links dropped 2026-09-11 |
 | In web development since | 2017 | client |
 | Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11 |
@@ -104,11 +104,6 @@ alight.
   while the renderer omits the entire block until it is approved.
   Replace `kindWords.items` in `content.js` with real quotes and set
   `todo: false`.
-- **The mentored-community link is a Telegram invite.** `t.me/+1k8AU1O9-…`
-  is a joining credential rather than a public @username, and the page is
-  indexable, so anyone who reads the markup can join. The owner supplied it
-  for publication knowingly; turn on Telegram's join-request approval for
-  that group, or swap in a public username, if that ever stops being wanted.
 
 ## Production hosting
 

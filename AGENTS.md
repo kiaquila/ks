@@ -280,10 +280,11 @@ Below that it is an ordinary flowing document.
 - **Three rules keep the hover honest, and they only work together**: the
   `.hero-portrait` zone takes no pointer events (it reaches back under the
   copy, and as a live sheet it ate a third of "See the work" at laptop
-  widths); the revealed `.portrait-notes` layer takes them back, so the
-  cursor can cross the white between print and link without the set folding
-  away; and `.hero-copy` is lifted to `z-index: 1` so its buttons win
-  wherever the layer overlaps them. A test asserts all three.
+  widths); only `.portrait-box` takes them back, so leaving the print folds
+  the now-noninteractive notes away; and `.hero-copy` is lifted to `z-index:
+  1` so the annotations cannot paint over its buttons. The full-zone
+  `.portrait-notes` layer never takes pointer events. A test asserts the
+  contract.
 - On hover the frosted stats panel of old is replaced by **hand-written
   annotations** (`.portrait-notes`): the owner's claims in Caveat, ink on the
   white around the print — "%YEARS%+ years in web development" and "AI

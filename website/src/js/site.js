@@ -286,8 +286,8 @@
       portrait.toggleAttribute("data-active");
     });
 
-    /* Leaving the portrait clears the toggled state; focus inside the notes
-       keeps them up through :focus-within anyway. */
+    /* Leaving the portrait clears the toggled state. Keyboard focus on the
+       frame still keeps the notes up through :focus-within. */
     portrait.addEventListener("blur", () => {
       portrait.removeAttribute("data-active");
     });

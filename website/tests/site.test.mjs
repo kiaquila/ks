@@ -470,7 +470,7 @@ test("the portrait swaps frames and the annotations stay readable", () => {
     /* Keyboard users need the swap too. */
     assert.match(portrait, /tabindex="0"/);
 
-    /* The claims and their links live OUTSIDE the role="img" element:
+    /* The claims live OUTSIDE the role="img" element:
        descendants of an img role are presentational, so annotations nested
        inside it would be silent for assistive tech. The slice above ends
        where the notes begin, which is itself the proof of the ordering. */
@@ -942,22 +942,22 @@ test("the hero's note layer never swallows a click", () => {
   /* The layer spans the whole hero zone, which reaches back under the copy.
      When the zone took pointer events it ate a third of the "See the work"
      button at laptop widths — a click there toggled the portrait instead.
-     The zone stays transparent to the pointer, the revealed layer takes
-     events back so the cursor can cross to a link without the set folding
-     away, and the copy is lifted above the layer so its buttons win either
-     way. All three rules are load-bearing together. */
+     The zone and its decorative notes stay transparent to the pointer, only
+     the print opts back in, and the copy is lifted above the layer. Leaving
+     the print therefore folds the notes instead of latching them open across
+     the hero. */
   const clean = withoutComments(css);
   const zone = clean.match(/\.hero-portrait \{[^}]*position: absolute;[^}]*\}/);
   assert.ok(zone, "the desktop hero zone rule is missing");
   assert.match(zone[0], /pointer-events:\s*none/);
   assert.match(clean, /\.portrait-box \{[^}]*pointer-events:\s*auto/);
   assert.match(clean, /\.portrait-notes \{[^}]*pointer-events:\s*none/);
+  assert.doesNotMatch(clean, /\.portrait-notes\s*\{[^}]*pointer-events:\s*auto/);
   assert.match(clean, /\.hero-copy \{\s*position: relative;\s*z-index: 1;/);
 
-  /* And the print stays above the revealed layer. A tap sets `data-active`,
-     which gives the full-zone layer pointer events; painted last, it would
-     take the second tap that is meant to switch the portrait back off, so
-     the toggle would only ever go one way. */
+  /* And the print stays above the revealed layer. A tap sets `data-active`;
+     keeping the print on top ensures the second tap reaches the portrait and
+     switches the touch toggle back off. */
   assert.match(clean, /\.portrait-box \{[^}]*position: relative;[^}]*z-index: 1;/);
 });
 

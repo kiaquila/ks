@@ -58,20 +58,18 @@
   }
 
   /* The zone the print and its notes are positioned in. It takes no pointer
-     events of its own; the print and — once revealed — the notes opt back
-     in, which keeps the hover alive while the pointer travels from the
-     photo to a note's link, because `:hover` walks up to this element. */
+     events of its own; only the print opts back in. The notes are plain text,
+     so leaving the print must end the hover instead of letting the full-zone
+     layer latch it open. */
   .hero-portrait {
     position: absolute;
     inset: 0 0 0 38%;
     pointer-events: none;
   }
 
-  /* Above the notes layer, not just clickable: once a tap reveals the notes
-     the layer covers the whole zone, and a second tap on the print would
-     land on it instead of on `[data-portrait]` — the touch toggle could be
-     switched on but never off. The layer keeps its own links interactive
-     everywhere the print is not. */
+  /* The print is the zone's only hit-testable child. It stays above the
+     decorative notes so a second tap still reaches `[data-portrait]` and
+     switches the touch toggle back off. */
   .portrait-box {
     position: relative;
     z-index: 1;

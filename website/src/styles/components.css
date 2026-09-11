@@ -199,12 +199,12 @@
 /* The hand-written annotations: the owner's claims, scribbled around the
    print the way a designer marks a contact sheet, with little arrows curling
    toward her. A sibling of the portrait box, because inside role="img" the
-   claims and their links would be silenced for screen readers.
+   claims would be silenced for screen readers.
 
    Below 1100px there is no room to scribble around a column-wide photo —
    and on a phone no hover to reveal them with — so the notes are a plain
-   hand-written list under the portrait: always visible, never over the face, and their links
-   reachable by tap like any other link. */
+   hand-written list under the portrait: always visible and never over the
+   face. */
 .portrait-notes {
   display: grid;
   gap: var(--space-sm);
@@ -267,12 +267,10 @@
 /* From 1100px up the notes lift off the flow and scatter around the print,
    revealed by hover, focus or the touch toggle.
 
-   The layer never takes pointer events itself — it spans the whole zone, and
-   an invisible sheet over the hero would swallow clicks meant for the
-   buttons underneath (it ate a third of "See the work" at laptop widths).
-   Only the notes themselves become clickable once they are visible, which is
-   also what keeps the state up while the pointer travels from the print to a
-   link. */
+   The layer never takes pointer events — it spans the whole zone, and an
+   invisible sheet over the hero would swallow clicks meant for the buttons
+   underneath (it ate a third of "See the work" at laptop widths). The notes
+   are plain text now, so leaving the print must fold the set away. */
 @media (min-width: 1100px) {
   .portrait-notes {
     /* The client's "step right, toward the print" is one viewport-scaled
@@ -290,15 +288,12 @@
     transition: opacity var(--dur) var(--ease), transform var(--dur) var(--ease);
   }
 
-  /* Revealed, the layer takes pointer events again: the reader has to be able
-     to cross the white between the print and a note without the whole set
-     folding away under the cursor. It only ever covers the copy while it is
-     revealed, and the copy sits above it either way. */
+  /* Focus and the touch toggle reveal the same decorative layer without
+     changing its hit testing. */
   .hero-portrait:focus-within .portrait-notes,
   .hero-portrait:has([data-active]) .portrait-notes {
     opacity: 1;
     transform: none;
-    pointer-events: auto;
   }
 
   /* A touch smaller than the flowing list's setting: scattered around the
@@ -464,7 +459,6 @@
   .hero-portrait:hover .portrait-notes {
     opacity: 1;
     transform: none;
-    pointer-events: auto;
   }
 }
 
