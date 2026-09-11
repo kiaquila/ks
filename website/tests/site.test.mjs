@@ -616,6 +616,9 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* Arrow keys act on the focused track alone, never on a focused thumbnail
      that the step would carry into the hidden wings. */
   assert.match(siteScript, /"keydown",[\s\S]*?if \(!strip\.matches \|\| event\.target !== track\) return;/);
+  /* Widening onto the strip hides the card bound for the wings; if the
+     keyboard is on it, focus moves to the track before the strip goes on. */
+  assert.match(siteScript, /const sync = \(\) => \{\s*const focused = document\.activeElement\?\.closest\("\.work-card"\);\s*if \(strip\.matches && focused && Math\.abs\(slot\[cards\.indexOf\(focused\)\]\) > 2\) track\.focus\(\);\s*carousel\.toggleAttribute\("data-strip"/);
   /* The kind is the one line of the card the strip drops, to keep the block
      short (client decision, 2026-09-11); it still reads in the flowing layout. */
   assert.match(clean, /\.carousel\[data-strip\] \.work-kind \{\s*display: none;/);

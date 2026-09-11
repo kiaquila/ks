@@ -219,7 +219,11 @@
     /* The slots are set before the strip is switched on, so the first layout
        lands in place instead of sliding in. */
     go(0, 1);
+    /* Widening onto the strip can hide the very card the keyboard is on
+       (the one bound for the wings); focus moves to the track first. */
     const sync = () => {
+      const focused = document.activeElement?.closest(".work-card");
+      if (strip.matches && focused && Math.abs(slot[cards.indexOf(focused)]) > 2) track.focus();
       carousel.toggleAttribute("data-strip", strip.matches);
       prev.hidden = next.hidden = !strip.matches;
     };
