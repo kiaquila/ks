@@ -174,28 +174,45 @@ test("the years of experience are derived, never hardcoded", () => {
   }
 });
 
-test("the hero annotations carry the owner's claims and destinations", () => {
-  /* Every note is client-supplied; the links are the owner's own channel,
-     community and feeds, each listed in `links` so the outbound test below
-     knows them. An interim "Why me" slide was tried and dropped (client
-     decision, 2026-08-28): the claims are written over the portrait
-     instead, and the header goes straight to the sections — Process listed
-     before Work, offer-first. */
+test("the hero annotations carry claims only; the feeds live in the footer", () => {
+  /* Every note is client-supplied. The notes fold away as the pointer
+     leaves the print, so the links they once carried could not be reached;
+     they are plain bullets now, and Instagram and GitHub sit in the footer
+     after LinkedIn and Telegram (client decision, 2026-09-11). An interim
+     "Why me" slide was tried and dropped (client decision, 2026-08-28): the
+     claims are written over the portrait instead, and the header goes
+     straight to the sections — Process listed before Work, offer-first. */
   for (const lang of LOCALES) {
     const html = pages[lang];
     assert.equal(content[lang].hero.notes.length, 4);
-    for (const href of [
-      links.vibecodeChannel,
-      links.aiCommunity,
-      links.instagram,
-      links.pinterest
-    ]) {
-      assert.ok(html.includes(`href="${href}"`), `${lang}: missing link ${href}`);
-    }
+    const layer = html.slice(
+      html.indexOf('<div class="portrait-notes"'),
+      html.indexOf("</section>", html.indexOf('<div class="portrait-notes"'))
+    );
+    assert.doesNotMatch(layer, /<a\b/, `${lang}: a link inside the hero notes cannot be reached`);
+    const footer = html.match(/<div class="footer-social">([\s\S]*?)<\/div>/)[1];
+    const hrefs = [...footer.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(hrefs, [links.linkedin, links.telegram, links.instagram, links.github]);
     assert.doesNotMatch(html, /id="why"|href="#why"/);
     const nav = html.match(/<nav class="site-nav"[\s\S]*?<\/nav>/)[0];
     const anchors = [...nav.matchAll(/href="#([a-z-]+)"/g)].map((m) => m[1]);
     assert.deepEqual(anchors, ["process", "work", "services", "contact"]);
+  }
+});
+
+test("every selected project ships in both languages and keeps its order", () => {
+  const slugs = ["chaijana", "alex-neon", "ember", "misha", "dreamboard", "fathom"];
+  for (const lang of LOCALES) {
+    assert.deepEqual(
+      content[lang].work.items.map((item) => item.slug),
+      slugs
+    );
+    for (const item of content[lang].work.items) {
+      assert.ok(
+        pages[lang].includes(`href="${item.href}"`),
+        `${lang}: selected project ${item.slug} is missing from the page`
+      );
+    }
   }
 });
 
@@ -277,9 +294,9 @@ test("Contact is reachable at every width and duplicated at none", () => {
 
 test("English is the default and Spanish is the prefixed second locale", () => {
   assert.deepEqual(Object.keys(languages), ["en", "es"]);
-  /* The owner approved the Spanish hero annotations on 2026-08-28. A new or
-     reworded translation goes back on this list — and into this assertion —
-     until she signs it off. */
+  /* The owner approved the Dream Board and Fathom cards on 2026-09-11. A new
+     or reworded translation goes back on this list — and into this
+     assertion — until she signs it off. */
   assert.deepEqual(localesAwaitingReview, []);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");
@@ -345,13 +362,13 @@ test("the only external links are the approved destinations", () => {
       links.linkedin,
       links.telegram,
       links.instagram,
-      links.pinterest,
-      links.vibecodeChannel,
-      links.aiCommunity,
+      links.github,
       links.work.chaijana,
       links.work.alexNeon,
       links.work.ember,
-      links.work.misha
+      links.work.misha,
+      links.work.dreamboard,
+      links.work.fathom
     ].map((url) => new URL(url).origin)
   );
 
@@ -453,7 +470,7 @@ test("the portrait swaps frames and the annotations stay readable", () => {
     /* Keyboard users need the swap too. */
     assert.match(portrait, /tabindex="0"/);
 
-    /* The claims and their links live OUTSIDE the role="img" element:
+    /* The claims live OUTSIDE the role="img" element:
        descendants of an img role are presentational, so annotations nested
        inside it would be silent for assistive tech. The slice above ends
        where the notes begin, which is itself the proof of the ordering. */
@@ -467,11 +484,8 @@ test("the portrait swaps frames and the annotations stay readable", () => {
         .replaceAll("&", "&amp;")
         .replaceAll("'", "&#039;");
       assert.ok(notes.includes(text), `${key}: note "${note.text}" is missing`);
-      for (const link of note.links ?? []) {
-        assert.ok(
-          notes.includes(`href="${link.href}"`),
-          `${key}: note link "${link.label}" is missing`
-        );
+      for (const item of note.items ?? []) {
+        assert.ok(notes.includes(item), `${key}: note item "${item}" is missing`);
       }
     }
   }
@@ -539,7 +553,7 @@ test("the footer is one horizontal row under the contact band", () => {
 });
 
 test("the work previews are shown at the screenshots' own proportion", async () => {
-  /* Every card image in assets/work is 1200×750. The card must neither crop it
+  /* Every card image in assets/work is 1200×675. The card must neither crop it
      nor stretch it, so the frame sets no height and no object-fit — height
      follows width, and the ratio is the file's own. */
   const shots = await readdir(join(dist, "assets/work"));
@@ -554,6 +568,16 @@ test("the work previews are shown at the screenshots' own proportion", async () 
     !/aspect-ratio|min-height|max-height/.test(rule[0]),
     "the shot must take its proportion from the file, not from CSS"
   );
+  for (const lang of LOCALES) {
+    assert.match(pages[lang], /width="1200" height="675"/);
+    /* The 16:9 re-shoot kept the file names, so every card URL carries the
+       version that busts the cached 8:5 files. */
+    const shots = [...pages[lang].matchAll(/\/assets\/work\/[a-z-]+-\d+\.(?:jpg|webp)(\?v=\d+)?/g)];
+    assert.ok(shots.length > 0, `${lang}: no work screenshots found`);
+    for (const [url, version] of shots) {
+      assert.equal(version, "?v=2", `${lang}: ${url} is not cache-busted`);
+    }
+  }
 
   /* On the deck the slide still fits one screen — by narrowing the cards, never
      by shortening them out of ratio. */
@@ -702,8 +726,7 @@ test("every touch target clears 44 px", () => {
     [/\.brand\s*\{[^}]*\}/, "height"],
     [/\.site-nav a\s*\{[^}]*\}/, "height"],
     [/\.btn-compact\s*\{[^}]*\}/, "height"],
-    [/(?:^|\})\s*\.btn\s*\{[^}]*\}/, "height"],
-    [/\.note-link\s*\{[^}]*\}/, "height"]
+    [/(?:^|\})\s*\.btn\s*\{[^}]*\}/, "height"]
   ];
 
   for (const [selector, axes] of rules) {
@@ -906,8 +929,8 @@ test("the hero notes stay inside the hand font's subset", () => {
   for (const lang of LOCALES) {
     for (const note of content[lang].hero.notes) {
       assert.match(note.text, SUBSET, `${lang}: "${note.text}" needs a glyph Caveat lacks`);
-      for (const link of note.links ?? []) {
-        assert.match(link.label, SUBSET, `${lang}: "${link.label}" needs a glyph Caveat lacks`);
+      for (const item of note.items ?? []) {
+        assert.match(item, SUBSET, `${lang}: "${item}" needs a glyph Caveat lacks`);
       }
     }
   }
@@ -919,22 +942,22 @@ test("the hero's note layer never swallows a click", () => {
   /* The layer spans the whole hero zone, which reaches back under the copy.
      When the zone took pointer events it ate a third of the "See the work"
      button at laptop widths — a click there toggled the portrait instead.
-     The zone stays transparent to the pointer, the revealed layer takes
-     events back so the cursor can cross to a link without the set folding
-     away, and the copy is lifted above the layer so its buttons win either
-     way. All three rules are load-bearing together. */
+     The zone and its decorative notes stay transparent to the pointer, only
+     the print opts back in, and the copy is lifted above the layer. Leaving
+     the print therefore folds the notes instead of latching them open across
+     the hero. */
   const clean = withoutComments(css);
   const zone = clean.match(/\.hero-portrait \{[^}]*position: absolute;[^}]*\}/);
   assert.ok(zone, "the desktop hero zone rule is missing");
   assert.match(zone[0], /pointer-events:\s*none/);
   assert.match(clean, /\.portrait-box \{[^}]*pointer-events:\s*auto/);
   assert.match(clean, /\.portrait-notes \{[^}]*pointer-events:\s*none/);
+  assert.doesNotMatch(clean, /\.portrait-notes\s*\{[^}]*pointer-events:\s*auto/);
   assert.match(clean, /\.hero-copy \{\s*position: relative;\s*z-index: 1;/);
 
-  /* And the print stays above the revealed layer. A tap sets `data-active`,
-     which gives the full-zone layer pointer events; painted last, it would
-     take the second tap that is meant to switch the portrait back off, so
-     the toggle would only ever go one way. */
+  /* And the print stays above the revealed layer. A tap sets `data-active`;
+     keeping the print on top ensures the second tap reaches the portrait and
+     switches the touch toggle back off. */
   assert.match(clean, /\.portrait-box \{[^}]*position: relative;[^}]*z-index: 1;/);
 });
 

@@ -39,6 +39,9 @@ const icons = {
   instagram: icon(
     '<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1.25" fill="currentColor"/>'
   ),
+  github: icon(
+    '<path fill="currentColor" d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-1.97c-3.2.7-3.87-1.54-3.87-1.54-.52-1.33-1.28-1.68-1.28-1.68-1.04-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.76 2.69 1.25 3.35.96.1-.75.4-1.25.73-1.54-2.56-.29-5.25-1.28-5.25-5.69 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.78 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.42-2.69 5.39-5.26 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5Z"/>'
+  ),
   arrowUpRight: icon(
     '<path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/>'
   ),
@@ -158,26 +161,21 @@ function hero(copy, years) {
 
   /* The hand-written annotations that rise over the stage on hover live
      OUTSIDE the portrait's role="img" box: descendants of an img role are
-     presentational, so the claims — and their links — would be silent for
-     assistive tech nested inside it. Each note carries a small hand-drawn
-     arrow curling toward the owner, and each link its own transition arrow. */
-  const linkArrow =
-    '<svg class="note-go" viewBox="0 0 22 12" width="20" height="11" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" d="M2 7.2 C 8 5.8, 13 6.6, 19 6.2 M14.5 2.2 C 16 3.8, 17.5 5.2, 19 6.2 C 17.2 7, 15.4 8.6, 14 10.2"/></svg>';
+     presentational, so the claims would be silent for assistive tech nested
+     inside it. Each note carries a small hand-drawn arrow curling toward the
+     owner. */
   const noteArrow = (step) =>
     `<svg class="note-arrow note-arrow-${step}" viewBox="0 0 52 40" width="52" height="40" aria-hidden="true" focusable="false"><path fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" d="M4 6 C 10 20, 20 30, 34 31 C 41 31.4, 45 29, 47 26 M38 21.5 C 41.5 23.5, 44.5 25, 47 26 C 45.8 28.6, 44.8 31.6, 44.2 34.5"/></svg>`;
 
   const notes = copy.hero.notes
     .map((note, index) => {
-      const noteLinks = note.links?.length
-        ? `\n          <p class="note-links">${note.links
-            .map(
-              (link) =>
-                `<a class="note-link" href="${escapeHtml(link.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(link.label)}${linkArrow}</a>`
-            )
-            .join("")}</p>`
+      const noteItems = note.items?.length
+        ? `\n          <ul class="note-items">${note.items
+            .map((item) => `<li class="note-item">${escapeHtml(item)}</li>`)
+            .join("")}</ul>`
         : "";
       return `<div class="note note-${index + 1}">
-          <p class="note-text">${fill(note.text, years)}</p>${noteLinks}
+          <p class="note-text">${fill(note.text, years)}</p>${noteItems}
           ${noteArrow(index + 1)}
         </div>`;
     })
@@ -224,8 +222,12 @@ function work(copy) {
               base: item.image,
               alt: item.alt,
               widths: [800, 1200],
-              height: 750,
-              sizes: "(max-width: 719px) 86vw, (max-width: 1099px) 44vw, 36vw"
+              height: 675,
+              sizes: "(max-width: 719px) 86vw, (max-width: 1099px) 44vw, 36vw",
+              /* v2: every card re-shot from 8:5 to 16:9 under the same file
+                 names (2026-09-11); a cached 8:5 file would fill the new box
+                 at the wrong ratio. */
+              version: 2
             })}</span>
             <span class="work-meta">
               <span class="work-kind">${escapeHtml(item.kind)} · ${escapeHtml(item.year)}</span>
@@ -349,12 +351,14 @@ function kindWords(copy) {
 
 function contact(copy) {
   const mailto = `mailto:${links.email}`;
-  /* LinkedIn and Telegram only: Instagram and Pinterest live in the hero's
-     hand-written annotations, and printing Instagram twice would say nothing
-     new (client decision, 2026-08-28). */
+  /* Instagram and GitHub follow Telegram (client decision, 2026-09-11): the
+     hero notes that used to carry Instagram and Pinterest fold away before a
+     pointer can reach them, so the footer is the one place the feeds live. */
   const social = [
     ["linkedin", links.linkedin],
-    ["telegram", links.telegram]
+    ["telegram", links.telegram],
+    ["instagram", links.instagram],
+    ["github", links.github]
   ]
     .map(
       ([name, href]) =>

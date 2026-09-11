@@ -51,9 +51,11 @@ rules, heavy tracked capitals. Everything below follows from that.
   at all; a test counts the hero's label and fails at two.
 - The language switch is two small words separated by a slash, the current one
   underlined — printed, not app-like. Each is a 44px target and a plain link.
-- **Portfolio screenshots are shown at their own 8:5 proportion**, never cropped
+- **Portfolio screenshots are shown at their own 16:9 proportion**, never cropped
   and never stretched: a card that reframes the work is showing something the
-  client never designed. The shot sets no height and no `object-fit`. When the
+  client never designed. The lower frame replaces the earlier 8:5 cards (client
+  decision, 2026-09-10), which made canvas work look vertically stretched. The
+  shot sets no height and no `object-fit`. When the
   slide is too short for the cards at that ratio, `.work-track` narrows them —
   the container is left alone so the heading keeps the section's left edge.
 - The process numerals grow slightly on hover. Any motion added here stays at
@@ -103,8 +105,9 @@ rules, heavy tracked capitals. Everything below follows from that.
 - The footer is **one horizontal row directly under the contact band**, and the
   pair is anchored to the bottom of the last slide: copyright hard left, a pin
   icon and the location centred on the page, social icons with no labels hard
-  right (LinkedIn and Telegram — Instagram and Pinterest live in the hero's
-  hand-written annotations instead, client decision 2026-08-28). Its outer grid columns are `1fr` so the
+  right (LinkedIn, Telegram, Instagram, GitHub — client decision 2026-09-11;
+  Instagram and Pinterest used to hang off the hero notes, but the notes fold
+  away as the pointer leaves the print, so no link there could be reached). Its outer grid columns are `1fr` so the
   middle one centres on the page rather than on the copyright. It carries no
   rule on top — the black band above it already divides the page, and the band
   must not be pushed away from it by a spacer row.
@@ -121,10 +124,10 @@ Below that it is an ordinary flowing document.
   `overflow: hidden`. A slide is exactly one screen whenever its content fits
   and grows instead of clipping when it does not — silently eating the last
   line of copy on a short laptop window is worse than a slide that scrolls.
-- The work slide preserves each screenshot's 8:5 ratio by letting height follow
+- The work slide preserves each screenshot's 16:9 ratio by letting height follow
   width. In deck mode, `.work-track` therefore caps its width from the viewport
   height left after the header, container padding, heading and card meta:
-  `(100svh - var(--header-h) - 25rem) × 1.6 × 2`, plus the card gap. Cap the
+  `(100svh - var(--header-h) - 25rem) × 1.7778 × 2`, plus the card gap. Cap the
   track rather than `.work > .container`, so the cards narrow on short screens
   while the heading keeps the same left edge as every other slide. If those
   vertical allowances change, re-measure the `25rem` term rather than assume.
@@ -277,22 +280,25 @@ Below that it is an ordinary flowing document.
 - **Three rules keep the hover honest, and they only work together**: the
   `.hero-portrait` zone takes no pointer events (it reaches back under the
   copy, and as a live sheet it ate a third of "See the work" at laptop
-  widths); the revealed `.portrait-notes` layer takes them back, so the
-  cursor can cross the white between print and link without the set folding
-  away; and `.hero-copy` is lifted to `z-index: 1` so its buttons win
-  wherever the layer overlaps them. A test asserts all three.
+  widths); only `.portrait-box` takes them back, so leaving the print folds
+  the now-noninteractive notes away; and `.hero-copy` is lifted to `z-index:
+  1` so the annotations cannot paint over its buttons. The full-zone
+  `.portrait-notes` layer never takes pointer events. A test asserts the
+  contract.
 - On hover the frosted stats panel of old is replaced by **hand-written
   annotations** (`.portrait-notes`): the owner's claims in Caveat, ink on the
   white around the print — "%YEARS%+ years in web development" and "AI
-  expert" with its join-links in the pocket under the headline, "I do
-  non-generic AI web design" and the aesthetics claim with its follow-links
-  on the right air — each with a small curled arrow pointing at her, each
-  link with its own transition arrow. The arrows are children of their note,
+  expert" with two plain bullets in the pocket under the headline, "I do
+  non-generic AI web design" and the aesthetics claim on the right air —
+  each with a small curled arrow pointing at her. **The notes carry no
+  links** (client decision, 2026-09-11): the layer folds away as the pointer
+  leaves the print, so a link out there could never be clicked; a test fails
+  on any `<a>` inside it. The arrows are children of their note,
   so they travel with the text they belong to. The Spanish page hangs its
   own set of them: the client walked three of the four arrows in passes
   (2026-08-29 … 2026-08-31) — arcs turned over, spun and shifted so each
-  tail leaves its Spanish claim and clears the longer Spanish
-  follow-links — while the English page keeps its original picks. The
+  tail leaves its Spanish claim and clears the Spanish follow-links of the
+  time (the arrows held their spots when the links went) — while the English page keeps its original picks. The
   exact `html[lang="es"]` offsets live with their history in
   `components.css`; re-walk them with the client rather than deriving
   them. The swap's `:hover` rules are gated behind `@media (hover: hover)`:
@@ -305,9 +311,7 @@ Below that it is an ordinary flowing document.
   predicate is the invariant (two predicates disagreeing is exactly the
   bug this fixed), and trading passive hover away on that hardware is the
   accepted cost (2026-08-31). The layer sits OUTSIDE
-  `role="img"`, where the claims and links would be silent for assistive
-  tech; links are real 44px targets, and the touch-target test names
-  `.note-link` explicitly. Keep notes off the face and off the dark sweater —
+  `role="img"`, where the claims would be silent for assistive tech. Keep notes off the face and off the dark sweater —
   ink dies there.
 - Caveat is the **one sanctioned third family** (client decision,
   2026-08-28): a single static 600 weight, subset to ASCII plus the Spanish
@@ -348,12 +352,12 @@ and the apple-touch PNG must never be edited by hand:
 node website/scripts/make-icons.mjs
 ```
 
-Portfolio card screenshots, from the live stages. Every card is 1200×750 and
-800×500 in both JPEG and WebP, so a new shot must be taken at the section's
-8:5 proportion rather than cropped into it:
+Portfolio card screenshots, from the live stages. Every card is 1200×675 and
+800×450 in both JPEG and WebP, so a new shot must be taken at the section's
+16:9 proportion rather than cropped into it:
 
 ```bash
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1440,900 --virtual-time-budget=9000 --screenshot=shot.png https://chaijana.ks-design.workers.dev
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1440,810 --virtual-time-budget=9000 --screenshot=shot.png https://chaijana.ks-design.workers.dev
 ```
 
 Two cards need more than that flag. Ember's shot must catch the animation
@@ -361,7 +365,7 @@ mid-burn, so it is taken through the DevTools protocol: open the study, click
 Play, wait about 1.3 seconds, then capture — a plain `--screenshot` grabs the
 resting figure. Mikhail Orlov's page holds its entrance reveals until the
 content scrolls into view, so a wide window screenshots as an empty sheet;
-shoot it at 1000×625 (or drive it over the protocol with a pause after load)
+shoot it at 1000×563 (or drive it over the protocol with a pause after load)
 and scale to the card sizes.
 
 Neither is part of `npm run build`; both outputs are committed.
