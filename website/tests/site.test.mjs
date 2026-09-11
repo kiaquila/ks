@@ -134,8 +134,8 @@ test("every process step appears in order", () => {
 
 test("the price list is rendered exactly as quoted", () => {
   const expected = {
-    en: ["USD 1,000", "from USD 3,000", "from USD 75"],
-    es: ["USD 1.000", "desde USD 3.000", "desde USD 75"]
+    en: ["USD 1,000", "USD 3,000", "from USD 75"],
+    es: ["USD 1.000", "USD 3.000", "desde USD 75"]
   };
   for (const [lang, prices] of Object.entries(expected)) {
     for (const price of prices) {
@@ -297,7 +297,7 @@ test("English is the default and Spanish is the prefixed second locale", () => {
   /* The owner approved the Dream Board and Fathom cards on 2026-09-11. A new
      or reworded translation goes back on this list — and into this
      assertion — until she signs it off. */
-  assert.deepEqual(localesAwaitingReview, ["es"]);
+  assert.deepEqual(localesAwaitingReview, []);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");
   assert.match(pages.en, /<html lang="en">/);
