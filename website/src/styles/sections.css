@@ -582,12 +582,14 @@
   gap: var(--space-md);
 }
 
-/* The package card: rounded and frosted. Its content now spells out the scope,
-   so the row establishes one shared height instead of forcing a fixed ratio. */
+/* The package card: rounded and frosted, its height set by its width. Three
+   packages make each column half again as wide as four did, and a square at
+   that width opened a hand's width of empty glass between the description and
+   the price — so the ratio is landscape now. */
 .service-card {
   display: flex;
   flex-direction: column;
-  min-height: 31rem;
+  aspect-ratio: 4 / 3;
   padding: var(--space-md);
   border-radius: var(--radius-lg);
   background: var(--glass);
@@ -616,27 +618,8 @@
 .service-note {
   margin-top: 0.75rem;
   color: var(--ink-soft);
-  font-size: 0.875rem;
+  font-size: 0.82rem;
   line-height: 1.5;
-}
-
-.service-features {
-  display: grid;
-  gap: 0.42rem;
-  margin-top: 1rem;
-  padding-left: 1.05rem;
-  color: var(--ink-soft);
-  font-size: 0.875rem;
-  line-height: 1.42;
-}
-
-.service-features li {
-  padding-left: 0.15rem;
-}
-
-.service-features li::marker {
-  color: var(--ink);
-  font-size: 0.78em;
 }
 
 /* Pinned to the bottom edge: the three prices then line up across the row
@@ -651,14 +634,8 @@
   white-space: nowrap;
 }
 
-.service-notes {
-  display: grid;
-  gap: 0.35rem;
+.currency-note {
   margin-top: var(--space-md);
-}
-
-.currency-note,
-.hosting-note {
   color: var(--ink-mute);
   font-size: var(--step-small);
 }
@@ -669,7 +646,8 @@
   }
 
   .service-card {
-    min-height: 0;
+    aspect-ratio: auto;
+    min-height: 11rem;
   }
 }
 
