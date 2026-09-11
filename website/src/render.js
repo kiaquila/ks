@@ -297,12 +297,14 @@ function process(copy) {
 function services(copy) {
   const cards = copy.services.items
     .map(
-      /* Name, then what it covers, then the price last and largest — the way a
-         pricing package reads, and the reason the price is pinned to the
-         bottom edge of the card rather than floating mid-air. */
+      /* Name, short framing line, included scope, then the price last and
+         largest — the package can be scanned before its cost is compared. */
       (item) => `<li class="service-card">
           <h3 class="service-name">${escapeHtml(item.name)}</h3>
           <p class="service-note">${escapeHtml(item.note)}</p>
+          <ul class="service-features">
+            ${item.features.map((feature) => `<li>${escapeHtml(feature)}</li>`).join("\n            ")}
+          </ul>
           <p class="service-price">${escapeHtml(item.price)}</p>
         </li>`
     )
@@ -317,7 +319,10 @@ function services(copy) {
       <ul class="service-grid" role="list">
         ${cards}
       </ul>
-      <p class="currency-note">${escapeHtml(copy.services.currencyNote)}</p>
+      <div class="service-notes">
+        <p class="currency-note">${escapeHtml(copy.services.currencyNote)}</p>
+        <p class="hosting-note">${escapeHtml(copy.services.hostingNote)}</p>
+      </div>
     </div>
   </section>`;
 }

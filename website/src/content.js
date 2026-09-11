@@ -49,8 +49,9 @@ export const languages = {
  *  owner approved the original Spanish copy on 2026-08-17, the ember and misha
  *  work cards on 2026-08-19, the hero annotations (`hero.notes`) on
  *  2026-08-28, and the Dream Board and Fathom cards with the reworded hero
- *  bullets on 2026-09-11. */
-export const localesAwaitingReview = [];
+ *  bullets on 2026-09-11. The expanded service packages added on 2026-09-11
+ *  reword the Spanish copy and put that locale back into review. */
+export const localesAwaitingReview = ["es"];
 
 /** One social card per language — sharing a page with a card that carries
  *  another language's headline is a mixed-language preview. Rendered by
@@ -184,7 +185,12 @@ export const content = {
             "We carefully gather and sharpen your meaning together — everything you consider important and want the landing page or site to say."
         },
         { n: "02", title: "A design concept", body: "I design a concept for you." },
-        { n: "03", title: "Two rounds of edits", body: "We go through two rounds of your edits." },
+        {
+          n: "03",
+          title: "Two rounds of edits",
+          body:
+            "We go through two rounds of edits. Each round is based on one consolidated list of comments within the approved concept."
+        },
         { n: "04", title: "The finished site", body: "You get the finished site." }
       ]
     },
@@ -192,17 +198,51 @@ export const content = {
       id: "services",
       title: "Services",
       currencyNote: "Prices are in US dollars.",
+      hostingNote: "* Hosting is available by arrangement for an additional fee.",
       items: [
-        { name: "Landing page", price: "USD 1,000", note: "A single-page site, done end to end." },
+        {
+          name: "Landing page",
+          price: "USD 1,000",
+          note: "A custom one-page site, designed and built end to end.",
+          features: [
+            "One scrolling page with up to 8 sections",
+            "Structuring and light editing of your existing copy",
+            "One custom design concept",
+            "Responsive development for desktop, tablet, and mobile",
+            "Two consolidated revision rounds",
+            "Final testing and launch",
+            "Full source code, delivered in a format that works for you",
+            "Domain registration, paid fonts, paid images, plugins, and subscriptions are paid for separately by the client"
+          ]
+        },
         {
           name: "Website, 5+ pages",
-          price: "USD 3,000",
-          note: "A multi-page site with one consistent structure."
+          price: "from USD 3,000",
+          note: "A cohesive multi-page site, designed and built as one system.",
+          features: [
+            "Sitemap and content structure",
+            "One custom visual direction",
+            "Design and development of 5 core pages",
+            "Responsive layouts and reusable components",
+            "One standard form",
+            "Two consolidated revision rounds",
+            "Final testing and launch",
+            "Full source code, delivered in a format that works for you",
+            "Additional pages and custom features are quoted separately",
+            "Domain registration, paid fonts, paid images, plugins, and subscriptions are paid for separately by the client"
+          ]
         },
         {
           name: "Illustrations",
           price: "from USD 75",
-          note: "Illustration work, priced per image."
+          note: "Custom illustration work, priced per image.",
+          features: [
+            "One original illustration based on your brief",
+            "Reference selection to agree on the visual direction",
+            "Final illustration in the agreed style, colour palette, and level of detail",
+            "Production-ready files in the formats agreed before work begins",
+            "Simple compositions start at USD 75; backgrounds, additional characters, editable source files, rush work, and more complex compositions are priced separately"
+          ]
         }
       ]
     },
@@ -381,7 +421,8 @@ export const content = {
         {
           n: "03",
           title: "Dos rondas de cambios",
-          body: "Pasamos dos rondas de cambios tuyos."
+          body:
+            "Pasamos dos rondas de cambios. Cada ronda parte de una única lista consolidada de comentarios dentro del concepto aprobado."
         },
         { n: "04", title: "El sitio terminado", body: "Recibís el sitio terminado." }
       ]
@@ -390,17 +431,51 @@ export const content = {
       id: "services",
       title: "Servicios",
       currencyNote: "Los precios están en dólares estadounidenses.",
+      hostingNote: "* El hosting está disponible previo acuerdo y por un costo adicional.",
       items: [
-        { name: "Landing", price: "USD 1.000", note: "Un sitio de una página, de punta a punta." },
+        {
+          name: "Landing",
+          price: "USD 1.000",
+          note: "Un sitio a medida de una sola página, diseñado y desarrollado de punta a punta.",
+          features: [
+            "Una página continua de hasta 8 secciones",
+            "Estructura y edición ligera de los textos que nos entregues",
+            "Un concepto de diseño a medida",
+            "Desarrollo responsive para computadora, tablet y celular",
+            "Dos rondas consolidadas de cambios",
+            "Pruebas finales y publicación",
+            "Todo el código fuente, entregado en el formato que te resulte más cómodo",
+            "El dominio, las tipografías pagas, las imágenes pagas, los plugins y las suscripciones corren por cuenta del cliente"
+          ]
+        },
         {
           name: "Sitio de 5+ páginas",
-          price: "USD 3.000",
-          note: "Un sitio de varias páginas con una estructura consistente."
+          price: "desde USD 3.000",
+          note: "Un sitio multipágina coherente, diseñado y desarrollado como un solo sistema.",
+          features: [
+            "Mapa del sitio y estructura de contenidos",
+            "Una dirección visual a medida",
+            "Diseño y desarrollo de 5 páginas principales",
+            "Diseños responsive y componentes reutilizables",
+            "Un formulario estándar",
+            "Dos rondas consolidadas de cambios",
+            "Pruebas finales y publicación",
+            "Todo el código fuente, entregado en el formato que te resulte más cómodo",
+            "Las páginas adicionales y las funciones a medida se cotizan por separado",
+            "El dominio, las tipografías pagas, las imágenes pagas, los plugins y las suscripciones corren por cuenta del cliente"
+          ]
         },
         {
           name: "Ilustraciones",
           price: "desde USD 75",
-          note: "Creación de ilustraciones, precio por imagen."
+          note: "Ilustraciones a medida, con precio por imagen.",
+          features: [
+            "Una ilustración original a partir de tu brief",
+            "Selección de referencias para acordar la dirección visual",
+            "Ilustración final con el estilo, la paleta y el nivel de detalle acordados",
+            "Archivos listos para usar en los formatos acordados antes de empezar",
+            "Las composiciones simples parten de USD 75; los fondos, personajes adicionales, archivos fuente editables, trabajos urgentes y composiciones más complejas se cotizan por separado"
+          ]
         }
       ]
     },

@@ -208,8 +208,10 @@
 
     prev.addEventListener("click", () => go(active - 1, -1));
     next.addEventListener("click", () => go(active + 1, 1));
+    /* Arrow keys step only while the track itself is focused: from a focused
+       thumbnail they would send that very card into the hidden wings. */
     track.addEventListener("keydown", (event) => {
-      if (!strip.matches) return;
+      if (!strip.matches || event.target !== track) return;
       if (event.key === "ArrowLeft") go(active - 1, -1);
       if (event.key === "ArrowRight") go(active + 1, 1);
     });

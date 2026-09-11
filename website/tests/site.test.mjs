@@ -134,8 +134,8 @@ test("every process step appears in order", () => {
 
 test("the price list is rendered exactly as quoted", () => {
   const expected = {
-    en: ["USD 1,000", "USD 3,000", "from USD 75"],
-    es: ["USD 1.000", "USD 3.000", "desde USD 75"]
+    en: ["USD 1,000", "from USD 3,000", "from USD 75"],
+    es: ["USD 1.000", "desde USD 3.000", "desde USD 75"]
   };
   for (const [lang, prices] of Object.entries(expected)) {
     for (const price of prices) {
@@ -297,7 +297,7 @@ test("English is the default and Spanish is the prefixed second locale", () => {
   /* The owner approved the Dream Board and Fathom cards on 2026-09-11. A new
      or reworded translation goes back on this list — and into this
      assertion — until she signs it off. */
-  assert.deepEqual(localesAwaitingReview, []);
+  assert.deepEqual(localesAwaitingReview, ["es"]);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");
   assert.match(pages.en, /<html lang="en">/);
@@ -613,6 +613,9 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* Off the strip the thumbnails are plain links; on it they bring their
      project forward and only the centre one opens the site. */
   assert.match(siteScript, /if \(!strip\.matches \|\| i === active\) return;\s*event\.preventDefault\(\);/);
+  /* Arrow keys act on the focused track alone, never on a focused thumbnail
+     that the step would carry into the hidden wings. */
+  assert.match(siteScript, /"keydown",[\s\S]*?if \(!strip\.matches \|\| event\.target !== track\) return;/);
   /* The kind is the one line of the card the strip drops, to keep the block
      short (client decision, 2026-09-11); it still reads in the flowing layout. */
   assert.match(clean, /\.carousel\[data-strip\] \.work-kind \{\s*display: none;/);
