@@ -224,7 +224,7 @@ function work(copy) {
               base: item.image,
               alt: item.alt,
               widths: [800, 1200],
-              height: 750,
+              height: 675,
               sizes: "(max-width: 719px) 86vw, (max-width: 1099px) 44vw, 36vw"
             })}</span>
             <span class="work-meta">

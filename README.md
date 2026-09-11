@@ -18,7 +18,7 @@ lead paragraph under it repeated what the heading already said.
    On hover it winks, and the owner's claims appear hand-written around it
    with curled arrows pointing at her, linking her channel, community,
    Instagram and Pinterest
-2. Selected projects — screenshots at their own 8:5 proportion
+2. Selected projects — screenshots at their own 16:9 proportion
 3. Process — `01`–`04`
 4. Services — three package cards
 5. Kind Words
@@ -57,7 +57,7 @@ Caveat (OFL, beside the other font licenses).
 | Mentored AI-engineers community | [invite link](https://t.me/+1k8AU1O9-o04MTRi) | client, 2026-08-27 |
 | Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert, aesthetics and authenticity | client, 2026-08-28 |
 | In web development since | 2017 | client |
-| Argentinian Spanish translation | `/es/` copy | client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28 |
+| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the new Dream Board and Fathom cards await local review |
 
 Every string lives in [`website/src/content.js`](./website/src/content.js).
 Nothing on the page is written anywhere else.
@@ -78,13 +78,15 @@ part of that project, which is a record of work done rather than an offer.
 
 ### Portfolio entries
 
-All four projects live in this repository and are linked to their public
+All six projects live in this repository and are linked to their public
 stages, in the order the carousel shows them:
 [Chaijaná Noir](https://chaijana.ks-design.workers.dev),
 [Alex Neon](https://alex-neon.ks-design.workers.dev),
-[Ember](https://ember.ks-design.art/) and
-[Mikhail Orlov](https://misha.ks-design.workers.dev/). The card images are
-screenshots of those stages at the section's 8:5 proportion, regenerated with
+[Ember](https://ember.ks-design.art/),
+[Mikhail Orlov](https://misha.ks-design.workers.dev/),
+[Dream Board](https://dreamboard.ks-design.art/) and
+[Fathom](https://fathom.ks-design.art/). The card images are
+screenshots of those stages at the section's 16:9 proportion, regenerated with
 the commands in [`AGENTS.md`](./AGENTS.md).
 
 Ember's card is not a resting screenshot: it is a frame taken about 1.3

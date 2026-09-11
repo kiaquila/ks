@@ -51,9 +51,11 @@ rules, heavy tracked capitals. Everything below follows from that.
   at all; a test counts the hero's label and fails at two.
 - The language switch is two small words separated by a slash, the current one
   underlined — printed, not app-like. Each is a 44px target and a plain link.
-- **Portfolio screenshots are shown at their own 8:5 proportion**, never cropped
+- **Portfolio screenshots are shown at their own 16:9 proportion**, never cropped
   and never stretched: a card that reframes the work is showing something the
-  client never designed. The shot sets no height and no `object-fit`. When the
+  client never designed. The lower frame replaces the earlier 8:5 cards (client
+  decision, 2026-09-10), which made canvas work look vertically stretched. The
+  shot sets no height and no `object-fit`. When the
   slide is too short for the cards at that ratio, `.work-track` narrows them —
   the container is left alone so the heading keeps the section's left edge.
 - The process numerals grow slightly on hover. Any motion added here stays at
@@ -121,10 +123,10 @@ Below that it is an ordinary flowing document.
   `overflow: hidden`. A slide is exactly one screen whenever its content fits
   and grows instead of clipping when it does not — silently eating the last
   line of copy on a short laptop window is worse than a slide that scrolls.
-- The work slide preserves each screenshot's 8:5 ratio by letting height follow
+- The work slide preserves each screenshot's 16:9 ratio by letting height follow
   width. In deck mode, `.work-track` therefore caps its width from the viewport
   height left after the header, container padding, heading and card meta:
-  `(100svh - var(--header-h) - 25rem) × 1.6 × 2`, plus the card gap. Cap the
+  `(100svh - var(--header-h) - 25rem) × 1.7778 × 2`, plus the card gap. Cap the
   track rather than `.work > .container`, so the cards narrow on short screens
   while the heading keeps the same left edge as every other slide. If those
   vertical allowances change, re-measure the `25rem` term rather than assume.
@@ -348,12 +350,12 @@ and the apple-touch PNG must never be edited by hand:
 node website/scripts/make-icons.mjs
 ```
 
-Portfolio card screenshots, from the live stages. Every card is 1200×750 and
-800×500 in both JPEG and WebP, so a new shot must be taken at the section's
-8:5 proportion rather than cropped into it:
+Portfolio card screenshots, from the live stages. Every card is 1200×675 and
+800×450 in both JPEG and WebP, so a new shot must be taken at the section's
+16:9 proportion rather than cropped into it:
 
 ```bash
-"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1440,900 --virtual-time-budget=9000 --screenshot=shot.png https://chaijana.ks-design.workers.dev
+"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" --headless --disable-gpu --hide-scrollbars --force-device-scale-factor=2 --window-size=1440,810 --virtual-time-budget=9000 --screenshot=shot.png https://chaijana.ks-design.workers.dev
 ```
 
 Two cards need more than that flag. Ember's shot must catch the animation
@@ -361,7 +363,7 @@ mid-burn, so it is taken through the DevTools protocol: open the study, click
 Play, wait about 1.3 seconds, then capture — a plain `--screenshot` grabs the
 resting figure. Mikhail Orlov's page holds its entrance reveals until the
 content scrolls into view, so a wide window screenshots as an empty sheet;
-shoot it at 1000×625 (or drive it over the protocol with a pause after load)
+shoot it at 1000×563 (or drive it over the protocol with a pause after load)
 and scale to the card sizes.
 
 Neither is part of `npm run build`; both outputs are committed.

@@ -199,6 +199,22 @@ test("the hero annotations carry the owner's claims and destinations", () => {
   }
 });
 
+test("every selected project ships in both languages and keeps its order", () => {
+  const slugs = ["chaijana", "alex-neon", "ember", "misha", "dreamboard", "fathom"];
+  for (const lang of LOCALES) {
+    assert.deepEqual(
+      content[lang].work.items.map((item) => item.slug),
+      slugs
+    );
+    for (const item of content[lang].work.items) {
+      assert.ok(
+        pages[lang].includes(`href="${item.href}"`),
+        `${lang}: selected project ${item.slug} is missing from the page`
+      );
+    }
+  }
+});
+
 test("placeholder testimonials stay out of the published pages", () => {
   /* Kind Words remains in the content model for later client-approved copy,
      but a todo block must never render in a customer-facing build. */
@@ -277,10 +293,9 @@ test("Contact is reachable at every width and duplicated at none", () => {
 
 test("English is the default and Spanish is the prefixed second locale", () => {
   assert.deepEqual(Object.keys(languages), ["en", "es"]);
-  /* The owner approved the Spanish hero annotations on 2026-08-28. A new or
-     reworded translation goes back on this list — and into this assertion —
-     until she signs it off. */
-  assert.deepEqual(localesAwaitingReview, []);
+  /* The new Dream Board and Fathom work cards are awaiting the owner's local
+     preview. Once approved, this goes back to an empty list. */
+  assert.deepEqual(localesAwaitingReview, ["es"]);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");
   assert.match(pages.en, /<html lang="en">/);
@@ -351,7 +366,9 @@ test("the only external links are the approved destinations", () => {
       links.work.chaijana,
       links.work.alexNeon,
       links.work.ember,
-      links.work.misha
+      links.work.misha,
+      links.work.dreamboard,
+      links.work.fathom
     ].map((url) => new URL(url).origin)
   );
 
@@ -539,7 +556,7 @@ test("the footer is one horizontal row under the contact band", () => {
 });
 
 test("the work previews are shown at the screenshots' own proportion", async () => {
-  /* Every card image in assets/work is 1200×750. The card must neither crop it
+  /* Every card image in assets/work is 1200×675. The card must neither crop it
      nor stretch it, so the frame sets no height and no object-fit — height
      follows width, and the ratio is the file's own. */
   const shots = await readdir(join(dist, "assets/work"));
@@ -554,6 +571,9 @@ test("the work previews are shown at the screenshots' own proportion", async () 
     !/aspect-ratio|min-height|max-height/.test(rule[0]),
     "the shot must take its proportion from the file, not from CSS"
   );
+  for (const lang of LOCALES) {
+    assert.match(pages[lang], /width="1200" height="675"/);
+  }
 
   /* On the deck the slide still fits one screen — by narrowing the cards, never
      by shortening them out of ratio. */

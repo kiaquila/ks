@@ -32,7 +32,9 @@ export const links = {
     alexNeon: "https://alex-neon.ks-design.workers.dev",
     /* Custom domain configured ahead of the rollout; serves once deployed. */
     ember: "https://ember.ks-design.art/",
-    misha: "https://misha.ks-design.workers.dev/"
+    misha: "https://misha.ks-design.workers.dev/",
+    dreamboard: "https://dreamboard.ks-design.art/",
+    fathom: "https://fathom.ks-design.art/"
   }
 };
 
@@ -48,10 +50,10 @@ export const languages = {
 /** Locales whose copy is a translation the owner has not signed off on yet.
  *  The build names them on every run, the way unfinished sections are named,
  *  so a draft translation cannot quietly become the published wording. The
- *  owner approved the Spanish copy on 2026-08-17, the ember and misha work
- *  cards on 2026-08-19, and the hero annotations (`hero.notes`) on
- *  2026-08-28. */
-export const localesAwaitingReview = [];
+ *  owner approved the original Spanish copy on 2026-08-17, the ember and misha
+ *  work cards on 2026-08-19, and the hero annotations (`hero.notes`) on
+ *  2026-08-28. The new Dream Board and Fathom cards await local review. */
+export const localesAwaitingReview = ["es"];
 
 /** One social card per language — sharing a page with a card that carries
  *  another language's headline is a mixed-language preview. Rendered by
@@ -157,6 +159,28 @@ export const content = {
           href: links.work.misha,
           image: "misha",
           alt: "Mikhail Orlov one-page CV portfolio, first screen"
+        },
+        {
+          slug: "dreamboard",
+          name: "Dream Board",
+          kind: "Lab study · browser tool",
+          year: "2026",
+          summary:
+            "A free browser tool for arranging uploaded images and text into a personal vision board, then downloading the finished composition as a PNG.",
+          href: links.work.dreamboard,
+          image: "dreamboard",
+          alt: "Dream Board landing page with a halftone world map"
+        },
+        {
+          slug: "fathom",
+          name: "Fathom",
+          kind: "Lab study · interactive",
+          year: "2026",
+          summary:
+            "An interactive school of shimmering goldfish drifting through painted water that changes with the visitor's local time of day.",
+          href: links.work.fathom,
+          image: "fathom",
+          alt: "Fathom study with shimmering goldfish in pale blue water"
         }
       ]
     },
@@ -336,6 +360,28 @@ export const content = {
           href: links.work.misha,
           image: "misha",
           alt: "Primera pantalla del portfolio CV de una página de Mikhail Orlov"
+        },
+        {
+          slug: "dreamboard",
+          name: "Dream Board",
+          kind: "Estudio de laboratorio · herramienta web",
+          year: "2026",
+          summary:
+            "Una herramienta gratuita en el navegador para armar un vision board con imágenes propias y texto, y descargar el resultado en PNG.",
+          href: links.work.dreamboard,
+          image: "dreamboard",
+          alt: "Landing de Dream Board con un mapamundi tramado"
+        },
+        {
+          slug: "fathom",
+          name: "Fathom",
+          kind: "Estudio de laboratorio · interactivo",
+          year: "2026",
+          summary:
+            "Un cardumen interactivo de peces dorados brillantes que deriva por agua pintada y cambia según la hora local de quien lo visita.",
+          href: links.work.fathom,
+          image: "fathom",
+          alt: "Estudio Fathom con peces dorados brillantes en agua celeste"
         }
       ]
     },
