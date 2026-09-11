@@ -150,96 +150,77 @@
       });
   }
 
-  /* --- work carousel ------------------------------------------------------ */
+  /* --- work filmstrip ----------------------------------------------------- */
 
+  /* Above 900px the track becomes the filmstrip (client pick, 2026-09-11):
+     the stylesheet places each card by its slot from the centre (`data-s`),
+     this only decides the slots. Below that width the track stays the native
+     scroller the markup ships, and a thumbnail's link is just a link. */
   const track = document.querySelector("[data-carousel-track]");
   const carousel = document.querySelector("[data-carousel]");
+  const strip = window.matchMedia("(min-width: 900px)");
 
   if (track && carousel) {
+    const cards = [...track.children];
+    const n = cards.length;
     const prev = carousel.querySelector("[data-carousel-prev]");
     const next = carousel.querySelector("[data-carousel-next]");
+    const count = carousel.querySelector("[data-carousel-count]");
+    const slot = cards.map(() => 0);
+    let active = 0;
 
-    /* One press moves exactly one card: the first card's box plus the gap. */
-    const step = () => {
-      const card = track.firstElementChild;
-      if (!card) return Math.max(track.clientWidth, 1);
-      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-      return card.getBoundingClientRect().width + gap;
+    const place = (i, s) => {
+      slot[i] = s;
+      cards[i].dataset.s = s;
     };
 
-    /* Chrome refuses a smooth programmatic scroll inside a nested scroller
-       while the document itself snaps, so the glide is animated by hand onto
-       a card boundary — which is where the snap points are. */
-    const glide = (direction) => {
-      const size = step();
-      const max = track.scrollWidth - track.clientWidth;
-      const to = Math.max(
-        0,
-        Math.min(Math.round(track.scrollLeft / size + direction) * size, max)
-      );
-      if (scrollBehavior() === "auto") {
-        track.scrollLeft = to;
-        return;
-      }
-      const from = track.scrollLeft;
-      const start = performance.now();
-      const tick = (now) => {
-        const p = Math.min(1, (now - start) / 320);
-        track.scrollLeft = from + (to - from) * (1 - (1 - p) ** 3);
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
+    /* Forward, the slots run −3…2 so the leaving card fades out on the left;
+       backward, −2…3 so it leaves on the right. A card whose slot would move
+       against the flow is the one entering from the far side: it is parked in
+       the wings first, without transition, so it slides in rather than
+       crossing the stage. */
+    const go = (target, dir) => {
+      active = (target + n) % n;
+      cards.forEach((card, i) => {
+        let s = (i - active + n) % n;
+        if (s > (dir > 0 ? 2 : 3)) s -= n;
+        if (dir > 0 ? s > slot[i] : s < slot[i]) {
+          card.classList.add("no-tr");
+          place(i, dir * 3);
+          void card.offsetWidth;
+          card.classList.remove("no-tr");
+        }
+        place(i, s);
+      });
+      count.textContent = `${active + 1}/${n}`;
     };
 
-    /* The arrows sit on the shots' centre, not the whole card's. */
-    const alignArrows = () => {
-      const shot = track.querySelector(".work-shot");
-      if (!shot) return;
-      const box = carousel.getBoundingClientRect();
-      const shotBox = shot.getBoundingClientRect();
-      const top = `${shotBox.top - box.top + shotBox.height / 2}px`;
-      prev.style.top = top;
-      next.style.top = top;
-    };
+    /* A thumbnail brings its project to the centre; the centre one opens
+       the site. */
+    cards.forEach((card, i) => {
+      card.addEventListener("click", (event) => {
+        if (!strip.matches || i === active) return;
+        event.preventDefault();
+        go(i, i > active ? 1 : -1);
+      });
+    });
 
+    prev.addEventListener("click", () => go(active - 1, -1));
+    next.addEventListener("click", () => go(active + 1, 1));
+    track.addEventListener("keydown", (event) => {
+      if (!strip.matches) return;
+      if (event.key === "ArrowLeft") go(active - 1, -1);
+      if (event.key === "ArrowRight") go(active + 1, 1);
+    });
+
+    /* The slots are set before the strip is switched on, so the first layout
+       lands in place instead of sliding in. */
+    go(0, 1);
     const sync = () => {
-      const max = track.scrollWidth - track.clientWidth;
-      /* With few projects the track does not overflow, and two dead arrows
-         read as breakage. */
-      const overflows = max > 4;
-      prev.hidden = !overflows;
-      next.hidden = !overflows;
-      if (!overflows) return;
-      prev.disabled = track.scrollLeft <= 4;
-      next.disabled = track.scrollLeft >= max - 4;
-      alignArrows();
+      carousel.toggleAttribute("data-strip", strip.matches);
+      prev.hidden = next.hidden = !strip.matches;
     };
-
-    prev.addEventListener("click", () => glide(-1));
-    next.addEventListener("click", () => glide(1));
-
-    let scrollTick = false;
-    track.addEventListener(
-      "scroll",
-      () => {
-        if (scrollTick) return;
-        scrollTick = true;
-        requestAnimationFrame(() => {
-          sync();
-          scrollTick = false;
-        });
-      },
-      { passive: true }
-    );
-
-    /* Card widths are percentages, so a resize changes both the page size
-       and whether the track overflows. */
-    if ("ResizeObserver" in window) {
-      new ResizeObserver(sync).observe(track);
-    } else {
-      addEventListener("resize", sync, { passive: true });
-    }
-
+    strip.addEventListener("change", sync);
     sync();
   }
 

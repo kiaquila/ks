@@ -584,6 +584,34 @@ test("the work previews are shown at the screenshots' own proportion", async () 
   assert.match(clean, /\.work-track \{\s*max-width: calc\(\(100svh/);
 });
 
+test("the filmstrip is claimed by the script and leaves the scroller behind", () => {
+  /* Above 900px the script rebuilds the work track as a filmstrip (client
+     pick, 2026-09-11). Every strip rule hangs off `data-strip`, which only
+     the script sets, so a no-JS visit keeps the native scroll track — the
+     markup ships nothing pre-hidden, and the counter is empty until the
+     script fills it. */
+  const clean = withoutComments(css);
+  const stripRules = clean.match(/\.carousel\[data-strip\][^{]*\{/g) ?? [];
+  assert.ok(stripRules.length >= 10, "the filmstrip rules are missing");
+  assert.doesNotMatch(clean, /(?:^|\})\s*\[data-s=/, "a slot rule outside data-strip would style the scroller");
+  assert.match(siteScript, /toggleAttribute\("data-strip", strip\.matches\)/);
+  assert.match(siteScript, /matchMedia\("\(min-width: 900px\)"\)/);
+  for (const lang of LOCALES) {
+    assert.match(pages[lang], /<span class="work-count" data-carousel-count aria-live="polite"><\/span>/);
+    /* No pagination dots and no loops: both were tried and declined. */
+    assert.doesNotMatch(pages[lang], /work-dots|<video/);
+  }
+  /* Off the strip the thumbnails are plain links; on it they bring their
+     project forward and only the centre one opens the site. */
+  assert.match(siteScript, /if \(!strip\.matches \|\| i === active\) return;\s*event\.preventDefault\(\);/);
+  /* The kind is the one line of the card the strip drops, to keep the block
+     short (client decision, 2026-09-11); it still reads in the flowing layout. */
+  assert.match(clean, /\.carousel\[data-strip\] \.work-kind \{\s*display: none;/);
+  /* The cornflower stays on the wordmark's dot alone. */
+  const dotUsers = [...clean.matchAll(/([^{}]+)\{[^}]*var\(--brand-dot\)[^}]*\}/g)].map((m) => m[1].trim());
+  assert.deepEqual(dotUsers, [".brand-dot"]);
+});
+
 test("switching language keeps the reader in the same section", () => {
   /* The hrefs in the markup stay the plain locale paths — the switch is a link
      first — and the script appends the current slide's id when the reader

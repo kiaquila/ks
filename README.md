@@ -17,7 +17,7 @@ lead paragraph under it repeated what the heading already said.
    to the wall, tilted 5° with a paper shadow and a piece of masking tape.
    On hover it winks, and the owner's claims appear hand-written around it
    with curled arrows pointing at her — plain text, no links
-2. Selected projects — screenshots at their own 16:9 proportion
+2. Selected projects — a filmstrip of screenshots at their own 16:9 proportion
 3. Process — `01`–`04`
 4. Services — three package cards
 5. Kind Words

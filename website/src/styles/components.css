@@ -467,8 +467,9 @@
 /* --- carousel -------------------------------------------------------------- */
 
 /* The track is an ordinary scroll container with snap points, so it works by
-   drag, wheel, trackpad and keyboard before any script loads. The buttons are
-   an enhancement and stay hidden until the script can drive them. */
+   drag, wheel, trackpad and keyboard before any script loads. Above 900px the
+   script rebuilds it as the filmstrip (sections.css); below, it stays this
+   scroller and swipes, so the arrows are shown only with the strip. */
 .work-track {
   display: grid;
   grid-auto-flow: column;
@@ -492,15 +493,12 @@
 }
 
 /* The arrows flank the track in side lanes reserved by the carousel's own
-   padding, so they never cover the shots at any width. Phones drop the
-   arrows (the track swipes) and reclaim the lanes. */
+   padding, so they never cover the shots at any width. */
 .carousel {
   position: relative;
   padding-inline: 4.5rem;
 }
 
-/* The script re-anchors `top` to the vertical centre of the shots; 50% is
-   only the fallback before the first sync runs. */
 .carousel-btn {
   display: inline-flex;
   align-items: center;
@@ -539,12 +537,12 @@
   background: var(--ground-alt);
 }
 
-.carousel-btn:disabled {
-  opacity: 0.32;
-  cursor: default;
+/* The counter belongs to the filmstrip and stays out of the flowing layout. */
+.work-count {
+  display: none;
 }
 
-@media (max-width: 719px) {
+@media (max-width: 899px) {
   .carousel {
     padding-inline: 0;
   }
@@ -552,7 +550,9 @@
   .carousel-btn {
     display: none;
   }
+}
 
+@media (max-width: 719px) {
   .work-track {
     grid-auto-columns: 86%;
     gap: var(--space-sm);
