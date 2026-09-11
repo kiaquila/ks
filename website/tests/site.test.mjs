@@ -751,6 +751,7 @@ test("every touch target clears 44 px", () => {
     [/\.lang-switch a,\s*\.lang-current\s*\{[^}]*\}/, "both"],
     [/\.footer-social a\s*\{[^}]*\}/, "both"],
     [/\.carousel-btn\s*\{[^}]*\}/, "both"],
+    [/\.carousel\[data-strip\] \.work-link\s*\{[^}]*\}/, "height"],
     [/\.brand\s*\{[^}]*\}/, "height"],
     [/\.site-nav a\s*\{[^}]*\}/, "height"],
     [/\.btn-compact\s*\{[^}]*\}/, "height"],

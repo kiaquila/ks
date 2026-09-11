@@ -386,10 +386,19 @@
     transition-delay: 0s, 0s, 0s, 420ms;
   }
 
+  /* A thumbnail is a control on the strip, so its link keeps a 44px tall
+     hit area even where the 16:9 shot inside is shorter (72px wide at the
+     900px floor makes a 41px shot); the shot stays centred in it. */
   .carousel[data-strip] .work-link {
-    display: block;
+    display: flex;
+    align-items: center;
     position: relative;
     height: auto;
+    min-height: 2.75rem;
+  }
+
+  .carousel[data-strip] .work-shot {
+    width: 100%;
   }
 
   /* Paper: square, a hairline on the thumbnails and none on the big shot. */
