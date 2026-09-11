@@ -63,7 +63,9 @@ rules, heavy tracked capitals. Everything below follows from that.
   project sits large on a `--ground-alt` panel with its name, a two-line
   summary and the "Open the site" link below; the other five wait as
   thumbnails either side, two visible per side and one unseen in the wings;
-  a counter (`1/6`) sits outside the panel at the shot's top right. The
+  a counter (`1/6`) sits at the strip's far right, level with the shot's top
+  and above the outer thumbnail — outside the panel on purpose, where the
+  reference keeps it, not on the shot's own edge. The
   arrows, a click on a thumbnail or an arrow key on the focused track slide
   the next one in as the current one shrinks away. The strip drops the kind
   line (client decision, 2026-09-11, to keep the block short — it still

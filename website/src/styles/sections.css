@@ -453,6 +453,10 @@
     margin-top: calc((var(--zone-top) - var(--zone-bottom)) / 2);
   }
 
+  /* The counter keeps to the strip's far right, level with the shot's top
+     and above the outer thumbnail, where the reference has it — outside the
+     panel on purpose, not on the shot's own edge (client pick, 2026-09-11).
+     The 4.5rem is the arrow lane. */
   .carousel[data-strip] .work-count {
     display: block;
     position: absolute;
