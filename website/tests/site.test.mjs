@@ -671,6 +671,16 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* The frame is what is left after the arrow lanes and four thumbnails, so
      the thumbnail ramp is part of the floor holding at the 900px breakpoint. */
   assert.match(clean, /--thumb-w: clamp\(3\.375rem, 6vw, 6\.25rem\);/);
+  /* The cards' sizes hint describes that same frame, so it is part of the
+     coupling: the horizontal term follows the thumbnail ramp, and the fixed
+     step covers the widths where the container caps. */
+  for (const lang of LOCALES) {
+    assert.match(
+      pages[lang],
+      /sizes="\(min-width: 1300px\) 520px, \(min-width: 900px\) min\(calc\(70\.8vw - 219px\), max\(25rem, calc\(106\.7vh - 313px\)\)\), \(max-width: 719px\) 86vw, 44vw"/,
+      `${lang}: the work cards no longer describe the featured frame`
+    );
+  }
   assert.doesNotMatch(clean, /max-width: calc\(\(60svh/);
   /* The cornflower stays on the wordmark's dot alone. */
   const dotUsers = [...clean.matchAll(/([^{}]+)\{[^}]*var\(--brand-dot\)[^}]*\}/g)].map((m) => m[1].trim());

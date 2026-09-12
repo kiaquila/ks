@@ -223,18 +223,20 @@ function work(copy) {
               alt: item.alt,
               widths: [800, 1200],
               height: 675,
-              /* The filmstrip's featured frame, measured rather than derived:
-                 restating the stylesheet's own min() cost 206 characters on
-                 each of twelve images and put the pages over their HTML
-                 budget. From 1300px the 76rem container is capped and the
-                 frame stops following the viewport — it measures 617px at
-                 1300, 536 at 1600, 520 at 2000 — so a fraction there would
-                 advertise a slot twice the real one and pull the 1200w file
-                 onto 1× screens that want the 800w. Below that cap it tracks
-                 the viewport (540px at 1280, 400 at the 900 floor). Then the
-                 scroller's two cards, and one on phones. */
+              /* The filmstrip's featured frame. It is whichever bites first:
+                 the width the two arrow lanes and four 6vw thumbnails leave
+                 over, or the height a deck slide leaves, floored at 25rem.
+                 Both terms are measured, not derived — the horizontal one
+                 matched the browser to a pixel at 900, 1000 and 1200 wide
+                 (418, 489, 630), the vertical at 1280×800 (540) and at the
+                 900×660 floor (400). Above 1300px the 76rem container caps
+                 and the frame settles at 520px, so a viewport fraction there
+                 would advertise twice the real slot; between 1300 and 1500
+                 the fixed step reads low by up to 97px, which still picks
+                 the same candidate at 1× and 2×. Then the scroller's two
+                 cards, and one on phones. */
               sizes:
-                "(min-width: 1300px) 620px, (min-width: 900px) 42vw, (max-width: 719px) 86vw, 44vw",
+                "(min-width: 1300px) 520px, (min-width: 900px) min(calc(70.8vw - 219px), max(25rem, calc(106.7vh - 313px))), (max-width: 719px) 86vw, 44vw",
               /* v2: every card re-shot from 8:5 to 16:9 under the same file
                  names (2026-09-11); a cached 8:5 file would fill the new box
                  at the wrong ratio. */
