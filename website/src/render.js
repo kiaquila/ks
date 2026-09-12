@@ -223,22 +223,14 @@ function work(copy) {
               alt: item.alt,
               widths: [800, 1200],
               height: 675,
-              /* The filmstrip's featured frame, as one min() of the three
-                 limits the layout applies: the width left by the arrow lanes
-                 and thumbnails while the container still grows, the width
-                 left once the 76rem container caps (where the 6vw ramp keeps
-                 eating into it until it too caps, at 520px), and the height a
-                 deck slide leaves, floored at 25rem. Measured against a
-                 browser rather than derived: exact at 900×660 (400), 900×1000
-                 (418), 1000×1000 (489), 1200×1000 (630), 1280×800 (540) and
-                 2000×1200 (520), and out by at most 9px between 1300 and
-                 1700, which holds the right candidate at 1×, 1.5× and 2×.
-                 The constants are rounded and the inner spaces dropped
-                 because this string ships 24 times across the two pages, so
-                 a character costs 24 bytes of the HTML budget. Then the
-                 scroller's two cards, and one on phones. */
-              sizes:
-                "(min-width:900px) min(calc(71vw - 220px),max(520px,min(calc(997px - 29vw),calc(920px - 24vw))),max(400px,calc(107vh - 313px))), (max-width:719px) 86vw, 44vw",
+              /* What the markup ships is the native scroller's slot, because
+                 that is what renders until the script claims the strip — and
+                 what a no-JS visit keeps for good. Measured: 341px at 900,
+                 463 at 1200, 469 at 1280, 464 at 2000. The strip's frame is a
+                 different size, so `site.js` carries that expression and swaps
+                 it in when it enables the strip; keeping it here would ship it
+                 24 times across the two pages for readers who never see it. */
+              sizes: "(min-width:900px) min(38vw,470px), (max-width:719px) 86vw, 44vw",
               /* v2: every card re-shot from 8:5 to 16:9 under the same file
                  names (2026-09-11); a cached 8:5 file would fill the new box
                  at the wrong ratio. */

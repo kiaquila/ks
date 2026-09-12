@@ -90,7 +90,26 @@ rules, heavy tracked capitals. Everything below follows from that.
   The floor only holds if the thumbnails leave room for it: the ramp is
   `clamp(3.375rem, 6vw, 6.25rem)`, and at 7vw the four thumbnails plus the
   two arrow lanes squeezed the frame to ~346px at the 900×660 floor
-  (Codex review, 2026-09-11). Re-measure both together if either moves. Thumbnails are the same 16:9
+  (Codex review, 2026-09-11). Re-measure both together if either moves.
+- **The work cards carry two `sizes` hints, and the script decides which.**
+  The markup ships the native scroller's slot —
+  `(min-width:900px) min(38vw,470px), (max-width:719px) 86vw, 44vw`, measured
+  at 341px at 900, 463 at 1200, 469 at 1280, 464 at 2000 — because the
+  scroller is what renders until the script claims the strip, and what a
+  no-JS visit keeps for good. `site.js` swaps in the strip's own frame when
+  it sets `data-strip`, and swaps it back out at the breakpoint:
+  `min(calc(71vw - 220px),max(520px,min(calc(997px - 29vw),calc(920px - 24vw))),max(400px,calc(107vh - 313px)))`
+  — the width left while the container grows, the width left once the 76rem
+  container caps and the 6vw ramp keeps eating in until it caps too at 520px,
+  and the height a deck slide leaves, floored at 25rem. Verified against a
+  probe element carrying the expression: exact at 900×660 (400) and 2000×1200
+  (520), within 3px at 1200×1000 (630) and 1280×800 (540), and low by at most
+  9px between 1300 and 1700, which still holds the right candidate at 1×, 1.5×
+  and 2×. It lives in the script rather than the markup for two reasons: it
+  would otherwise ship 24 times across the two pages, against an HTML budget
+  with little room, and it would describe a layout a no-JS reader never gets
+  (both Codex review, 2026-09-12). The script's prose was cut to pay for the
+  bytes, which is why this paragraph is here and not there. Thumbnails are the same 16:9
   files uncropped, not portrait crops.
 - The process numerals grow slightly on hover. Any motion added here stays at
   that scale: a transform on one element, killed by `prefers-reduced-motion`.

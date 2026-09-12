@@ -647,6 +647,8 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* Off the strip the thumbnails are plain links; on it they bring their
      project forward and only the centre one opens the site. */
   assert.match(siteScript, /if \(!strip\.matches \|\| i === active\) return;\s*event\.preventDefault\(\);/);
+  assert.match(siteScript, /const flow = shots\[0\]\.sizes;/);
+  assert.match(siteScript, /shots\.forEach\(\(el\) => \(el\.sizes = strip\.matches \? wide : flow\)\);/);
   /* Focus never stays on a control the breakpoint is about to withdraw: an
      arrow is hidden by `sync`, so focus moves to the track before that. */
   assert.match(siteScript, /if \(!strip\.matches && document\.activeElement\?\.closest\("\.carousel-btn"\)\) track\.focus\(\);\s*prev\.hidden = next\.hidden = !strip\.matches;/);
@@ -656,9 +658,10 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* Widening onto the strip leaves every card but the centre one out of the
      accessibility tree, so focus moves to the track before it goes on. */
   assert.match(siteScript, /const sync = \(\) => \{\s*const focused = document\.activeElement\?\.closest\("\.work-card"\);\s*if \(strip\.matches && focused && slot\[cards\.indexOf\(focused\)\]\) track\.focus\(\);\s*carousel\.toggleAttribute\("data-strip"/);
-  /* Narrowing off the strip leaves the scroller at its start; the focused
-     card is scrolled into view once the flowing layout is back. */
-  assert.match(siteScript, /prev\.hidden = next\.hidden = !strip\.matches;\s*if \(!strip\.matches && focused\) focused\.scrollIntoView\(\{ block: "nearest", inline: "start" \}\);/);
+  /* Narrowing off the strip leaves the scroller at its start, so the active
+     project is scrolled into view — whether it was reached by a card or by
+     an arrow, which owns focus itself. */
+  assert.match(siteScript, /prev\.hidden = next\.hidden = !strip\.matches;\s*if \(!strip\.matches\) cards\[active\]\.scrollIntoView\(\{ block: "nearest", inline: "start" \}\);/);
   /* Off the centre, a thumbnail is a pointer target only: it leaves the tab
      order and the accessibility tree, so link semantics — an external link
      that really navigates — stay with the one card that opens a site. The
@@ -674,13 +677,13 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* The frame is what is left after the arrow lanes and four thumbnails, so
      the thumbnail ramp is part of the floor holding at the 900px breakpoint. */
   assert.match(clean, /--thumb-w: clamp\(3\.375rem, 6vw, 6\.25rem\);/);
-  /* The cards' sizes hint describes that same frame, so it is part of the
-     coupling: the horizontal term follows the thumbnail ramp, and the fixed
-     step covers the widths where the container caps. */
+  /* The markup ships the scroller's slot — that is what a no-JS visit keeps
+     — and the script swaps in the strip's own frame, which follows the
+     thumbnail ramp, only once it has claimed the strip. */
   for (const lang of LOCALES) {
     assert.match(
       pages[lang],
-      /sizes="\(min\-width:900px\)\ min\(calc\(71vw\ \-\ 220px\),max\(520px,min\(calc\(997px\ \-\ 29vw\),calc\(920px\ \-\ 24vw\)\)\),max\(400px,calc\(107vh\ \-\ 313px\)\)\),\ \(max\-width:719px\)\ 86vw,\ 44vw"/,
+      /sizes="\(min\-width:900px\)\ min\(38vw,470px\),\ \(max\-width:719px\)\ 86vw,\ 44vw"/,
       `${lang}: the work cards no longer describe the featured frame`
     );
   }

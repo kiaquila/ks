@@ -152,10 +152,8 @@
 
   /* --- work filmstrip ----------------------------------------------------- */
 
-  /* Above 900px the track becomes the filmstrip (client pick, 2026-09-11):
-     the stylesheet places each card by its slot from the centre (`data-s`),
-     this only decides the slots. Below that width the track stays the native
-     scroller the markup ships, and a thumbnail's link is just a link. */
+  /* Above 900px the track is the filmstrip: CSS places each card by its slot
+     (`data-s`), this decides the slots. See AGENTS.md. */
   const track = document.querySelector("[data-carousel-track]");
   const carousel = document.querySelector("[data-carousel]");
   const strip = window.matchMedia("(min-width: 900px)");
@@ -168,19 +166,22 @@
     const count = carousel.querySelector("[data-carousel-count]");
     const slot = cards.map(() => 0);
     let active = 0;
+    /* The markup's `sizes` fits the scroller; the strip's frame does not. */
+    const shots = [...track.querySelectorAll("img,source")];
+    const flow = shots[0].sizes;
+    const wide = "min(calc(71vw - 220px),max(520px,min(calc(997px - 29vw),calc(920px - 24vw))),max(400px,calc(107vh - 313px)))";
 
     const place = (i, s) => {
       slot[i] = s;
       cards[i].dataset.s = s;
-      /* Only the centre card is the site's link; thumbnails are pointer
-         targets and leave the tab order and the a11y tree. */
+      /* Only the centre card is the site's link. */
       const off = strip.matches && s !== 0;
       cards[i].ariaHidden = off;
       cards[i].firstElementChild.tabIndex = off ? -1 : 0;
     };
 
-    /* Slots run −3…2 forward, −2…3 back. A card moving against the flow
-       parks in the wings first, untransitioned, so it slides in. */
+    /* Slots run −3…2 forward, −2…3 back; a card crossing the list parks in
+       the wings first, untransitioned. */
     const go = (target, dir) => {
       active = (target + n) % n;
       cards.forEach((card, i) => {
@@ -197,8 +198,7 @@
       count.textContent = `${active + 1}/${n}`;
     };
 
-    /* A thumbnail centres its project; the centre one opens the site. The
-       flow follows the side it is seen on, not its index. */
+    /* A thumbnail centres its project, entering from the side it is on. */
     cards.forEach((card, i) => {
       card.addEventListener("click", (event) => {
         if (!strip.matches || i === active) return;
@@ -209,26 +209,26 @@
 
     prev.addEventListener("click", () => go(active - 1, -1));
     next.addEventListener("click", () => go(active + 1, 1));
-    /* Arrow keys step only while the track itself is focused. */
+    /* Arrow keys step only from the track itself. */
     track.addEventListener("keydown", (event) => {
       if (!strip.matches || event.target !== track) return;
       if (event.key === "ArrowLeft") go(active - 1, -1);
       if (event.key === "ArrowRight") go(active + 1, 1);
     });
 
-    /* Slots first, so the opening layout lands rather than slides. */
+    /* Slots first, so the opening layout lands. */
     go(0, 1);
-    /* Crossing 900px takes whatever the keyboard is on out of reach — a card
-       into the a11y tree's shadow, an arrow into `hidden` — so focus moves to
-       the track first and the card is scrolled back into view after. */
+    /* Crossing 900px puts whatever the keyboard is on out of reach, so focus
+       goes to the track and the scroller opens on the chosen project. */
     const sync = () => {
       const focused = document.activeElement?.closest(".work-card");
       if (strip.matches && focused && slot[cards.indexOf(focused)]) track.focus();
       carousel.toggleAttribute("data-strip", strip.matches);
       if (!strip.matches && document.activeElement?.closest(".carousel-btn")) track.focus();
       prev.hidden = next.hidden = !strip.matches;
-      if (!strip.matches && focused) focused.scrollIntoView({ block: "nearest", inline: "start" });
+      if (!strip.matches) cards[active].scrollIntoView({ block: "nearest", inline: "start" });
       cards.forEach((card, i) => place(i, slot[i]));
+      shots.forEach((el) => (el.sizes = strip.matches ? wide : flow));
     };
     strip.addEventListener("change", sync);
     sync();
