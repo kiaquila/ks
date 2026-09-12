@@ -221,12 +221,15 @@
     /* Crossing 900px puts whatever the keyboard is on out of reach, so focus
        goes to the track and the scroller opens on the chosen project. */
     const sync = () => {
+      const wasStrip = carousel.hasAttribute("data-strip");
       const focused = document.activeElement?.closest(".work-card");
       if (strip.matches && focused && slot[cards.indexOf(focused)]) track.focus();
       carousel.toggleAttribute("data-strip", strip.matches);
       if (!strip.matches && document.activeElement?.closest(".carousel-btn")) track.focus();
       prev.hidden = next.hidden = !strip.matches;
-      if (!strip.matches) cards[active].scrollIntoView({ block: "nearest", inline: "start" });
+      if (wasStrip && !strip.matches) {
+        track.scrollLeft = cards[active].offsetLeft - cards[0].offsetLeft;
+      }
       cards.forEach((card, i) => place(i, slot[i]));
       shots.forEach((el) => (el.sizes = strip.matches ? wide : flow));
     };
