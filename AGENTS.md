@@ -80,7 +80,10 @@ rules, heavy tracked capitals. Everything below follows from that.
   the keyboard steps with the arrows or the focused track. The strip is
   script-built — so a no-JS visit keeps the native scroller, which is also what
   phones and tablets get (below 900px the track swipes and the arrows are
-  gone; the old arrow-driven glide went with the script budget). The big
+  gone; the old arrow-driven glide went with the script budget). When
+  widening, the card nearest the scroller's snapped left edge becomes active
+  in the strip (a focused card wins). Narrowing back scrolls only the track
+  horizontally to that active card, never the document. The big
   width is the track less four thumbnails, and percent padding on the track
   turns it into the 16:9 height, so nothing is measured; the height cap is
   `60svh` less the header, which keeps the heading at the air it had over

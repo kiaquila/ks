@@ -180,8 +180,6 @@
       cards[i].firstElementChild.tabIndex = off ? -1 : 0;
     };
 
-    /* Slots run −3…2 forward, −2…3 back; a card crossing the list parks in
-       the wings first, untransitioned. */
     const go = (target, dir) => {
       active = (target + n) % n;
       cards.forEach((card, i) => {
@@ -223,6 +221,10 @@
     const sync = () => {
       const wasStrip = carousel.hasAttribute("data-strip");
       const focused = document.activeElement?.closest(".work-card");
+      if (strip.matches && !wasStrip) {
+        const nearest = Math.round(track.scrollLeft / (cards[1].offsetLeft - cards[0].offsetLeft));
+        go(focused ? cards.indexOf(focused) : nearest, 1);
+      }
       if (strip.matches && focused && slot[cards.indexOf(focused)]) track.focus();
       carousel.toggleAttribute("data-strip", strip.matches);
       if (!strip.matches && document.activeElement?.closest(".carousel-btn")) track.focus();

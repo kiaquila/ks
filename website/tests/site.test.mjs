@@ -657,7 +657,8 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   assert.match(siteScript, /"keydown",[\s\S]*?if \(!strip\.matches \|\| event\.target !== track\) return;/);
   /* Widening onto the strip leaves every card but the centre one out of the
      accessibility tree, so focus moves to the track before it goes on. */
-  assert.match(siteScript, /const sync = \(\) => \{\s*const wasStrip = carousel\.hasAttribute\("data-strip"\);\s*const focused = document\.activeElement\?\.closest\("\.work-card"\);\s*if \(strip\.matches && focused && slot\[cards\.indexOf\(focused\)\]\) track\.focus\(\);\s*carousel\.toggleAttribute\("data-strip"/);
+  assert.match(siteScript, /const sync = \(\) => \{\s*const wasStrip = carousel\.hasAttribute\("data-strip"\);\s*const focused = document\.activeElement\?\.closest\("\.work-card"\);/);
+  assert.match(siteScript, /if \(strip\.matches && !wasStrip\) \{[\s\S]*?Math\.round\(track\.scrollLeft \/ \(cards\[1\]\.offsetLeft - cards\[0\]\.offsetLeft\)\);\s*go\(focused \? cards\.indexOf\(focused\) : nearest, 1\);\s*\}\s*if \(strip\.matches && focused && slot\[cards\.indexOf\(focused\)\]\) track\.focus\(\);\s*carousel\.toggleAttribute\("data-strip"/);
   /* Only a strip-to-scroller transition repositions the track. Initial mobile
      sync and unrelated breakpoint changes must not pull the page to Work. */
   assert.match(siteScript, /const wasStrip = carousel\.hasAttribute\("data-strip"\);/);
