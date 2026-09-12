@@ -647,6 +647,9 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* Off the strip the thumbnails are plain links; on it they bring their
      project forward and only the centre one opens the site. */
   assert.match(siteScript, /if \(!strip\.matches \|\| i === active\) return;\s*event\.preventDefault\(\);/);
+  /* Focus never stays on a control the breakpoint is about to withdraw: an
+     arrow is hidden by `sync`, so focus moves to the track before that. */
+  assert.match(siteScript, /if \(!strip\.matches && document\.activeElement\?\.closest\("\.carousel-btn"\)\) track\.focus\(\);\s*prev\.hidden = next\.hidden = !strip\.matches;/);
   /* Arrow keys act on the focused track alone, never on a focused thumbnail
      that the step would carry into the hidden wings. */
   assert.match(siteScript, /"keydown",[\s\S]*?if \(!strip\.matches \|\| event\.target !== track\) return;/);
@@ -677,7 +680,7 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   for (const lang of LOCALES) {
     assert.match(
       pages[lang],
-      /sizes="\(min-width: 1300px\) 520px, \(min-width: 900px\) min\(calc\(70\.8vw - 219px\), max\(25rem, calc\(106\.7vh - 313px\)\)\), \(max-width: 719px\) 86vw, 44vw"/,
+      /sizes="\(min\-width:900px\)\ min\(calc\(71vw\ \-\ 220px\),max\(520px,min\(calc\(997px\ \-\ 29vw\),calc\(920px\ \-\ 24vw\)\)\),max\(400px,calc\(107vh\ \-\ 313px\)\)\),\ \(max\-width:719px\)\ 86vw,\ 44vw"/,
       `${lang}: the work cards no longer describe the featured frame`
     );
   }

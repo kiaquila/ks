@@ -172,17 +172,15 @@
     const place = (i, s) => {
       slot[i] = s;
       cards[i].dataset.s = s;
-      /* Only the centre card is the site's link. The thumbnails are pointer
-         targets, so they leave the tab order and the a11y tree instead of
-         being announced as links that do not navigate. */
+      /* Only the centre card is the site's link; thumbnails are pointer
+         targets and leave the tab order and the a11y tree. */
       const off = strip.matches && s !== 0;
       cards[i].ariaHidden = off;
       cards[i].firstElementChild.tabIndex = off ? -1 : 0;
     };
 
-    /* Slots run −3…2 forward, −2…3 back. A card moving against the flow is
-       entering from the far side: parked in the wings first, untransitioned,
-       so it slides in instead of crossing the stage. */
+    /* Slots run −3…2 forward, −2…3 back. A card moving against the flow
+       parks in the wings first, untransitioned, so it slides in. */
     const go = (target, dir) => {
       active = (target + n) % n;
       cards.forEach((card, i) => {
@@ -220,13 +218,14 @@
 
     /* Slots first, so the opening layout lands rather than slides. */
     go(0, 1);
-    /* Crossing 900px with the keyboard on a card: widening leaves every card
-       but the centre one out of the a11y tree, narrowing parks it out of
-       view — so focus and scroll follow it. */
+    /* Crossing 900px takes whatever the keyboard is on out of reach — a card
+       into the a11y tree's shadow, an arrow into `hidden` — so focus moves to
+       the track first and the card is scrolled back into view after. */
     const sync = () => {
       const focused = document.activeElement?.closest(".work-card");
       if (strip.matches && focused && slot[cards.indexOf(focused)]) track.focus();
       carousel.toggleAttribute("data-strip", strip.matches);
+      if (!strip.matches && document.activeElement?.closest(".carousel-btn")) track.focus();
       prev.hidden = next.hidden = !strip.matches;
       if (!strip.matches && focused) focused.scrollIntoView({ block: "nearest", inline: "start" });
       cards.forEach((card, i) => place(i, slot[i]));

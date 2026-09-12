@@ -223,20 +223,22 @@ function work(copy) {
               alt: item.alt,
               widths: [800, 1200],
               height: 675,
-              /* The filmstrip's featured frame. It is whichever bites first:
-                 the width the two arrow lanes and four 6vw thumbnails leave
-                 over, or the height a deck slide leaves, floored at 25rem.
-                 Both terms are measured, not derived — the horizontal one
-                 matched the browser to a pixel at 900, 1000 and 1200 wide
-                 (418, 489, 630), the vertical at 1280×800 (540) and at the
-                 900×660 floor (400). Above 1300px the 76rem container caps
-                 and the frame settles at 520px, so a viewport fraction there
-                 would advertise twice the real slot; between 1300 and 1500
-                 the fixed step reads low by up to 97px, which still picks
-                 the same candidate at 1× and 2×. Then the scroller's two
-                 cards, and one on phones. */
+              /* The filmstrip's featured frame, as one min() of the three
+                 limits the layout applies: the width left by the arrow lanes
+                 and thumbnails while the container still grows, the width
+                 left once the 76rem container caps (where the 6vw ramp keeps
+                 eating into it until it too caps, at 520px), and the height a
+                 deck slide leaves, floored at 25rem. Measured against a
+                 browser rather than derived: exact at 900×660 (400), 900×1000
+                 (418), 1000×1000 (489), 1200×1000 (630), 1280×800 (540) and
+                 2000×1200 (520), and out by at most 9px between 1300 and
+                 1700, which holds the right candidate at 1×, 1.5× and 2×.
+                 The constants are rounded and the inner spaces dropped
+                 because this string ships 24 times across the two pages, so
+                 a character costs 24 bytes of the HTML budget. Then the
+                 scroller's two cards, and one on phones. */
               sizes:
-                "(min-width: 1300px) 520px, (min-width: 900px) min(calc(70.8vw - 219px), max(25rem, calc(106.7vh - 313px))), (max-width: 719px) 86vw, 44vw",
+                "(min-width:900px) min(calc(71vw - 220px),max(520px,min(calc(997px - 29vw),calc(920px - 24vw))),max(400px,calc(107vh - 313px))), (max-width:719px) 86vw, 44vw",
               /* v2: every card re-shot from 8:5 to 16:9 under the same file
                  names (2026-09-11); a cached 8:5 file would fill the new box
                  at the wrong ratio. */
