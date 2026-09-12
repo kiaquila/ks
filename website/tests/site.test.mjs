@@ -650,9 +650,9 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* Arrow keys act on the focused track alone, never on a focused thumbnail
      that the step would carry into the hidden wings. */
   assert.match(siteScript, /"keydown",[\s\S]*?if \(!strip\.matches \|\| event\.target !== track\) return;/);
-  /* Widening onto the strip hides the card bound for the wings; if the
-     keyboard is on it, focus moves to the track before the strip goes on. */
-  assert.match(siteScript, /const sync = \(\) => \{\s*const focused = document\.activeElement\?\.closest\("\.work-card"\);\s*if \(strip\.matches && focused && Math\.abs\(slot\[cards\.indexOf\(focused\)\]\) > 2\) track\.focus\(\);\s*carousel\.toggleAttribute\("data-strip"/);
+  /* Widening onto the strip leaves every card but the centre one out of the
+     accessibility tree, so focus moves to the track before it goes on. */
+  assert.match(siteScript, /const sync = \(\) => \{\s*const focused = document\.activeElement\?\.closest\("\.work-card"\);\s*if \(strip\.matches && focused && slot\[cards\.indexOf\(focused\)\]\) track\.focus\(\);\s*carousel\.toggleAttribute\("data-strip"/);
   /* Narrowing off the strip leaves the scroller at its start; the focused
      card is scrolled into view once the flowing layout is back. */
   assert.match(siteScript, /prev\.hidden = next\.hidden = !strip\.matches;\s*if \(!strip\.matches && focused\) focused\.scrollIntoView\(\{ block: "nearest", inline: "start" \}\);/);
@@ -668,6 +668,9 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* The strip switches on at 900px wide at any height, so the height-derived
      frame carries a floor; without it a short window shrank it to nothing. */
   assert.match(clean, /--frame: max\(25rem, calc\(\(60svh/);
+  /* The frame is what is left after the arrow lanes and four thumbnails, so
+     the thumbnail ramp is part of the floor holding at the 900px breakpoint. */
+  assert.match(clean, /--thumb-w: clamp\(3\.375rem, 6vw, 6\.25rem\);/);
   assert.doesNotMatch(clean, /max-width: calc\(\(60svh/);
   /* The cornflower stays on the wordmark's dot alone. */
   const dotUsers = [...clean.matchAll(/([^{}]+)\{[^}]*var\(--brand-dot\)[^}]*\}/g)].map((m) => m[1].trim());

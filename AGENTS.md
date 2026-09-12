@@ -84,7 +84,13 @@ rules, heavy tracked capitals. Everything below follows from that.
   width is the track less four thumbnails, and percent padding on the track
   turns it into the 16:9 height, so nothing is measured; the height cap is
   `60svh` less the header, which keeps the heading at the air it had over
-  the two-card layout on a 1280×800 laptop. Thumbnails are the same 16:9
+  the two-card layout on a 1280×800 laptop. That cap sits behind a **25rem
+  floor** (`--frame`), because the strip switches on at 900px wide at any
+  height and the bare calculation collapsed the frame on a short window.
+  The floor only holds if the thumbnails leave room for it: the ramp is
+  `clamp(3.375rem, 6vw, 6.25rem)`, and at 7vw the four thumbnails plus the
+  two arrow lanes squeezed the frame to ~346px at the 900×660 floor
+  (Codex review, 2026-09-11). Re-measure both together if either moves. Thumbnails are the same 16:9
   files uncropped, not portrait crops.
 - The process numerals grow slightly on hover. Any motion added here stays at
   that scale: a transform on one element, killed by `prefers-reduced-motion`.

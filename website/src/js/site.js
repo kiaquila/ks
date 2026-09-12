@@ -220,11 +220,12 @@
 
     /* Slots first, so the opening layout lands rather than slides. */
     go(0, 1);
-    /* Crossing 900px with the keyboard on a card: widening may hide it in
-       the wings, narrowing parks it out of view — focus and scroll follow. */
+    /* Crossing 900px with the keyboard on a card: widening leaves every card
+       but the centre one out of the a11y tree, narrowing parks it out of
+       view — so focus and scroll follow it. */
     const sync = () => {
       const focused = document.activeElement?.closest(".work-card");
-      if (strip.matches && focused && Math.abs(slot[cards.indexOf(focused)]) > 2) track.focus();
+      if (strip.matches && focused && slot[cards.indexOf(focused)]) track.focus();
       carousel.toggleAttribute("data-strip", strip.matches);
       prev.hidden = next.hidden = !strip.matches;
       if (!strip.matches && focused) focused.scrollIntoView({ block: "nearest", inline: "start" });
