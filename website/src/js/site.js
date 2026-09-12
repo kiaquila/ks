@@ -219,9 +219,8 @@
     /* The slots are set before the strip is switched on, so the first layout
        lands in place instead of sliding in. */
     go(0, 1);
-    /* Crossing 900px with the keyboard on a card: widening can hide that
-       card in the wings, so focus moves to the track first; narrowing puts
-       it back in a scroller parked at the start, so it is scrolled into view. */
+    /* Crossing 900px with the keyboard on a card: widening may hide it in
+       the wings, narrowing parks it out of view — focus and scroll follow. */
     const sync = () => {
       const focused = document.activeElement?.closest(".work-card");
       if (strip.matches && focused && Math.abs(slot[cards.indexOf(focused)]) > 2) track.focus();
