@@ -49,7 +49,8 @@ export const languages = {
  *  owner approved the original Spanish copy on 2026-08-17, the ember and misha
  *  work cards on 2026-08-19, the hero annotations (`hero.notes`) on
  *  2026-08-28, and the Dream Board and Fathom cards with the reworded hero
- *  bullets on 2026-09-11. */
+ *  bullets on 2026-09-11. The owner approved the expanded service package
+ *  translations on 2026-09-11 as well. */
 export const localesAwaitingReview = [];
 
 /** One social card per language — sharing a page with a card that carries
@@ -184,7 +185,12 @@ export const content = {
             "We carefully gather and sharpen your meaning together — everything you consider important and want the landing page or site to say."
         },
         { n: "02", title: "A design concept", body: "I design a concept for you." },
-        { n: "03", title: "Two rounds of edits", body: "We go through two rounds of your edits." },
+        {
+          n: "03",
+          title: "Two rounds of edits",
+          body:
+            "We go through two rounds of edits. Each round is based on one consolidated list of comments within the approved concept."
+        },
         { n: "04", title: "The finished site", body: "You get the finished site." }
       ]
     },
@@ -192,17 +198,43 @@ export const content = {
       id: "services",
       title: "Services",
       currencyNote: "Prices are in US dollars.",
+      hostingNote:
+        "* Domain registration, paid fonts and images, plugins, and subscriptions are paid separately. Hosting can be arranged for an additional fee.",
       items: [
-        { name: "Landing page", price: "USD 1,000", note: "A single-page site, done end to end." },
+        {
+          name: "Landing page",
+          price: "USD 1,000",
+          note: "A single-page site, done end to end.",
+          features: [
+            "Up to 8 sections on one page",
+            "Structure and light editing of your copy",
+            "One custom design, built for desktop, tablet, and mobile",
+            "Two rounds of edits",
+            "Testing, launch, and full source code in your preferred format"
+          ]
+        },
         {
           name: "Website, 5+ pages",
-          price: "USD 3,000",
-          note: "A multi-page site with one consistent structure."
+          price: "from USD 3,000",
+          note: "A multi-page site with one consistent structure.",
+          features: [
+            "Sitemap and content structure",
+            "5 core pages with one consistent design",
+            "Responsive build with reusable components",
+            "One standard form and two rounds of edits",
+            "Testing, launch, and full source code in your preferred format"
+          ]
         },
         {
           name: "Illustrations",
           price: "from USD 75",
-          note: "Illustration work, priced per image."
+          note: "Illustration work, priced per image.",
+          features: [
+            "One original illustration based on your brief",
+            "Reference selection to agree on the visual direction",
+            "Final artwork in the agreed style and level of detail",
+            "Ready-to-use files in agreed formats"
+          ]
         }
       ]
     },
@@ -381,7 +413,8 @@ export const content = {
         {
           n: "03",
           title: "Dos rondas de cambios",
-          body: "Pasamos dos rondas de cambios tuyos."
+          body:
+            "Pasamos dos rondas de cambios. Cada ronda parte de una única lista consolidada de comentarios dentro del concepto aprobado."
         },
         { n: "04", title: "El sitio terminado", body: "Recibís el sitio terminado." }
       ]
@@ -390,17 +423,43 @@ export const content = {
       id: "services",
       title: "Servicios",
       currencyNote: "Los precios están en dólares estadounidenses.",
+      hostingNote:
+        "* El registro del dominio, las tipografías e imágenes pagas, los plugins y las suscripciones se pagan por separado. Podemos acordar el hosting por un costo adicional.",
       items: [
-        { name: "Landing", price: "USD 1.000", note: "Un sitio de una página, de punta a punta." },
+        {
+          name: "Landing",
+          price: "USD 1.000",
+          note: "Un sitio de una página, de punta a punta.",
+          features: [
+            "Hasta 8 secciones en una sola página",
+            "Estructura y edición ligera de tus textos",
+            "Un diseño a medida para computadora, tablet y celular",
+            "Dos rondas de cambios",
+            "Pruebas, publicación y todo el código fuente en el formato que prefieras"
+          ]
+        },
         {
           name: "Sitio de 5+ páginas",
-          price: "USD 3.000",
-          note: "Un sitio de varias páginas con una estructura consistente."
+          price: "desde USD 3.000",
+          note: "Un sitio de varias páginas con una estructura consistente.",
+          features: [
+            "Mapa del sitio y estructura de contenidos",
+            "5 páginas principales con un diseño consistente",
+            "Desarrollo responsive con componentes reutilizables",
+            "Un formulario estándar y dos rondas de cambios",
+            "Pruebas, publicación y todo el código fuente en el formato que prefieras"
+          ]
         },
         {
           name: "Ilustraciones",
           price: "desde USD 75",
-          note: "Creación de ilustraciones, precio por imagen."
+          note: "Creación de ilustraciones, precio por imagen.",
+          features: [
+            "Una ilustración original a partir de tu brief",
+            "Selección de referencias para acordar la dirección visual",
+            "Arte final con el estilo y nivel de detalle acordados",
+            "Archivos listos para usar en los formatos acordados"
+          ]
         }
       ]
     },

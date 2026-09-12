@@ -134,8 +134,8 @@ test("every process step appears in order", () => {
 
 test("the price list is rendered exactly as quoted", () => {
   const expected = {
-    en: ["USD 1,000", "USD 3,000", "from USD 75"],
-    es: ["USD 1.000", "USD 3.000", "desde USD 75"]
+    en: ["USD 1,000", "from USD 3,000", "from USD 75"],
+    es: ["USD 1.000", "desde USD 3.000", "desde USD 75"]
   };
   for (const [lang, prices] of Object.entries(expected)) {
     for (const price of prices) {
@@ -148,6 +148,40 @@ test("the price list is rendered exactly as quoted", () => {
        owner has taken off the price list. */
     assert.equal(content[lang].services.items.length, 3);
   }
+});
+
+test("the service scope is rendered as visible bullet lists", () => {
+  for (const lang of LOCALES) {
+    assert.equal(
+      pages[lang].match(/<ul class="service-features">/g)?.length,
+      3,
+      `${lang}: every service card needs its own feature list`
+    );
+    for (const item of content[lang].services.items) {
+      for (const feature of item.features) {
+        assert.ok(
+          pages[`${lang}Text`].includes(feature),
+          `${lang}: missing service feature "${feature}"`
+        );
+      }
+    }
+    assert.ok(pages[`${lang}Text`].includes(content[lang].services.hostingNote));
+  }
+
+  const [landing, website, illustrations] = content.en.services.items;
+  assert.doesNotMatch(landing.features.join(" "), /SEO|standard form/i);
+  assert.match(website.features.join(" "), /one standard form/i);
+  assert.doesNotMatch(
+    website.features.join(" "),
+    /additional pages|custom features/i
+  );
+  assert.doesNotMatch(illustrations.features.join(" "), /revision|licen[cs]e/i);
+  assert.doesNotMatch(
+    [...landing.features, ...website.features].join(" "),
+    /domain|paid fonts|subscriptions/i
+  );
+  assert.match(css, /\.service-features \{[^}]*list-style:\s*disc/);
+  assert.match(css, /\.hosting-note \{[^}]*color:\s*var\(--ink\)/);
 });
 
 test("the retired packages are gone from the price list", () => {
