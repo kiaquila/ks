@@ -74,7 +74,11 @@ rules, heavy tracked capitals. Everything below follows from that.
   loops over the moving sites; neither is to come back without asking. The
   strip is script-built: every rule hangs off `data-strip` and the cards are
   placed by slot (`data-s`, −3…3) in CSS — the script only decides the
-  slots — so a no-JS visit keeps the native scroller, which is also what
+  slots. Off the centre a thumbnail is a pointer target only: it leaves the
+  tab order and the accessibility tree, so the one card announced as a link
+  that opens a site is the one that actually does (Codex review, 2026-09-11);
+  the keyboard steps with the arrows or the focused track. The strip is
+  script-built — so a no-JS visit keeps the native scroller, which is also what
   phones and tablets get (below 900px the track swipes and the arrows are
   gone; the old arrow-driven glide went with the script budget). The big
   width is the track less four thumbnails, and percent padding on the track
@@ -211,7 +215,9 @@ Below that it is an ordinary flowing document.
 - The stylesheet budget is **64 KB raw** (`web-design.config.json`, raised
   from 60 KB on 2026-09-11 for the filmstrip, deliberately — the comments
   are part of the file and are not to be gutted to fit). The script budget
-  stayed at 4 KB.
+  stayed at 4 KB, and twice in this change behaviour was paid for by cutting
+  the filmstrip's own prose in `site.js` rather than by raising it; the
+  reasoning that was cut lives in this file.
 - **The collapsed menu leaves the tab order through CSS `visibility`, and that
   property is never transitioned.** Clip-path, opacity and pointer-events hide
   it from the eye and the mouse but leave every link keyboard-focusable. Every

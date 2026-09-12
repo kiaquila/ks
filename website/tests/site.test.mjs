@@ -656,6 +656,12 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* Narrowing off the strip leaves the scroller at its start; the focused
      card is scrolled into view once the flowing layout is back. */
   assert.match(siteScript, /prev\.hidden = next\.hidden = !strip\.matches;\s*if \(!strip\.matches && focused\) focused\.scrollIntoView\(\{ block: "nearest", inline: "start" \}\);/);
+  /* Off the centre, a thumbnail is a pointer target only: it leaves the tab
+     order and the accessibility tree, so link semantics — an external link
+     that really navigates — stay with the one card that opens a site. The
+     placement runs again when the breakpoint is crossed. */
+  assert.match(siteScript, /const off = strip\.matches && s !== 0;\s*cards\[i\]\.ariaHidden = off;\s*cards\[i\]\.firstElementChild\.tabIndex = off \? -1 : 0;/);
+  assert.match(siteScript, /cards\.forEach\(\(card, i\) => place\(i, slot\[i\]\)\);/);
   /* The kind is the one line of the card the strip drops, to keep the block
      short (client decision, 2026-09-11); it still reads in the flowing layout. */
   assert.match(clean, /\.carousel\[data-strip\] \.work-kind \{\s*display: none;/);

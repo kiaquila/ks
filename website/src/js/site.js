@@ -172,13 +172,17 @@
     const place = (i, s) => {
       slot[i] = s;
       cards[i].dataset.s = s;
+      /* Only the centre card is the site's link. The thumbnails are pointer
+         targets, so they leave the tab order and the a11y tree instead of
+         being announced as links that do not navigate. */
+      const off = strip.matches && s !== 0;
+      cards[i].ariaHidden = off;
+      cards[i].firstElementChild.tabIndex = off ? -1 : 0;
     };
 
-    /* Forward, the slots run −3…2 so the leaving card fades out on the left;
-       backward, −2…3 so it leaves on the right. A card whose slot would move
-       against the flow is the one entering from the far side: it is parked in
-       the wings first, without transition, so it slides in rather than
-       crossing the stage. */
+    /* Slots run −3…2 forward, −2…3 back. A card moving against the flow is
+       entering from the far side: parked in the wings first, untransitioned,
+       so it slides in instead of crossing the stage. */
     const go = (target, dir) => {
       active = (target + n) % n;
       cards.forEach((card, i) => {
@@ -195,9 +199,8 @@
       count.textContent = `${active + 1}/${n}`;
     };
 
-    /* A thumbnail brings its project to the centre; the centre one opens
-       the site. The flow follows the side the thumbnail is seen on, not its
-       index: past the end of the list the two disagree. */
+    /* A thumbnail centres its project; the centre one opens the site. The
+       flow follows the side it is seen on, not its index. */
     cards.forEach((card, i) => {
       card.addEventListener("click", (event) => {
         if (!strip.matches || i === active) return;
@@ -208,16 +211,14 @@
 
     prev.addEventListener("click", () => go(active - 1, -1));
     next.addEventListener("click", () => go(active + 1, 1));
-    /* Arrow keys step only while the track itself is focused: from a focused
-       thumbnail they would send that very card into the hidden wings. */
+    /* Arrow keys step only while the track itself is focused. */
     track.addEventListener("keydown", (event) => {
       if (!strip.matches || event.target !== track) return;
       if (event.key === "ArrowLeft") go(active - 1, -1);
       if (event.key === "ArrowRight") go(active + 1, 1);
     });
 
-    /* The slots are set before the strip is switched on, so the first layout
-       lands in place instead of sliding in. */
+    /* Slots first, so the opening layout lands rather than slides. */
     go(0, 1);
     /* Crossing 900px with the keyboard on a card: widening may hide it in
        the wings, narrowing parks it out of view — focus and scroll follow. */
@@ -227,6 +228,7 @@
       carousel.toggleAttribute("data-strip", strip.matches);
       prev.hidden = next.hidden = !strip.matches;
       if (!strip.matches && focused) focused.scrollIntoView({ block: "nearest", inline: "start" });
+      cards.forEach((card, i) => place(i, slot[i]));
     };
     strip.addEventListener("change", sync);
     sync();
