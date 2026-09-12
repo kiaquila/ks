@@ -223,15 +223,18 @@ function work(copy) {
               alt: item.alt,
               widths: [800, 1200],
               height: 675,
-              /* Above 900px the hint is the filmstrip's featured frame, given
-                 as the share of the viewport it was measured at (538px at
-                 1280 wide, 520 at 1440, ~400 at the 900 floor). Restating the
-                 stylesheet's own min() here instead cost 206 characters on
-                 every one of the twelve images and put the pages over their
-                 HTML budget; the frame never leaves the band where 42vw picks
-                 the same candidate as the exact width. Below 900px the
-                 scroller's two cards; on phones, one. */
-              sizes: "(min-width: 900px) 42vw, (max-width: 719px) 86vw, 44vw",
+              /* The filmstrip's featured frame, measured rather than derived:
+                 restating the stylesheet's own min() cost 206 characters on
+                 each of twelve images and put the pages over their HTML
+                 budget. From 1300px the 76rem container is capped and the
+                 frame stops following the viewport — it measures 617px at
+                 1300, 536 at 1600, 520 at 2000 — so a fraction there would
+                 advertise a slot twice the real one and pull the 1200w file
+                 onto 1× screens that want the 800w. Below that cap it tracks
+                 the viewport (540px at 1280, 400 at the 900 floor). Then the
+                 scroller's two cards, and one on phones. */
+              sizes:
+                "(min-width: 1300px) 620px, (min-width: 900px) 42vw, (max-width: 719px) 86vw, 44vw",
               /* v2: every card re-shot from 8:5 to 16:9 under the same file
                  names (2026-09-11); a cached 8:5 file would fill the new box
                  at the wrong ratio. */
