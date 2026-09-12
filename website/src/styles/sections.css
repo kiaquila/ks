@@ -193,36 +193,16 @@
   transition: transform var(--dur-slow) var(--ease);
 }
 
-/* The slide still has to fit one screen, and with the proportion fixed the only
-   honest way to fit is to make the cards narrower — never shorter than their
-   own ratio. The cap is the height left once the header, the container padding,
-   the heading and the card meta have taken theirs; ×1.7778 for the 16:9 ratio,
-   ×2 for the two cards, plus the gap between them. The track is capped rather
-   than the container, so the heading keeps the section's own left edge and
-   stays aligned with every other slide. */
+/* The no-script deck: the slide still has to fit one screen, and with the
+   proportion fixed the honest way is to narrow the two cards, never shorten
+   them. The cap is the height left after the header, heading and meta,
+   ×1.7778 for 16:9, ×2 for two cards, plus the gap; on the track, not the
+   container, so the heading keeps the section's left edge. */
 @media (min-width: 900px) and (min-height: 660px) {
   .work-track {
     max-width: calc((100svh - var(--header-h) - 25rem) * 1.7778 * 2 + 3rem);
   }
 
-  /* The carousel shrinks with the capped track, plus its two 4.5rem arrow
-     lanes, so on a wide but short viewport — where the cap bites hardest — the
-     arrows keep flanking the screenshots instead of stranding themselves
-     against the section's edges. */
-  .carousel {
-    max-width: calc((100svh - var(--header-h) - 25rem) * 1.7778 * 2 + 3rem + 9rem);
-    margin-inline: auto;
-  }
-
-  /* Two lines on the deck: the summary is a teaser next to the shot, and the
-     full sentence still shows in the flowing layout on phones. */
-  .work-summary {
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-  }
 }
 
 .work-link:hover .work-shot img {
@@ -271,6 +251,19 @@
   line-height: 1.55;
 }
 
+/* Two lines on the deck: the summary is a teaser under the shot, and the full
+   sentence still shows in the flowing layout on phones. After the block rule
+   above, or `display: block` would win the cascade back. */
+@media (min-width: 900px) and (min-height: 660px) {
+  .work-summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
 .work-visit {
   display: inline-flex;
   align-items: center;
@@ -294,6 +287,199 @@
 
 .work-link:hover .work-visit svg {
   transform: translate(2px, -2px);
+}
+
+/* --- the filmstrip ----------------------------------------------------------- */
+
+/* Above 900px the script rebuilds the track as a filmstrip (client pick,
+   2026-09-11: "Paper" of a twelve-variant show after a muz.li reference): the
+   active project sits large on a grey panel, the rest wait as thumbnails
+   either side, and an arrow, a click on a thumbnail or an arrow key slides
+   the next one in as the current shrinks away. All of it hangs off
+   `data-strip`, set only by the script, so a no-JS visit keeps the native
+   scroller above. Cards are absolute, placed by their slot from the centre
+   (`data-s`): 0 is big, ±1 and ±2 the thumbnails, ±3 waits unseen in the
+   wings. The big width is the track less four thumbnails; percent padding
+   turns it into the 16:9 height with no script measuring. The panel holds
+   only the shot and, below it, the name, a two-line summary and the link —
+   the kind stays off the strip (client decision, 2026-09-11, to keep the
+   block short); the counter sits outside, at the shot's top right. The
+   height cap is 60svh less the header, so the heading keeps the air it had
+   over the two-card layout on a 1280×800 laptop. */
+@media (min-width: 900px) {
+  /* The card in the wings sits past the track; the section's container
+     clips it, so it cannot widen the page, while the lift keeps its
+     vertical air. Gated on the strip like everything else here, so the
+     no-JS scroller is left exactly as shipped. */
+  .work > .container:has(.carousel[data-strip]) {
+    overflow-x: clip;
+  }
+
+  /* Capped to the track plus the two arrow lanes, so the percentages the
+     counter and the panel take from it are the track's. */
+  .carousel[data-strip] {
+    /* 6vw, not 7: the frame is what the thumbnails and lanes leave over, and
+       the wider ramp held it under the floor at 900px. See AGENTS.md. */
+    --thumb-w: clamp(3.375rem, 6vw, 6.25rem);
+    --gap: 0.875rem;
+    --zone-top: 2rem;
+    --zone-bottom: 10rem;
+    --big-w: calc(100% - 4 * (var(--thumb-w) + var(--gap)));
+    /* Driven by the height a deck slide leaves, with a 25rem floor: the strip
+       switches on at 900px wide at any height, and the bare calculation shrank
+       the frame to a few pixels on a short window. See AGENTS.md. */
+    --frame: max(25rem, calc((60svh - var(--header-h) - 6.75rem) * 1.7778));
+    max-width: calc(var(--frame) + 4 * (var(--thumb-w) + var(--gap)) + 9rem);
+    margin-inline: auto;
+  }
+
+  .carousel[data-strip] .work-track {
+    max-width: calc(var(--frame) + 4 * (var(--thumb-w) + var(--gap)));
+    display: block;
+    position: relative;
+    height: 0;
+    padding: calc(var(--big-w) * 0.5625 + var(--zone-top) + var(--zone-bottom)) 0 0;
+    overflow: visible;
+    scroll-snap-type: none;
+  }
+
+  .carousel[data-strip] .work-track::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: calc(var(--big-w) + 5.5rem);
+    transform: translateX(-50%);
+    background: var(--ground-alt);
+  }
+
+  /* Centred on the shot (half the track less half the zones' difference) and
+     offset by slot: the big half-width once, then thumbnails. Only `left` and
+     `width` move; the 16:9 height follows. */
+  .carousel[data-strip] .work-card {
+    --k: 0;
+    --sg: 0;
+    position: absolute;
+    top: 50%;
+    left: calc(50% + var(--sg) * (var(--big-w) / 2 + var(--thumb-w) / 2 + var(--gap)) + (var(--k) - var(--sg)) * (var(--thumb-w) + var(--gap)));
+    width: var(--thumb-w);
+    margin-top: calc((var(--zone-top) - var(--zone-bottom)) / 2);
+    transform: translate(-50%, -50%);
+    transition: left var(--dur-slow) var(--ease), width var(--dur-slow) var(--ease),
+      opacity 420ms var(--ease), visibility 0s;
+  }
+
+  .carousel[data-strip] .work-card.no-tr {
+    transition: none;
+  }
+
+  .carousel[data-strip] [data-s="0"] {
+    width: var(--big-w);
+    z-index: 1;
+  }
+
+  .carousel[data-strip] [data-s="1"] { --k: 1; --sg: 1; }
+  .carousel[data-strip] [data-s="2"] { --k: 2; --sg: 1; }
+  .carousel[data-strip] [data-s="3"] { --k: 3; --sg: 1; }
+  .carousel[data-strip] [data-s="-1"] { --k: -1; --sg: -1; }
+  .carousel[data-strip] [data-s="-2"] { --k: -2; --sg: -1; }
+  .carousel[data-strip] [data-s="-3"] { --k: -3; --sg: -1; }
+
+  .carousel[data-strip] [data-s="3"],
+  .carousel[data-strip] [data-s="-3"] {
+    opacity: 0;
+    visibility: hidden;
+    transition-delay: 0s, 0s, 0s, 420ms;
+  }
+
+  /* A thumbnail is a control on the strip, so its link keeps a 44px tall
+     hit area even where the 16:9 shot inside is shorter (54px wide at the
+     900px floor makes a 30px shot); the shot stays centred in it. */
+  .carousel[data-strip] .work-link {
+    display: flex;
+    align-items: center;
+    position: relative;
+    height: auto;
+    min-height: 2.75rem;
+  }
+
+  .carousel[data-strip] .work-shot {
+    width: 100%;
+  }
+
+  /* Paper: square, a hairline on the thumbnails and none on the big shot. */
+  .carousel[data-strip] .work-shot {
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .carousel[data-strip] [data-s="0"] .work-shot {
+    border-color: transparent;
+  }
+
+  /* Name, summary and link hang under the shot; the centre card alone shows
+     them, and they fade in after the card has grown. */
+  .carousel[data-strip] .work-meta {
+    position: absolute;
+    top: calc(100% + 1.25rem);
+    left: 0;
+    width: 100%;
+    padding-top: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 200ms var(--ease), visibility 0s 200ms;
+  }
+
+  .carousel[data-strip] [data-s="0"] .work-meta {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 400ms var(--ease) 300ms, visibility 0s 300ms;
+  }
+
+  .carousel[data-strip] .work-kind {
+    display: none;
+  }
+
+  .carousel[data-strip] .work-name {
+    margin-top: 0;
+  }
+
+  /* The zone under the shot is a fixed 10rem, so the summary is two lines on
+     the strip at every height — the deck rule above only covers 660px up. */
+  .carousel[data-strip] .work-summary {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .carousel[data-strip] .carousel-btn {
+    margin-top: calc((var(--zone-top) - var(--zone-bottom)) / 2);
+  }
+
+  /* The counter keeps to the strip's far right, level with the shot's top
+     and above the outer thumbnail, where the reference has it — outside the
+     panel on purpose, not on the shot's own edge (client pick, 2026-09-11).
+     The 4.5rem is the arrow lane. */
+  .carousel[data-strip] .work-count {
+    display: block;
+    position: absolute;
+    top: calc(var(--zone-top) - 0.4rem);
+    right: 4.5rem;
+    font-weight: 400;
+    color: var(--ink-mute);
+  }
+
+  /* The global reduced-motion rule shortens durations, not delays: without
+     this the cards would snap while the caption still waited 300ms. */
+  @media (prefers-reduced-motion: reduce) {
+    .carousel[data-strip] .work-card,
+    .carousel[data-strip] .work-meta {
+      transition-delay: 0s !important;
+    }
+  }
 }
 
 /* --- process ---------------------------------------------------------------- */

@@ -58,6 +58,62 @@ rules, heavy tracked capitals. Everything below follows from that.
   shot sets no height and no `object-fit`. When the
   slide is too short for the cards at that ratio, `.work-track` narrows them —
   the container is left alone so the heading keeps the section's left edge.
+- **Above 900px the work slide is a filmstrip** (client pick, 2026-09-11:
+  "Paper", one of twelve variants after a muz.li reference): the current
+  project sits large on a `--ground-alt` panel with its name, a two-line
+  summary and the "Open the site" link below; the other five wait as
+  thumbnails either side, two visible per side and one unseen in the wings;
+  a counter (`1/6`) sits at the strip's far right, level with the shot's top
+  and above the outer thumbnail — outside the panel on purpose, where the
+  reference keeps it, not on the shot's own edge. The
+  arrows, a click on a thumbnail or an arrow key on the focused track slide
+  the next one in as the current one shrinks away. The strip drops the kind
+  line (client decision, 2026-09-11, to keep the block short — it still
+  reads in the flowing layout), and two things were tried the same day and
+  declined by the client: pagination dots on the panel and muted video
+  loops over the moving sites; neither is to come back without asking. The
+  strip is script-built: every rule hangs off `data-strip` and the cards are
+  placed by slot (`data-s`, −3…3) in CSS — the script only decides the
+  slots. Off the centre a thumbnail is a pointer target only: it leaves the
+  tab order and the accessibility tree, so the one card announced as a link
+  that opens a site is the one that actually does (Codex review, 2026-09-11);
+  the keyboard steps with the arrows or the focused track. The strip is
+  script-built — so a no-JS visit keeps the native scroller, which is also what
+  phones and tablets get (below 900px the track swipes and the arrows are
+  gone; the old arrow-driven glide went with the script budget). When
+  widening, the card nearest the scroller's snapped left edge becomes active
+  in the strip (a focused card wins). Narrowing back scrolls only the track
+  horizontally to that active card, never the document. The big
+  width is the track less four thumbnails, and percent padding on the track
+  turns it into the 16:9 height, so nothing is measured; the height cap is
+  `60svh` less the header, which keeps the heading at the air it had over
+  the two-card layout on a 1280×800 laptop. That cap sits behind a **25rem
+  floor** (`--frame`), because the strip switches on at 900px wide at any
+  height and the bare calculation collapsed the frame on a short window.
+  The floor only holds if the thumbnails leave room for it: the ramp is
+  `clamp(3.375rem, 6vw, 6.25rem)`, and at 7vw the four thumbnails plus the
+  two arrow lanes squeezed the frame to ~346px at the 900×660 floor
+  (Codex review, 2026-09-11). Re-measure both together if either moves.
+- **The work cards carry two `sizes` hints, and the script decides which.**
+  The markup ships the native scroller's slot —
+  `(min-width:900px) min(38vw,470px), (max-width:719px) 86vw, 44vw`, measured
+  at 341px at 900, 463 at 1200, 469 at 1280, 464 at 2000 — because the
+  scroller is what renders until the script claims the strip, and what a
+  no-JS visit keeps for good. `site.js` swaps in the strip's own frame when
+  it sets `data-strip`, and swaps it back out at the breakpoint:
+  `min(calc(71vw - 220px),max(520px,min(calc(997px - 29vw),calc(920px - 24vw))),max(400px,calc(107vh - 313px)))`
+  — the width left while the container grows, the width left once the 76rem
+  container caps and the 6vw ramp keeps eating in until it caps too at 520px,
+  and the height a deck slide leaves, floored at 25rem. Verified against a
+  probe element carrying the expression: exact at 900×660 (400) and 2000×1200
+  (520), within 3px at 1200×1000 (630) and 1280×800 (540), and low by at most
+  9px between 1300 and 1700, which still holds the right candidate at 1×, 1.5×
+  and 2×. It lives in the script rather than the markup for two reasons: it
+  would otherwise ship 24 times across the two pages, against an HTML budget
+  with little room, and it would describe a layout a no-JS reader never gets
+  (both Codex review, 2026-09-12). The script's prose was cut to pay for the
+  bytes, which is why this paragraph is here and not there. Thumbnails are the same 16:9
+  files uncropped, not portrait crops.
 - The process numerals grow slightly on hover. Any motion added here stays at
   that scale: a transform on one element, killed by `prefers-reduced-motion`.
 - The wordmark is **typography, not an image**: `ks·design` set in Manrope as
@@ -126,11 +182,14 @@ Below that it is an ordinary flowing document.
   line of copy on a short laptop window is worse than a slide that scrolls.
 - The work slide preserves each screenshot's 16:9 ratio by letting height follow
   width. In deck mode, `.work-track` therefore caps its width from the viewport
-  height left after the header, container padding, heading and card meta:
-  `(100svh - var(--header-h) - 25rem) × 1.7778 × 2`, plus the card gap. Cap the
-  track rather than `.work > .container`, so the cards narrow on short screens
-  while the heading keeps the same left edge as every other slide. If those
-  vertical allowances change, re-measure the `25rem` term rather than assume.
+  height left after the header, heading, the strip's two zones and the dots:
+  `(60svh - var(--header-h) - 6.75rem) × 1.7778` for the big shot plus four
+  thumbnails with their gaps (the no-JS scroller keeps its own
+  `(100svh - var(--header-h) - 25rem) × 1.7778 × 2` cap for two cards). Cap the track rather than `.work > .container`, so the cards
+  narrow on short screens while the heading keeps the same left edge as every
+  other slide. If those vertical allowances change, re-measure the terms
+  rather than assume; at the deck's 900×660 floor the big shot is about
+  400px wide, which is the accepted minimum.
 - Entrance reveals are claimed by the script (`html.reveal-on`), never written
   into the markup. A visitor without JavaScript, or with reduced motion, gets
   every slide fully visible.
@@ -178,9 +237,15 @@ Below that it is an ordinary flowing document.
   in `components.css`.
 - `site.js` is enhancement only. Nothing may be hidden in the markup waiting for
   a script: the nav is a visible list until the script collapses it, the
-  carousel is a native scroll container until the script adds buttons, and the
-  portrait swaps on hover in pure CSS. A test asserts the markup ships nothing
-  pre-hidden.
+  work track is a native scroll container until the script rebuilds it as the
+  filmstrip (its counter and dots ship empty), and the portrait swaps on
+  hover in pure CSS. A test asserts the markup ships nothing pre-hidden.
+- The stylesheet budget is **64 KB raw** (`web-design.config.json`, raised
+  from 60 KB on 2026-09-11 for the filmstrip, deliberately — the comments
+  are part of the file and are not to be gutted to fit). The script budget
+  stayed at 4 KB, and twice in this change behaviour was paid for by cutting
+  the filmstrip's own prose in `site.js` rather than by raising it; the
+  reasoning that was cut lives in this file.
 - **The collapsed menu leaves the tab order through CSS `visibility`, and that
   property is never transitioned.** Clip-path, opacity and pointer-events hide
   it from the eye and the mouse but leave every link keyboard-focusable. Every
@@ -408,8 +473,10 @@ and the script budget. Do not weaken a test to make a change pass.
 Visually: 360 px, the 1100–1500 px band (where the air-guaranteed print is
 at its smallest — the notes must clear it, and the print must still read
 as the hero), and 1280 px+, both locales, keyboard focus, the portrait
-swap with its annotations on hover and on tap, the carousel at every
-breakpoint, `prefers-reduced-motion`, and a console with no errors.
+swap with its annotations on hover and on tap, the filmstrip at 900×660,
+1280×800 and 1440×900 (the heading keeps its air; arrows, thumbnails and
+arrow keys all step) and the scroller below 900 px,
+`prefers-reduced-motion`, and a console with no errors.
 
 ### Two traps when verifying this project
 

@@ -150,96 +150,92 @@
       });
   }
 
-  /* --- work carousel ------------------------------------------------------ */
+  /* --- work filmstrip ----------------------------------------------------- */
 
+  /* Above 900px the track is the filmstrip: CSS places each card by its slot
+     (`data-s`), this decides the slots. See AGENTS.md. */
   const track = document.querySelector("[data-carousel-track]");
   const carousel = document.querySelector("[data-carousel]");
+  const strip = window.matchMedia("(min-width: 900px)");
 
   if (track && carousel) {
+    const cards = [...track.children];
+    const n = cards.length;
     const prev = carousel.querySelector("[data-carousel-prev]");
     const next = carousel.querySelector("[data-carousel-next]");
+    const count = carousel.querySelector("[data-carousel-count]");
+    const slot = cards.map(() => 0);
+    let active = 0;
+    /* The markup's `sizes` fits the scroller; the strip's frame does not. */
+    const shots = [...track.querySelectorAll("img,source")];
+    const flow = shots[0].sizes;
+    const wide = "min(calc(71vw - 220px),max(520px,min(calc(997px - 29vw),calc(920px - 24vw))),max(400px,calc(107vh - 313px)))";
 
-    /* One press moves exactly one card: the first card's box plus the gap. */
-    const step = () => {
-      const card = track.firstElementChild;
-      if (!card) return Math.max(track.clientWidth, 1);
-      const gap = parseFloat(getComputedStyle(track).columnGap) || 0;
-      return card.getBoundingClientRect().width + gap;
+    const place = (i, s) => {
+      slot[i] = s;
+      cards[i].dataset.s = s;
+      /* Only the centre card is the site's link. */
+      const off = strip.matches && s !== 0;
+      cards[i].ariaHidden = off;
+      cards[i].firstElementChild.tabIndex = off ? -1 : 0;
     };
 
-    /* Chrome refuses a smooth programmatic scroll inside a nested scroller
-       while the document itself snaps, so the glide is animated by hand onto
-       a card boundary — which is where the snap points are. */
-    const glide = (direction) => {
-      const size = step();
-      const max = track.scrollWidth - track.clientWidth;
-      const to = Math.max(
-        0,
-        Math.min(Math.round(track.scrollLeft / size + direction) * size, max)
-      );
-      if (scrollBehavior() === "auto") {
-        track.scrollLeft = to;
-        return;
-      }
-      const from = track.scrollLeft;
-      const start = performance.now();
-      const tick = (now) => {
-        const p = Math.min(1, (now - start) / 320);
-        track.scrollLeft = from + (to - from) * (1 - (1 - p) ** 3);
-        if (p < 1) requestAnimationFrame(tick);
-      };
-      requestAnimationFrame(tick);
+    const go = (target, dir) => {
+      active = (target + n) % n;
+      cards.forEach((card, i) => {
+        let s = (i - active + n) % n;
+        if (s > (dir > 0 ? 2 : 3)) s -= n;
+        if (dir > 0 ? s > slot[i] : s < slot[i]) {
+          card.classList.add("no-tr");
+          place(i, dir * 3);
+          void card.offsetWidth;
+          card.classList.remove("no-tr");
+        }
+        place(i, s);
+      });
+      count.textContent = `${active + 1}/${n}`;
     };
 
-    /* The arrows sit on the shots' centre, not the whole card's. */
-    const alignArrows = () => {
-      const shot = track.querySelector(".work-shot");
-      if (!shot) return;
-      const box = carousel.getBoundingClientRect();
-      const shotBox = shot.getBoundingClientRect();
-      const top = `${shotBox.top - box.top + shotBox.height / 2}px`;
-      prev.style.top = top;
-      next.style.top = top;
-    };
+    /* A thumbnail centres its project, entering from the side it is on. */
+    cards.forEach((card, i) => {
+      card.addEventListener("click", (event) => {
+        if (!strip.matches || i === active) return;
+        event.preventDefault();
+        go(i, slot[i] > 0 ? 1 : -1);
+      });
+    });
 
+    prev.addEventListener("click", () => go(active - 1, -1));
+    next.addEventListener("click", () => go(active + 1, 1));
+    /* Arrow keys step only from the track itself. */
+    track.addEventListener("keydown", (event) => {
+      if (!strip.matches || event.target !== track) return;
+      if (event.key === "ArrowLeft") go(active - 1, -1);
+      if (event.key === "ArrowRight") go(active + 1, 1);
+    });
+
+    /* Slots first, so the opening layout lands. */
+    go(0, 1);
+    /* Crossing 900px puts whatever the keyboard is on out of reach, so focus
+       goes to the track and the scroller opens on the chosen project. */
     const sync = () => {
-      const max = track.scrollWidth - track.clientWidth;
-      /* With few projects the track does not overflow, and two dead arrows
-         read as breakage. */
-      const overflows = max > 4;
-      prev.hidden = !overflows;
-      next.hidden = !overflows;
-      if (!overflows) return;
-      prev.disabled = track.scrollLeft <= 4;
-      next.disabled = track.scrollLeft >= max - 4;
-      alignArrows();
+      const wasStrip = carousel.hasAttribute("data-strip");
+      const focused = document.activeElement?.closest(".work-card");
+      if (strip.matches && !wasStrip) {
+        const nearest = Math.round(track.scrollLeft / (cards[1].offsetLeft - cards[0].offsetLeft));
+        go(focused ? cards.indexOf(focused) : nearest, 1);
+      }
+      if (strip.matches && focused && slot[cards.indexOf(focused)]) track.focus();
+      carousel.toggleAttribute("data-strip", strip.matches);
+      if (!strip.matches && document.activeElement?.closest(".carousel-btn")) track.focus();
+      prev.hidden = next.hidden = !strip.matches;
+      if (wasStrip && !strip.matches) {
+        track.scrollLeft = cards[active].offsetLeft - cards[0].offsetLeft;
+      }
+      cards.forEach((card, i) => place(i, slot[i]));
+      shots.forEach((el) => (el.sizes = strip.matches ? wide : flow));
     };
-
-    prev.addEventListener("click", () => glide(-1));
-    next.addEventListener("click", () => glide(1));
-
-    let scrollTick = false;
-    track.addEventListener(
-      "scroll",
-      () => {
-        if (scrollTick) return;
-        scrollTick = true;
-        requestAnimationFrame(() => {
-          sync();
-          scrollTick = false;
-        });
-      },
-      { passive: true }
-    );
-
-    /* Card widths are percentages, so a resize changes both the page size
-       and whether the track overflows. */
-    if ("ResizeObserver" in window) {
-      new ResizeObserver(sync).observe(track);
-    } else {
-      addEventListener("resize", sync, { passive: true });
-    }
-
+    strip.addEventListener("change", sync);
     sync();
   }
 

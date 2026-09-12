@@ -618,6 +618,83 @@ test("the work previews are shown at the screenshots' own proportion", async () 
   assert.match(clean, /\.work-track \{\s*max-width: calc\(\(100svh/);
 });
 
+test("the filmstrip is claimed by the script and leaves the scroller behind", () => {
+  /* Above 900px the script rebuilds the work track as a filmstrip (client
+     pick, 2026-09-11). Every strip rule hangs off `data-strip`, which only
+     the script sets, so a no-JS visit keeps the native scroll track — the
+     markup ships nothing pre-hidden, and the counter is empty until the
+     script fills it. */
+  const clean = withoutComments(css);
+  const stripRules = clean.match(/\.carousel\[data-strip\][^{]*\{/g) ?? [];
+  assert.ok(stripRules.length >= 10, "the filmstrip rules are missing");
+  assert.doesNotMatch(clean, /(?:^|\})\s*\[data-s=/, "a slot rule outside data-strip would style the scroller");
+  /* Every rule in the strip's media block names the attribute, the container
+     clip included — an unguarded `.work > .container` would reach the no-JS
+     scroller too. */
+  const block = clean.slice(clean.indexOf(".carousel[data-strip] {"));
+  const stripMedia = block.slice(0, block.indexOf("\n}\n") + 3);
+  for (const selector of stripMedia.match(/(?:^|\})\s*([^{}@]+)\{/g) ?? []) {
+    assert.match(selector, /data-strip/, `unguarded rule on the strip: ${selector.trim()}`);
+  }
+  assert.match(clean, /\.work > \.container:has\(\.carousel\[data-strip\]\) \{\s*overflow-x: clip/);
+  assert.match(siteScript, /toggleAttribute\("data-strip", strip\.matches\)/);
+  assert.match(siteScript, /matchMedia\("\(min-width: 900px\)"\)/);
+  for (const lang of LOCALES) {
+    assert.match(pages[lang], /<span class="work-count" data-carousel-count aria-live="polite"><\/span>/);
+    /* No pagination dots and no loops: both were tried and declined. */
+    assert.doesNotMatch(pages[lang], /work-dots|<video/);
+  }
+  /* Off the strip the thumbnails are plain links; on it they bring their
+     project forward and only the centre one opens the site. */
+  assert.match(siteScript, /if \(!strip\.matches \|\| i === active\) return;\s*event\.preventDefault\(\);/);
+  assert.match(siteScript, /const flow = shots\[0\]\.sizes;/);
+  assert.match(siteScript, /shots\.forEach\(\(el\) => \(el\.sizes = strip\.matches \? wide : flow\)\);/);
+  /* Focus never stays on a control the breakpoint is about to withdraw: an
+     arrow is hidden by `sync`, so focus moves to the track before that. */
+  assert.match(siteScript, /if \(!strip\.matches && document\.activeElement\?\.closest\("\.carousel-btn"\)\) track\.focus\(\);\s*prev\.hidden = next\.hidden = !strip\.matches;/);
+  /* Arrow keys act on the focused track alone, never on a focused thumbnail
+     that the step would carry into the hidden wings. */
+  assert.match(siteScript, /"keydown",[\s\S]*?if \(!strip\.matches \|\| event\.target !== track\) return;/);
+  /* Widening onto the strip leaves every card but the centre one out of the
+     accessibility tree, so focus moves to the track before it goes on. */
+  assert.match(siteScript, /const sync = \(\) => \{\s*const wasStrip = carousel\.hasAttribute\("data-strip"\);\s*const focused = document\.activeElement\?\.closest\("\.work-card"\);/);
+  assert.match(siteScript, /if \(strip\.matches && !wasStrip\) \{[\s\S]*?Math\.round\(track\.scrollLeft \/ \(cards\[1\]\.offsetLeft - cards\[0\]\.offsetLeft\)\);\s*go\(focused \? cards\.indexOf\(focused\) : nearest, 1\);\s*\}\s*if \(strip\.matches && focused && slot\[cards\.indexOf\(focused\)\]\) track\.focus\(\);\s*carousel\.toggleAttribute\("data-strip"/);
+  /* Only a strip-to-scroller transition repositions the track. Initial mobile
+     sync and unrelated breakpoint changes must not pull the page to Work. */
+  assert.match(siteScript, /const wasStrip = carousel\.hasAttribute\("data-strip"\);/);
+  assert.match(siteScript, /if \(wasStrip && !strip\.matches\) \{\s*track\.scrollLeft = cards\[active\]\.offsetLeft - cards\[0\]\.offsetLeft;/);
+  assert.doesNotMatch(siteScript, /cards\[active\]\.scrollIntoView/);
+  /* Off the centre, a thumbnail is a pointer target only: it leaves the tab
+     order and the accessibility tree, so link semantics — an external link
+     that really navigates — stay with the one card that opens a site. The
+     placement runs again when the breakpoint is crossed. */
+  assert.match(siteScript, /const off = strip\.matches && s !== 0;\s*cards\[i\]\.ariaHidden = off;\s*cards\[i\]\.firstElementChild\.tabIndex = off \? -1 : 0;/);
+  assert.match(siteScript, /cards\.forEach\(\(card, i\) => place\(i, slot\[i\]\)\);/);
+  /* The kind is the one line of the card the strip drops, to keep the block
+     short (client decision, 2026-09-11); it still reads in the flowing layout. */
+  assert.match(clean, /\.carousel\[data-strip\] \.work-kind \{\s*display: none;/);
+  /* The strip switches on at 900px wide at any height, so the height-derived
+     frame carries a floor; without it a short window shrank it to nothing. */
+  assert.match(clean, /--frame: max\(25rem, calc\(\(60svh/);
+  /* The frame is what is left after the arrow lanes and four thumbnails, so
+     the thumbnail ramp is part of the floor holding at the 900px breakpoint. */
+  assert.match(clean, /--thumb-w: clamp\(3\.375rem, 6vw, 6\.25rem\);/);
+  /* The markup ships the scroller's slot — that is what a no-JS visit keeps
+     — and the script swaps in the strip's own frame, which follows the
+     thumbnail ramp, only once it has claimed the strip. */
+  for (const lang of LOCALES) {
+    assert.match(
+      pages[lang],
+      /sizes="\(min\-width:900px\)\ min\(38vw,470px\),\ \(max\-width:719px\)\ 86vw,\ 44vw"/,
+      `${lang}: the work cards no longer describe the featured frame`
+    );
+  }
+  assert.doesNotMatch(clean, /max-width: calc\(\(60svh/);
+  /* The cornflower stays on the wordmark's dot alone. */
+  const dotUsers = [...clean.matchAll(/([^{}]+)\{[^}]*var\(--brand-dot\)[^}]*\}/g)].map((m) => m[1].trim());
+  assert.deepEqual(dotUsers, [".brand-dot"]);
+});
+
 test("switching language keeps the reader in the same section", () => {
   /* The hrefs in the markup stay the plain locale paths — the switch is a link
      first — and the script appends the current slide's id when the reader
@@ -757,6 +834,7 @@ test("every touch target clears 44 px", () => {
     [/\.lang-switch a,\s*\.lang-current\s*\{[^}]*\}/, "both"],
     [/\.footer-social a\s*\{[^}]*\}/, "both"],
     [/\.carousel-btn\s*\{[^}]*\}/, "both"],
+    [/\.carousel\[data-strip\] \.work-link\s*\{[^}]*\}/, "height"],
     [/\.brand\s*\{[^}]*\}/, "height"],
     [/\.site-nav a\s*\{[^}]*\}/, "height"],
     [/\.btn-compact\s*\{[^}]*\}/, "height"],
