@@ -665,6 +665,10 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* The kind is the one line of the card the strip drops, to keep the block
      short (client decision, 2026-09-11); it still reads in the flowing layout. */
   assert.match(clean, /\.carousel\[data-strip\] \.work-kind \{\s*display: none;/);
+  /* The strip switches on at 900px wide at any height, so the height-derived
+     frame carries a floor; without it a short window shrank it to nothing. */
+  assert.match(clean, /--frame: max\(25rem, calc\(\(60svh/);
+  assert.doesNotMatch(clean, /max-width: calc\(\(60svh/);
   /* The cornflower stays on the wordmark's dot alone. */
   const dotUsers = [...clean.matchAll(/([^{}]+)\{[^}]*var\(--brand-dot\)[^}]*\}/g)].map((m) => m[1].trim());
   assert.deepEqual(dotUsers, [".brand-dot"]);

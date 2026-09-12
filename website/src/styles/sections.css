@@ -323,12 +323,18 @@
     --zone-top: 2rem;
     --zone-bottom: 10rem;
     --big-w: calc(100% - 4 * (var(--thumb-w) + var(--gap)));
-    max-width: calc((60svh - var(--header-h) - 6.75rem) * 1.7778 + 4 * (var(--thumb-w) + var(--gap)) + 9rem);
+    /* The featured frame is driven by the height left on a deck slide, with a
+       25rem floor: the strip switches on at 900px wide whatever the height,
+       and on a short window the bare calculation shrank the frame to a few
+       pixels. Below the deck's 660px the page flows and scrolls, so a floor
+       is the honest answer there rather than a frame nobody can see. */
+    --frame: max(25rem, calc((60svh - var(--header-h) - 6.75rem) * 1.7778));
+    max-width: calc(var(--frame) + 4 * (var(--thumb-w) + var(--gap)) + 9rem);
     margin-inline: auto;
   }
 
   .carousel[data-strip] .work-track {
-    max-width: calc((60svh - var(--header-h) - 6.75rem) * 1.7778 + 4 * (var(--thumb-w) + var(--gap)));
+    max-width: calc(var(--frame) + 4 * (var(--thumb-w) + var(--gap)));
     display: block;
     position: relative;
     height: 0;
