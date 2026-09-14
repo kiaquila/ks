@@ -16,6 +16,10 @@
   /* Carries eyebrows, labels, notes and roles — all real text, so it has to
      clear 4.5:1 on white. */
   --ink-mute: #6e7076; /* 4.9:1 on white */
+  /* The services notes sit on the tinted slide, over its dark shadow-blobs,
+     where --ink-mute drops to about 2.5:1. Still a grey, but dark enough to
+     clear 4.5:1 on the deepest blob; a test measures it there. */
+  --ink-note: #404145;
   /* Ornament only: the opening quote glyph. Never set on text a reader needs. */
   --ink-faint: #b6b8bd;
   --line: #e4e4e7;
