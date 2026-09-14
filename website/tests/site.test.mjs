@@ -181,7 +181,10 @@ test("the service scope is rendered as visible bullet lists", () => {
     /domain|paid fonts|subscriptions/i
   );
   assert.match(css, /\.service-features \{[^}]*list-style:\s*disc/);
-  assert.match(css, /\.hosting-note \{[^}]*color:\s*var\(--ink\)/);
+  /* Both service notes share the muted grey of secondary metadata (client
+     decision, 2026-09-14): the scope disclaimer reads as a footnote, not copy. */
+  assert.match(css, /\.currency-note,\s*\.hosting-note \{[^}]*color:\s*var\(--ink-mute\)/);
+  assert.doesNotMatch(css, /\.hosting-note \{[^}]*color:\s*var\(--ink\)[;\s]/);
 });
 
 test("the retired packages are gone from the price list", () => {
