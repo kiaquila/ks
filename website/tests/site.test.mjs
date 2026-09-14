@@ -181,7 +181,46 @@ test("the service scope is rendered as visible bullet lists", () => {
     /domain|paid fonts|subscriptions/i
   );
   assert.match(css, /\.service-features \{[^}]*list-style:\s*disc/);
-  assert.match(css, /\.hosting-note \{[^}]*color:\s*var\(--ink\)/);
+  /* Both service notes share one grey (client decision, 2026-09-14): the
+     scope disclaimer reads as a footnote beside the currency line, not as
+     copy, so it must not get its own darker ink again. */
+  assert.match(css, /\.currency-note,\s*\.hosting-note \{[^}]*color:\s*var\(--ink-note\)/);
+  assert.doesNotMatch(css, /\.hosting-note \{[^}]*color:\s*var\(--ink\)[;\s]/);
+});
+
+test("the services notes clear AA on the darkest services blob", () => {
+  const channel = (value) => {
+    const c = value / 255;
+    return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+  };
+  const luminance = ([r, g, b]) =>
+    0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  const rgb = (hex) => [1, 3, 5].map((i) => parseInt(hex.slice(i, i + 2), 16));
+  const token = (name) => {
+    const found = css.match(new RegExp(`${name}:\\s*(#[0-9a-f]{6})`, "i"));
+    assert.ok(found, `token ${name} is missing`);
+    return rgb(found[1]);
+  };
+
+  /* The notes lie on --ground-alt under the blobs' dark radial gradients.
+     Measure against the ground at the peak of the strongest dark blob. */
+  const blobs = css.match(/\.services-blobs \{[^}]*\}/);
+  assert.ok(blobs, "the services blobs rule is missing");
+  const dark = [...blobs[0].matchAll(/rgb\((\d+) (\d+) (\d+) \/ ([\d.]+)\)/g)]
+    .map((m) => ({ ink: [m[1], m[2], m[3]].map(Number), alpha: Number(m[4]) }))
+    .filter(({ ink }) => ink[0] < 128)
+    .sort((a, b) => b.alpha - a.alpha)[0];
+  assert.ok(dark, "no dark blob found");
+  const ground = token("--ground-alt").map(
+    (c, i) => c * (1 - dark.alpha) + dark.ink[i] * dark.alpha
+  );
+
+  const ratio = (luminance(ground) + 0.05) / (luminance(token("--ink-note")) + 0.05);
+  assert.ok(ratio >= 4.5, `--ink-note is ${ratio.toFixed(2)}:1 on the darkest blob, below AA`);
+  assert.ok(
+    luminance(token("--ink-note")) > luminance(token("--ink")),
+    "--ink-note must stay a grey, lighter than the body ink"
+  );
 });
 
 test("the retired packages are gone from the price list", () => {
