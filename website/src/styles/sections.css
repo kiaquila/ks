@@ -777,99 +777,193 @@
 
 /* --- contact ----------------------------------------------------------------- */
 
-/* Last slide: the band and the footer are one block, closing the page at its
-   bottom edge. Centring them left a field of white under the footer that read
-   as an unfinished page; anchoring the pair to the end puts the footer where a
-   footer belongs and gives the band the air above it instead. */
+/* Last slide: the band and the footer are one block closing the page at its
+   bottom edge, and the hand-written line takes the white above them. The `1fr`
+   row is the line's alone — nothing may be reserved between the band and the
+   footer it sits on. */
 .contact {
   display: grid;
-  grid-template-rows: auto auto;
-  align-content: end;
+  grid-template-rows: 1fr auto auto;
   padding-bottom: 0;
+}
+
+.contact-line {
+  display: grid;
+  align-content: center;
+  padding-block: var(--space-lg);
+}
+
+/* The hand font's second and last job (client decision, 2026-09-17): one line
+   that writes itself as the slide arrives. Words never break inside. */
+.hand-line {
+  font-family: var(--font-hand);
+  font-size: clamp(2rem, 1.1rem + 2.7vw, 3.75rem);
+  font-weight: 600;
+  line-height: 1.12;
+  text-align: center;
+  text-wrap: balance;
+}
+
+.hand-word {
+  display: inline-block;
+  white-space: nowrap;
+}
+
+.hand-word span {
+  display: inline-block;
+}
+
+/* The full stop is the wordmark's dot — the gradient's one other use. */
+.hand-dot {
+  display: inline-block;
+  width: 0.18em;
+  height: 0.18em;
+  margin-left: 0.06em;
+  border-radius: 50%;
+  background: var(--brand-dot);
+}
+
+/* Each letter is uncovered left to right, the way a nib lays ink, at the
+   delay the renderer gave it. The box opens wider than the glyph because
+   Caveat's strokes overhang theirs. Claimed under `reveal-on` like every
+   entrance, so no script and reduced motion both get the finished line; the
+   slide's `in-view` starts the writing, and leaving resets it. */
+html.reveal-on .hand-word span {
+  clip-path: inset(-0.4em calc(100% + 0.4em) -0.4em -0.4em);
+}
+
+html.reveal-on .hand-dot {
+  opacity: 0;
+}
+
+html.reveal-on .in-view .hand-word span {
+  animation: hand-ink 130ms linear calc(var(--d) * 1ms) both;
+}
+
+html.reveal-on .in-view .hand-dot {
+  animation: hand-drop 720ms cubic-bezier(0.3, 0, 0.5, 1) calc(var(--d) * 1ms) both;
+}
+
+@keyframes hand-ink {
+  to {
+    clip-path: inset(-0.4em);
+  }
+}
+
+@keyframes hand-drop {
+  0% {
+    opacity: 0;
+    transform: translateY(-1.6em);
+  }
+  12% {
+    opacity: 1;
+  }
+  52%,
+  86% {
+    transform: translateY(0);
+  }
+  70% {
+    transform: translateY(-0.32em);
+  }
+  93% {
+    transform: translateY(-0.08em);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
 }
 
 .contact-middle {
   display: grid;
 }
 
-/* The band runs edge to edge — one printed stripe across the page. */
+/* The band runs edge to edge in the portfolio panel's grey (client decision,
+   2026-09-17; it was a near-black stripe and one big mail link before).
+   Everything in it is centred: the heading, then the address and the feeds
+   on one row either side of a hairline. */
 .contact-band {
-  display: block;
   width: 100%;
-  background: var(--panel);
-  color: var(--panel-ink);
-  padding-block: clamp(2.5rem, 9svh, 5.5rem);
-  transition: background-color var(--dur) var(--ease);
-}
-
-.contact-band:hover {
-  background: #26272b;
+  background: var(--ground-alt);
+  padding-block: clamp(2rem, 7svh, 4.25rem);
 }
 
 .band-inner {
-  display: flex;
-  align-items: center;
-  gap: clamp(1.25rem, 3vw, 2.5rem);
-}
-
-.band-icon {
   display: grid;
-  place-items: center;
-  flex-shrink: 0;
-  width: 3.5rem;
-  height: 3.5rem;
-  border: 1px solid rgb(255 255 255 / 0.28);
-  border-radius: var(--radius-pill);
-}
-
-.band-copy {
-  display: grid;
-  gap: 0.4rem;
+  justify-items: center;
+  gap: 0.6rem;
+  text-align: center;
 }
 
 .band-title {
-  font-family: var(--font-display);
   font-size: clamp(1.6rem, 1rem + 2.4vw, 2.8rem);
-  font-weight: 800;
   letter-spacing: 0.06em;
-  text-transform: uppercase;
   line-height: 1.05;
 }
 
-.band-note {
+.band-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 0.25rem var(--space-md);
+}
+
+.band-rule {
+  width: 1px;
+  height: 1.6rem;
+  background: var(--line-strong);
+}
+
+/* The address is the one place the serif italic still speaks in the band. */
+.band-mail {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
   font-family: var(--font-serif);
   font-style: italic;
-  font-size: clamp(1rem, 0.9rem + 0.5vw, 1.25rem);
-  color: var(--panel-ink-soft);
+  font-size: clamp(1.15rem, 1rem + 0.8vw, 1.6rem);
+  text-decoration-line: underline;
+  text-decoration-thickness: 1px;
+  text-decoration-color: var(--line-strong);
+  text-underline-offset: 0.28em;
+  transition: text-decoration-color var(--dur) var(--ease);
 }
 
-.band-arrow {
-  margin-left: auto;
-  color: var(--panel-ink-soft);
-  transition: transform var(--dur) var(--ease), color var(--dur) var(--ease);
+.band-mail:hover,
+.band-mail:focus-visible {
+  text-decoration-color: var(--ink);
 }
 
-.band-arrow svg {
-  width: 34px;
-  height: 34px;
+/* A 22px glyph in a 44px target; the 4px gap keeps the glyphs 26px apart. */
+.band-social {
+  display: flex;
+  gap: 0.25rem;
 }
 
-.contact-band:hover .band-arrow {
-  transform: translate(4px, -4px);
-  color: var(--panel-ink);
+.band-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.75rem;
+  min-height: 2.75rem;
+  color: var(--ink-soft);
+  transition: color var(--dur-fast) var(--ease);
 }
 
-.contact-band:focus-visible {
-  outline-offset: -4px;
-  outline-color: var(--panel-ink);
+.band-social a:hover,
+.band-social a:focus-visible {
+  color: var(--ink);
 }
 
+.band-social svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* Once the row wraps the hairline divides nothing. */
 @media (max-width: 599px) {
-  .band-inner {
-    flex-wrap: wrap;
-  }
-
-  .band-arrow {
+  .band-rule {
     display: none;
   }
 }

@@ -28,16 +28,12 @@
   /* The one chromatic device: the cornflower gradient of the ks·design
      wordmark dot (client decision, 2026-08-28; it replaced the brand-gold
      amber of 2026-08-19), shared with the favicon. Indigo into cyan at 135°,
-     saturated enough to read on white, bright enough on the near-black
-     panel. Use it for the brand dot only — never for text or UI states. */
+     saturated enough to read on white. It marks the brand dot, and the full
+     stop closing the contact slide's hand-written line, which is that same
+     dot (client decision, 2026-09-17) — never text or UI states. */
   --brand-dot-a: #818cf8;
   --brand-dot-b: #22d3ee;
   --brand-dot: linear-gradient(135deg, var(--brand-dot-a), var(--brand-dot-b));
-
-  /* The Get in touch band: near-black, so it reads as one printed stripe. */
-  --panel: #141416;
-  --panel-ink: #ffffff;
-  --panel-ink-soft: #b9babf;
 
   /* Frosted glass: the services cards. */
   --glass: rgb(255 255 255 / 0.5);

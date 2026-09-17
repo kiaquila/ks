@@ -36,6 +36,12 @@ const icons = {
   telegram: icon(
     '<path fill="currentColor" d="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.75l-4.6-3.4-2.2 2.15c-.25.25-.45.45-.9.45l.32-4.6L18.3 6.8c.36-.32-.08-.5-.56-.18L7.4 13.16l-4.5-1.4c-.98-.3-1-.98.2-1.45l17.6-6.8c.8-.3 1.5.2 1.2 1.8Z"/>'
   ),
+  /* Drawn for this page rather than lifted from the brand kit: the official
+     glyph is a kilobyte of path, twice over, against an HTML budget that the
+     contact line's letter spans had already spent. */
+  whatsapp: icon(
+    '<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="m3.2 20.8 1.3-4.6a8.7 8.7 0 1 1 3.4 3.3l-4.7 1.3Z"/><path fill="currentColor" d="M9.2 7.5c.4-.3.9-.2 1.1.2l.8 1.7c.1.3.1.6-.1.9l-.6.7c.6 1.1 1.5 2 2.6 2.6l.7-.6c.3-.2.6-.2.9-.1l1.7.8c.4.2.5.7.2 1.1-.7.8-1.6 1.2-2.6 1-3-.6-5.4-3-6-6-.2-1 .2-1.9 1-2.6Z"/>'
+  ),
   instagram: icon(
     '<rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/><circle cx="17.2" cy="6.8" r="1.25" fill="currentColor"/>'
   ),
@@ -50,11 +56,6 @@ const icons = {
   ),
   arrowUpRight: icon(
     '<path fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" d="M7 17 17 7M8 7h9v9"/>'
-  ),
-  mail: icon(
-    '<rect x="2.8" y="5" width="18.4" height="14" rx="2.2" fill="none" stroke="currentColor" stroke-width="1.5"/><path fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" d="m3.6 7 8.4 6 8.4-6"/>',
-    "0 0 24 24",
-    28
   ),
   /* Sized to the footer's 14px type rather than to the 20px social row. */
   pin: icon(
@@ -364,43 +365,68 @@ function kindWords(copy) {
   </section>`;
 }
 
+/** The hand-written line over the band, set one letter per span so the
+ *  stylesheet can ink them in one after another. No script is involved: each
+ *  letter carries its own delay, and the rhythm is worked out here — a pause
+ *  at a space, a longer one at punctuation, an uneven beat between letters.
+ *  The wobble is a fixed function of the index, so two builds agree. The
+ *  closing full stop is not a glyph but the wordmark's cornflower dot, and it
+ *  drops in last. A reader without the script, or with reduced motion, gets
+ *  the finished line; a screen reader gets the plain sentence. */
+function handLine(text) {
+  let at = 500;
+  const words = text
+    .replace(/\.$/, "")
+    .split(" ")
+    .map((word, w, all) => {
+      const letters = [...word]
+        .map((ch, i) => {
+          const d = Math.round(at);
+          const beat = 0.65 + 0.8 * Math.abs(Math.sin((w + 1) * 7.3 + i * 12.9898));
+          at += 86 * (/[',]/.test(ch) ? 1.8 : beat);
+          return `<span style="--d:${d}">${escapeHtml(ch)}</span>`;
+        })
+        .join("");
+      at += 95;
+      const dot = w === all.length - 1 ? `<i class="hand-dot" style="--d:${Math.round(at + 25)}"></i>` : "";
+      return `<span class="hand-word">${letters}${dot}</span>`;
+    })
+    .join(" ");
+  return `<p class="hand-line"><span class="visually-hidden">${escapeHtml(text)}</span><span aria-hidden="true">${words}</span></p>`;
+}
+
 function contact(copy) {
   const mailto = `mailto:${links.email}`;
-  /* Instagram and GitHub follow Telegram (client decision, 2026-09-11): the
-     hero notes that used to carry Instagram and Pinterest fold away before a
-     pointer can reach them, so the footer is the one place the feeds live. */
-  const social = [
-    ["linkedin", links.linkedin],
-    ["telegram", links.telegram],
-    ["instagram", links.instagram],
-    ["github", links.github]
-  ]
+  /* Every way to reach the owner sits in the band now, not under it (client
+     decision, 2026-09-17): the address spelled out as a link, then the feeds,
+     WhatsApp straight after Telegram. The footer keeps the two labels. */
+  const social = ["linkedin", "telegram", "whatsapp", "instagram", "github"]
     .map(
-      ([name, href]) =>
-        `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(copy.contact.social[name])}">${icons[name]}</a>`
+      (name) =>
+        `<a href="${escapeHtml(links[name])}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(copy.contact.social[name])}">${icons[name]}</a>`
     )
     .join("");
 
-  /* The whole band is one link: no separate button, no spelled-out address —
-     the envelope says what happens on click. */
+  /* The line is a direct child of the slide's own container so it rides the
+     same entrance reveal as every other slide's copy. */
   return `<section class="slide contact" id="contact" aria-labelledby="contact-title">
+    <div class="container contact-line">${handLine(copy.contact.line)}</div>
     <div class="contact-middle">
-      <a class="contact-band" href="${mailto}">
-        <span class="band-inner container">
-          <span class="band-icon" aria-hidden="true">${icons.mail}</span>
-          <span class="band-copy">
-            <span class="band-title" id="contact-title">${escapeHtml(copy.contact.band.title)}</span>
-            <span class="band-note">${escapeHtml(copy.contact.band.note)}</span>
-          </span>
-          <span class="band-arrow" aria-hidden="true">${icons.arrowUpRight}</span>
-        </span>
-      </a>
+      <div class="contact-band">
+        <div class="band-inner container">
+          <h2 class="band-title" id="contact-title">${escapeHtml(copy.contact.band.title)}</h2>
+          <div class="band-row">
+            <a class="band-mail" href="${mailto}">${escapeHtml(links.email)}</a>
+            <span class="band-rule" aria-hidden="true"></span>
+            <div class="band-social">${social}</div>
+          </div>
+        </div>
+      </div>
     </div>
     <footer class="site-footer">
       <div class="container footer-inner">
         <p class="footer-copyright">${escapeHtml(copy.footer.copyright)}</p>
         <p class="footer-location">${icons.pin}${escapeHtml(copy.contact.location)}</p>
-        <div class="footer-social">${social}</div>
       </div>
     </footer>
   </section>`;

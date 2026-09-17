@@ -15,17 +15,21 @@ rules, heavy tracked capitals. Everything below follows from that.
   other UI. Hierarchy is carried by weight, tracking, rules and scale, the way
   it is on paper. The single sanctioned exception (client decision,
   2026-08-28, replacing the brand-gold amber of 2026-08-19) is the
-  cornflower gradient `--brand-dot` on the wordmark dot described below. A
+  cornflower gradient `--brand-dot` on the wordmark dot described below, and
+  on that same dot standing as the full stop of the contact line (client
+  decision, 2026-09-17; see "The contact slide"). A test pins those two
+  users and no third. A
   test walks every hex colour in the compiled stylesheet, allows exactly the
   gradient's two stops, and fails any other whose RGB channels spread more
   than 12, so a stray accent cannot slip in.
 - Type is two working families, both already licensed in this repository:
   **Manrope** for the wordmark, headings, navigation and body; **Playfair
-  Display** for the chapter numerals, the pull quotes and the italic line in
-  the contact band — nowhere else. The single sanctioned exception (client
-  decision, 2026-08-28) is **Caveat**, the hand-written voice of the hero
-  portrait's hover annotations and of nothing else; see "The hero portrait".
-  Do not add a fourth family.
+  Display** for the chapter numerals, the pull quotes and the italic e-mail
+  address in the contact band — nowhere else. The single sanctioned exception
+  (client decision, 2026-08-28) is **Caveat**, the hand-written voice of the
+  hero portrait's hover annotations and, since 2026-09-17, of the one line
+  over the contact band — and of nothing else; see "The hero portrait" and
+  "The contact slide". Do not add a fourth family.
 - Headings are uppercase with open tracking (`0.06em`–`0.09em`), not tight
   display type.
 - **The header is set in two voices, not one.** The wordmark and the
@@ -160,13 +164,10 @@ rules, heavy tracked capitals. Everything below follows from that.
   convention.
 - The footer is **one horizontal row directly under the contact band**, and the
   pair is anchored to the bottom of the last slide: copyright hard left, a pin
-  icon and the location centred on the page, social icons with no labels hard
-  right (LinkedIn, Telegram, Instagram, GitHub — client decision 2026-09-11;
-  Instagram and Pinterest used to hang off the hero notes, but the notes fold
-  away as the pointer leaves the print, so no link there could be reached). Its outer grid columns are `1fr` so the
-  middle one centres on the page rather than on the copyright. It carries no
-  rule on top — the black band above it already divides the page, and the band
-  must not be pushed away from it by a spacer row.
+  icon and the location hard right — in the corner the social icons held
+  until they moved up into the band (client decision, 2026-09-17). It carries
+  no links and no rule on top — the band above it already divides the page,
+  and the band must not be pushed away from it by a spacer row.
 - Tone: calm, concrete, premium. No urgency timers, no invented counters, no
   exclamation marks.
 
@@ -193,6 +194,45 @@ Below that it is an ordinary flowing document.
 - Entrance reveals are claimed by the script (`html.reveal-on`), never written
   into the markup. A visitor without JavaScript, or with reduced motion, gets
   every slide fully visible.
+
+## The contact slide
+
+Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
+(`prototypes/contact/` in the owner's workspace, not in this repository).
+
+- **The band is the portfolio panel's grey** (`--ground-alt`), not the
+  near-black stripe it was, and it is no longer one big mail link. Centred in
+  it: the `GET IN TOUCH` heading (English on both pages, as before), then one
+  row — the e-mail address spelled out in Playfair italic as a `mailto:`
+  link, a hairline, and the feeds as 44px icon targets: LinkedIn, Telegram,
+  **WhatsApp**, Instagram, GitHub, in that order. `links.whatsapp` is a
+  `wa.me/<digits>` URL because wa.me opens a chat for a phone number only; a
+  test rejects a handle there. The WhatsApp glyph is drawn for this page in
+  the Instagram icon's stroke weight — the official mark is a kilobyte of
+  path on each page.
+- **Over the band one Caveat line writes itself** — "Let's make your brand
+  impossible to forget." / "Hagamos que tu marca sea imposible de olvidar."
+  (`contact.line`; the owner approved the Spanish on 2026-09-17). It must
+  stay inside the Caveat subset — a straight apostrophe, never a typographic
+  one — and end in a full stop; tests check both.
+- **The writing costs no JavaScript**, because the 4 KB script budget was
+  already spent. `render.js` sets one `<span>` per letter with its own
+  `--d` delay in milliseconds, worked out at build time: an uneven beat
+  between letters, a pause at every space, a longer one at an apostrophe or
+  comma — a fixed function of the index, so two builds agree. The stylesheet
+  uncovers each letter left to right with a `clip-path` wipe (the box opens
+  0.4em past the glyph because Caveat's strokes overhang it). The hidden
+  state is claimed under `html.reveal-on` and started by the slide's
+  `in-view`, like every entrance — so no script and reduced motion both get
+  the finished sentence, a test fails any `.hand-` rule that hides without
+  that claim, and the line writes again each time the slide is re-entered. A
+  visually-hidden copy carries the sentence for screen readers; the letter
+  spans are `aria-hidden`.
+- **The closing full stop is the wordmark's dot**, not a glyph: `.hand-dot`,
+  `0.18em` across (the client took the show's `0.2em` down a tenth), filled
+  with `--brand-dot`, dropping in with a small bounce after the last letter.
+- The letter spans are paid for in HTML, and the band's rules in CSS; both
+  budgets were raised deliberately for this slide — see "Implementation".
 
 ## Content
 
@@ -240,9 +280,13 @@ Below that it is an ordinary flowing document.
   work track is a native scroll container until the script rebuilds it as the
   filmstrip (its counter and dots ship empty), and the portrait swaps on
   hover in pure CSS. A test asserts the markup ships nothing pre-hidden.
-- The stylesheet budget is **64 KB raw** (`web-design.config.json`, raised
-  from 60 KB on 2026-09-11 for the filmstrip, deliberately — the comments
-  are part of the file and are not to be gutted to fit). The script budget
+- The stylesheet budget is **68 KB raw** (`web-design.config.json`, raised
+  from 60 KB to 64 KB on 2026-09-11 for the filmstrip and to 68 KB on
+  2026-09-17 for the contact slide, deliberately — the comments are part of
+  the file and are not to be gutted to fit). The HTML budget went from 60 KB
+  to **64 KB raw** the same day: it is summed over every document, and the
+  contact line's letter spans — the price of keeping the writing out of the
+  script — cost about 1.2 KB on each language's page. The script budget
   stayed at 4 KB, and twice in this change behaviour was paid for by cutting
   the filmstrip's own prose in `site.js` rather than by raising it; the
   reasoning that was cut lives in this file.

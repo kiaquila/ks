@@ -247,11 +247,12 @@ test("the years of experience are derived, never hardcoded", () => {
   }
 });
 
-test("the hero annotations carry claims only; the feeds live in the footer", () => {
+test("the hero annotations carry claims only; the feeds live in the contact band", () => {
   /* Every note is client-supplied. The notes fold away as the pointer
      leaves the print, so the links they once carried could not be reached;
-     they are plain bullets now, and Instagram and GitHub sit in the footer
-     after LinkedIn and Telegram (client decision, 2026-09-11). An interim
+     they are plain bullets now, and the feeds sit together in the contact
+     band — they moved up from the footer on 2026-09-17, WhatsApp joining
+     straight after Telegram (client decisions, 2026-09-11 and -17). An interim
      "Why me" slide was tried and dropped (client decision, 2026-08-28): the
      claims are written over the portrait instead, and the header goes
      straight to the sections — Process listed before Work, offer-first. */
@@ -263,9 +264,14 @@ test("the hero annotations carry claims only; the feeds live in the footer", () 
       html.indexOf("</section>", html.indexOf('<div class="portrait-notes"'))
     );
     assert.doesNotMatch(layer, /<a\b/, `${lang}: a link inside the hero notes cannot be reached`);
-    const footer = html.match(/<div class="footer-social">([\s\S]*?)<\/div>/)[1];
-    const hrefs = [...footer.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(hrefs, [links.linkedin, links.telegram, links.instagram, links.github]);
+    const feeds = html.match(/<div class="band-social">([\s\S]*?)<\/div>/)[1];
+    const hrefs = [...feeds.matchAll(/href="([^"]+)"/g)].map((m) => m[1]);
+    assert.deepEqual(hrefs, [links.linkedin, links.telegram, links.whatsapp, links.instagram, links.github]);
+    /* wa.me opens a chat for a phone number only; a handle there is a dead link. */
+    assert.match(links.whatsapp, /^https:\/\/wa\.me\/\d{10,15}$/);
+    /* The footer keeps its two labels and no link at all. */
+    const footer = html.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/)[1];
+    assert.doesNotMatch(footer, /<a\b/, `${lang}: the feeds live in the band, not the footer`);
     assert.doesNotMatch(html, /id="why"|href="#why"/);
     const nav = html.match(/<nav class="site-nav"[\s\S]*?<\/nav>/)[0];
     const anchors = [...nav.matchAll(/href="#([a-z-]+)"/g)].map((m) => m[1]);
@@ -434,6 +440,7 @@ test("the only external links are the approved destinations", () => {
     [
       links.linkedin,
       links.telegram,
+      links.whatsapp,
       links.instagram,
       links.github,
       links.work.chaijana,
@@ -600,14 +607,13 @@ test("the page still works with scripts disabled", () => {
 });
 
 test("the footer is one horizontal row under the contact band", () => {
-  /* Copyright left, location centred, icons right. The outer columns are `1fr`
-     so the middle one is centred on the page rather than on the copyright, and
-     the rule that used to sit on top is gone — the black band above it already
-     divides the page. */
+  /* Copyright left, location right — in the corner the social icons held until
+     they moved up into the band (client decision, 2026-09-17). The rule that
+     used to sit on top stays gone: the band above already divides the page. */
   const clean = withoutComments(css);
   const rule = clean.match(/\.footer-inner \{[^}]*\}/);
   assert.ok(rule, "the footer rule is missing");
-  assert.match(rule[0], /grid-template-columns: 1fr auto 1fr/);
+  assert.match(rule[0], /grid-template-columns: 1fr auto;/);
   assert.ok(
     !/border-top/.test(rule[0]),
     "the footer must not carry a rule between itself and the band"
@@ -617,12 +623,42 @@ test("the footer is one horizontal row under the contact band", () => {
     clean,
     /main \+ \.site-footer \.footer-inner \{[^}]*border-top/
   );
-  /* And the contact slide must not reserve a spacer row that pushes the footer
-     away from the band it belongs under, nor leave a field of white below the
-     footer: the pair closes the page at its bottom edge. */
+  /* The contact slide's one flexible row belongs to the hand-written line
+     above the band. The band and the footer stay `auto` and adjacent, so no
+     spacer can push the footer away from the band or leave white under it:
+     the pair closes the page at its bottom edge. */
   const contact = clean.match(/(?:^|\})\s*\.contact \{[^}]*\}/)[0];
-  assert.doesNotMatch(contact, /1fr/);
-  assert.match(contact, /align-content:\s*end/);
+  assert.match(contact, /grid-template-rows:\s*1fr auto auto;/);
+  for (const lang of LOCALES) {
+    assert.match(
+      pages[lang],
+      /<div class="container contact-line">[\s\S]*?<\/div>\s*<div class="contact-middle">[\s\S]*?<\/div>\s*<footer class="site-footer">/,
+      `${lang}: the line, the band and the footer must follow in that order`
+    );
+  }
+});
+
+test("the contact line writes itself without a script", () => {
+  /* One span per letter, each with the delay the renderer worked out, and the
+     whole effect claimed under `reveal-on` — so a reader with no script or
+     with reduced motion gets the finished sentence, never hidden letters. */
+  const clean = withoutComments(css);
+  for (const lang of LOCALES) {
+    const line = content[lang].contact.line;
+    const html = pages[lang].match(/<p class="hand-line">([\s\S]*?)<\/p>/)[1];
+    assert.ok(html.includes(`<span class="visually-hidden">${line.replaceAll("'", "&#039;")}</span>`),
+      `${lang}: a screen reader needs the plain sentence`);
+    const delays = [...html.matchAll(/style="--d:(\d+)"/g)].map((m) => Number(m[1]));
+    /* every letter, and the dot that stands for the full stop */
+    assert.equal(delays.length, line.replace(/[ .]/g, "").length + 1, `${lang}: one delay per letter`);
+    assert.deepEqual(delays, [...delays].sort((a, b) => a - b), `${lang}: the line must write in reading order`);
+    assert.match(line, /\.$/, `${lang}: the dot replaces a full stop, so the line must end in one`);
+    assert.equal((html.match(/class="hand-dot"/g) ?? []).length, 1);
+  }
+  for (const [, selector] of clean.matchAll(/([^{}]+)\{[^}]*(?:clip-path|opacity:\s*0)[^}]*\}/g)) {
+    if (!/\.hand-/.test(selector)) continue;
+    assert.match(selector, /html\.reveal-on/, `${selector.trim()} hides the line without the script's claim`);
+  }
 });
 
 test("the work previews are shown at the screenshots' own proportion", async () => {
@@ -729,9 +765,10 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
     );
   }
   assert.doesNotMatch(clean, /max-width: calc\(\(60svh/);
-  /* The cornflower stays on the wordmark's dot alone. */
+  /* The cornflower stays on the wordmark's dot and on the same dot closing
+     the contact line (client decision, 2026-09-17) — nowhere else. */
   const dotUsers = [...clean.matchAll(/([^{}]+)\{[^}]*var\(--brand-dot\)[^}]*\}/g)].map((m) => m[1].trim());
-  assert.deepEqual(dotUsers, [".brand-dot"]);
+  assert.deepEqual(dotUsers, [".brand-dot", ".hand-dot"]);
 });
 
 test("switching language keeps the reader in the same section", () => {
@@ -871,7 +908,8 @@ test("every touch target clears 44 px", () => {
   const clean = withoutComments(css);
   const rules = [
     [/\.lang-switch a,\s*\.lang-current\s*\{[^}]*\}/, "both"],
-    [/\.footer-social a\s*\{[^}]*\}/, "both"],
+    [/\.band-social a\s*\{[^}]*\}/, "both"],
+    [/\.band-mail\s*\{[^}]*\}/, "height"],
     [/\.carousel-btn\s*\{[^}]*\}/, "both"],
     [/\.carousel\[data-strip\] \.work-link\s*\{[^}]*\}/, "height"],
     [/\.brand\s*\{[^}]*\}/, "height"],
@@ -1069,7 +1107,7 @@ test("each locale prefix serves its own error page", () => {
   }
 });
 
-test("the hero notes stay inside the hand font's subset", () => {
+test("everything set in the hand font stays inside its subset", () => {
   /* Caveat ships as a subset — ASCII plus the Spanish lowercase accents the
      notes set — to fit beside the two working families inside the woff2
      budget. A glyph outside it silently falls back mid-word to a system
@@ -1078,6 +1116,8 @@ test("the hero notes stay inside the hand font's subset", () => {
      character this rejects. */
   const SUBSET = /^[\u0020-\u007E\u00E1\u00E9\u00ED\u00F1\u00F3\u00FA\u00FC]*$/;
   for (const lang of LOCALES) {
+    const line = content[lang].contact.line;
+    assert.match(line, SUBSET, `${lang}: "${line}" needs a glyph Caveat lacks`);
     for (const note of content[lang].hero.notes) {
       assert.match(note.text, SUBSET, `${lang}: "${note.text}" needs a glyph Caveat lacks`);
       for (const item of note.items ?? []) {

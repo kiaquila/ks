@@ -20,6 +20,8 @@ export const experienceYears = (now = new Date()) =>
 export const links = {
   linkedin: "https://www.linkedin.com/in/kiaquila",
   telegram: "https://t.me/ks_aquila",
+  /* wa.me resolves a phone number only — a handle does not open a chat. */
+  whatsapp: "https://wa.me/5491127132101",
   instagram: "https://www.instagram.com/ks_aquila",
   github: "https://github.com/kiaquila",
   email: "ks@ks-design.art",
@@ -50,7 +52,8 @@ export const languages = {
  *  work cards on 2026-08-19, the hero annotations (`hero.notes`) on
  *  2026-08-28, and the Dream Board and Fathom cards with the reworded hero
  *  bullets on 2026-09-11. The owner approved the expanded service package
- *  translations on 2026-09-11 as well. */
+ *  translations on 2026-09-11 as well, and the contact line with the
+ *  Portfolio nav label on 2026-09-17. */
 export const localesAwaitingReview = [];
 
 /** One social card per language — sharing a page with a card that carries
@@ -71,7 +74,9 @@ export const content = {
     },
     nav: {
       label: "Page sections",
-      work: "Work",
+      /* The key stays `work` — it is the slide's id. The label reads Portfolio
+         in both languages (client decision, 2026-09-17). */
+      work: "Portfolio",
       process: "Process",
       services: "Services",
       contact: "Contact"
@@ -270,14 +275,16 @@ export const content = {
     },
     contact: {
       id: "contact",
-      band: {
-        title: "Get in touch",
-        note: "Write me — I'll make you a design that sells."
-      },
+      /* Written out letter by letter over the band, in the hand font — so it
+         has to stay inside the Caveat subset: a straight apostrophe, not a
+         typographic one. The owner approved the Spanish line on 2026-09-17. */
+      line: "Let's make your brand impossible to forget.",
+      band: { title: "Get in touch" },
       location: "Buenos Aires, Argentina (GMT-3)",
       social: {
         linkedin: "LinkedIn",
         telegram: "Telegram",
+        whatsapp: "WhatsApp",
         instagram: "Instagram",
         github: "GitHub"
       }
@@ -301,7 +308,7 @@ export const content = {
     },
     nav: {
       label: "Secciones de la página",
-      work: "Trabajos",
+      work: "Portfolio",
       process: "Proceso",
       services: "Servicios",
       contact: "Contacto"
@@ -496,14 +503,13 @@ export const content = {
     },
     contact: {
       id: "contact",
-      band: {
-        title: "Get in touch",
-        note: "Escribime y te hago un diseño que vende."
-      },
+      line: "Hagamos que tu marca sea imposible de olvidar.",
+      band: { title: "Get in touch" },
       location: "Buenos Aires, Argentina (GMT-3)",
       social: {
         linkedin: "LinkedIn",
         telegram: "Telegram",
+        whatsapp: "WhatsApp",
         instagram: "Instagram",
         github: "GitHub"
       }
