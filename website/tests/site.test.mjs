@@ -655,6 +655,16 @@ test("the contact line writes itself without a script", () => {
     assert.match(line, /\.$/, `${lang}: the dot replaces a full stop, so the line must end in one`);
     assert.equal((html.match(/class="hand-dot"/g) ?? []).length, 1);
   }
+  /* And under the motion query itself, not only the script's one-time sample
+     of it: `reveal-on` outlives a reader switching motion off mid-visit, and
+     the global reduced-motion rule cuts durations, never the `--d` delays. */
+  const motion = clean.match(/@media \(prefers-reduced-motion: no-preference\) \{((?:[^{}]*\{[^}]*\})+)\s*\}/);
+  assert.ok(motion, "the writing must sit inside a no-preference motion query");
+  for (const [, selector] of clean.matchAll(/([^{}]+)\{[^}]*(?:clip-path|opacity:\s*0|animation:)[^}]*\}/g)) {
+    if (/\.hand-/.test(selector)) {
+      assert.ok(motion[1].includes(selector.trim()), `${selector.trim()} must live inside the motion query`);
+    }
+  }
   for (const [, selector] of clean.matchAll(/([^{}]+)\{[^}]*(?:clip-path|opacity:\s*0)[^}]*\}/g)) {
     if (!/\.hand-/.test(selector)) continue;
     assert.match(selector, /html\.reveal-on/, `${selector.trim()} hides the line without the script's claim`);

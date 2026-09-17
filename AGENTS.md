@@ -223,9 +223,14 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   uncovers each letter left to right with a `clip-path` wipe (the box opens
   0.4em past the glyph because Caveat's strokes overhang it). The hidden
   state is claimed under `html.reveal-on` and started by the slide's
-  `in-view`, like every entrance — so no script and reduced motion both get
-  the finished sentence, a test fails any `.hand-` rule that hides without
-  that claim, and the line writes again each time the slide is re-entered. A
+  `in-view`, like every entrance — so no script gets the finished sentence,
+  and the line writes again each time the slide is re-entered. The same
+  rules also sit inside `@media (prefers-reduced-motion: no-preference)`:
+  the script samples reduced motion once, at load, and the global
+  reduced-motion rule cuts durations but never delays, so a reader who
+  switched motion off mid-visit would otherwise wait out five seconds of
+  `--d`. A test fails any `.hand-` rule that hides or animates outside
+  either claim. A
   visually-hidden copy carries the sentence for screen readers; the letter
   spans are `aria-hidden`.
 - **The closing full stop is the wordmark's dot**, not a glyph: `.hand-dot`,

@@ -826,22 +826,27 @@
 /* Each letter is uncovered left to right, the way a nib lays ink, at the
    delay the renderer gave it. The box opens wider than the glyph because
    Caveat's strokes overhang theirs. Claimed under `reveal-on` like every
-   entrance, so no script and reduced motion both get the finished line; the
-   slide's `in-view` starts the writing, and leaving resets it. */
-html.reveal-on .hand-word span {
-  clip-path: inset(-0.4em calc(100% + 0.4em) -0.4em -0.4em);
-}
+   entrance, so no script gets the finished line; the slide's `in-view` starts
+   the writing, and leaving resets it. The media query is not decoration: the
+   script samples reduced motion once, at load, and the global reduced-motion
+   rule shortens durations but not delays — a reader who turns motion off
+   afterwards would still wait out five seconds of `--d`. */
+@media (prefers-reduced-motion: no-preference) {
+  html.reveal-on .hand-word span {
+    clip-path: inset(-0.4em calc(100% + 0.4em) -0.4em -0.4em);
+  }
 
-html.reveal-on .hand-dot {
-  opacity: 0;
-}
+  html.reveal-on .hand-dot {
+    opacity: 0;
+  }
 
-html.reveal-on .in-view .hand-word span {
-  animation: hand-ink 130ms linear calc(var(--d) * 1ms) both;
-}
+  html.reveal-on .in-view .hand-word span {
+    animation: hand-ink 130ms linear calc(var(--d) * 1ms) both;
+  }
 
-html.reveal-on .in-view .hand-dot {
-  animation: hand-drop 720ms cubic-bezier(0.3, 0, 0.5, 1) calc(var(--d) * 1ms) both;
+  html.reveal-on .in-view .hand-dot {
+    animation: hand-drop 720ms cubic-bezier(0.3, 0, 0.5, 1) calc(var(--d) * 1ms) both;
+  }
 }
 
 @keyframes hand-ink {
