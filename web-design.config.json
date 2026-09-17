@@ -45,10 +45,10 @@
       "criticalGzipBytes": 46080,
       "extensions": {
         ".html": {
-          "rawBytes": 61440
+          "rawBytes": 65536
         },
         ".css": {
-          "rawBytes": 65536
+          "rawBytes": 69632
         },
         ".js": {
           "rawBytes": 49152,

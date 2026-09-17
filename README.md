@@ -21,11 +21,13 @@ lead paragraph under it repeated what the heading already said.
 3. Process — `01`–`04`
 4. Services — three package cards
 5. Kind Words
-6. Get in touch — full-width band, then the footer directly under it with
-   LinkedIn, Telegram, Instagram and GitHub
+6. Get in touch — a hand-written line that writes itself, then a full-width
+   grey band with the e-mail address spelled out and LinkedIn, Telegram,
+   WhatsApp, Instagram and GitHub, then the footer directly under it
 
-The header lists Process before Work (the owner reads the menu offer-first),
-while the slides keep Work first.
+The header lists Process before Portfolio (the owner reads the menu
+offer-first), while the slides keep the portfolio first. The slide's id and
+content key stay `work`; only the label reads Portfolio.
 
 Implementation lives in `website/`: static HTML/CSS/JS with no framework.
 The customer stage remains on Cloudflare Workers; production is
