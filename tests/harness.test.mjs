@@ -6,6 +6,7 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { gzipSync } from "node:zlib";
 import test from "node:test";
+import { pageRequests, wireBytes } from "../scripts/check-delivery-speed.mjs";
 
 const templateRoot = resolve(import.meta.dirname, "..");
 
@@ -33,7 +34,8 @@ function configure(root) {
   /* KS builds into website/dist, but the fixture exercises the harness against
      its own synthetic dist/ so these tests never depend on a real build. */
   config.performance.outputDirectory = "dist";
-  config.performance.criticalFiles = ["index.html"];
+  config.performance.entryPages = ["index.html"];
+  config.performance.delivery.baseline = "delivery-baseline.json";
   writeFileSync(configPath, `${JSON.stringify(config, null, 2)}\n`);
   const owners = readFileSync(join(root, ".github/CODEOWNERS"), "utf8")
     .replaceAll("replace-with-owner", "owner");
@@ -56,14 +58,28 @@ function deconfigure(root) {
 function makeFixture({ configured = true } = {}) {
   const root = mkdtempSync(join(tmpdir(), "web-design-template-"));
   cpSync(templateRoot, root, { recursive: true });
+  /* In a linked worktree `.git` is a file pointing at the real repository,
+     and a copy of it still points there: the fixture's `git add -A` below
+     then staged the demo configuration into the worktree's own index. The
+     fixture gets a repository of its own. */
+  rmSync(join(root, ".git"), { recursive: true, force: true });
   if (configured) configure(root); else deconfigure(root);
   const git = spawnSync("git", ["init", "-q"], { cwd: root, encoding: "utf8" });
   assert.equal(git.status, 0, git.stderr);
   const add = spawnSync("git", ["add", "-A"], { cwd: root, encoding: "utf8" });
   assert.equal(add.status, 0, add.stderr);
-  write(root, "dist/index.html", "<!doctype html><title>Demo</title>\n");
+  write(root, "dist/index.html", "<!doctype html><title>Demo</title><script src=\"/app.js\" defer></script>\n");
   write(root, "dist/app.js", "document.documentElement.dataset.ready = 'true';\n");
   return root;
+}
+
+function recordBaseline(root) {
+  const result = spawnSync(process.execPath, [join(root, "scripts/check-delivery-speed.mjs"), "--root", root, "--update"], {
+    cwd: root,
+    encoding: "utf8"
+  });
+  assert.equal(result.status, 0, result.stderr);
+  return JSON.parse(readFileSync(join(root, "delivery-baseline.json"), "utf8"));
 }
 
 function withFixture(options, callback) {
@@ -85,12 +101,13 @@ test("the untouched reference requires deliberate project configuration", () => 
   });
 });
 
-test("configured repository, project commands, and payload pass", () => {
+test("configured repository, project commands, and delivery check pass", () => {
   withFixture({}, (root) => {
+    recordBaseline(root);
     for (const script of [
       "check-repository.mjs",
       "run-project-checks.mjs",
-      "check-performance-budget.mjs"
+      "check-delivery-speed.mjs"
     ]) {
       const result = run(root, script);
       assert.equal(result.status, 0, `${script}\n${result.stderr}`);
@@ -109,53 +126,96 @@ test("project commands are executed directly and failures propagate", () => {
   });
 });
 
-test("JavaScript gzip budget retains the Alex Neon 20 KiB ceiling", () => {
+test("a build with no recorded baseline says how to record one", () => {
   withFixture({}, (root) => {
-    write(root, "dist/app.js", randomBytes(25 * 1024));
-    const result = run(root, "check-performance-budget.mjs");
+    const result = run(root, "check-delivery-speed.mjs");
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /\.js gzip payload .* exceeds 20480 B/);
+    assert.match(result.stderr, /No baseline at delivery-baseline\.json; run check-delivery-speed\.mjs --update/);
   });
 });
 
-test("critical first-render text retains the 45 KiB gzip ceiling", () => {
+test("a slower first paint than the baseline fails and names what grew", () => {
   withFixture({}, (root) => {
+    const baseline = recordBaseline(root);
+    /* Random bytes do not compress, so 47 KiB of them is 47 KiB on the wire:
+       at 1600 kbps that is 240 ms on a first paint of a few hundred. */
     write(root, "dist/index.html", randomBytes(47 * 1024));
-    const result = run(root, "check-performance-budget.mjs");
+    const result = run(root, "check-delivery-speed.mjs");
     assert.equal(result.status, 1);
-    assert.match(result.stderr, /Critical gzip payload .* exceeds 46080 B/);
+    const [, ms] = result.stderr.match(/index\.html first paint (\d+) ms is [\d.]+% slower than the (\d+) ms baseline/) ?? [];
+    assert.ok(ms, result.stderr);
+    assert.ok(Number(ms) > baseline.pages["index.html"].firstPaint.ms);
+    assert.match(result.stderr, /\(index\.html \+[\d,]+ B\)/);
+    assert.match(result.stderr, /--update/);
   });
 });
 
-test("each critical file is measured as its own gzip response", () => {
+test("growth inside the tolerance passes, and a gain is offered as the new baseline", () => {
   withFixture({}, (root) => {
-    const script = "document.documentElement.dataset.ready = 'true';\n".repeat(400);
-    const markup = `<!doctype html><title>Demo</title><script>${script}</script>\n`;
+    recordBaseline(root);
+    /* Well under 3% of the modelled first paint (a few hundred bytes of
+       compressible markup is a millisecond or two). */
+    write(root, "dist/index.html", "<!doctype html><title>Demo</title><script src=\"/app.js\" defer></script><p>hello</p>\n");
+    let result = run(root, "check-delivery-speed.mjs");
+    assert.equal(result.status, 0, result.stderr);
+
+    write(root, "dist/index.html", randomBytes(20 * 1024));
+    recordBaseline(root);
+    write(root, "dist/index.html", "<!doctype html><title>Demo</title>\n");
+    result = run(root, "check-delivery-speed.mjs");
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /faster than the .* baseline — run --update/);
+  });
+});
+
+test("every request is counted as its own gzip response", () => {
+  /* One shared stream would let a later file reuse an earlier one's
+     dictionary, so two copies of the same text would look like one. */
+  const script = "document.documentElement.dataset.ready = 'true';\n".repeat(400);
+  const markup = `<!doctype html><title>Demo</title><script src="/app.js" defer></script><script>${script}</script>\n`;
+  const own = wireBytes("index.html", Buffer.from(markup)) + wireBytes("app.js", Buffer.from(script));
+  const shared = gzipSync(Buffer.concat([Buffer.from(markup), Buffer.from(script)]), { level: 6 }).length;
+  assert.ok(shared < own);
+  withFixture({}, (root) => {
     write(root, "dist/index.html", markup);
     write(root, "dist/app.js", script);
-    const buffers = [Buffer.from(markup), Buffer.from(script)];
-    const streamed = buffers.reduce((total, buffer) => total + gzipSync(buffer, { level: 9 }).length, 0);
-    const budget = streamed - 1;
-    // One shared stream lets app.js reuse the markup's dictionary, so a critical
-    // path that is really over budget would be measured as comfortably under it.
-    assert.ok(gzipSync(Buffer.concat(buffers), { level: 9 }).length < budget);
-
-    const path = join(root, "web-design.config.json");
-    const config = JSON.parse(readFileSync(path, "utf8"));
-    config.performance.criticalFiles = ["index.html", "app.js"];
-    config.performance.budgets.criticalGzipBytes = budget;
-    writeFileSync(path, `${JSON.stringify(config, null, 2)}\n`);
-
-    const result = run(root, "check-performance-budget.mjs");
-    assert.equal(result.status, 1);
-    assert.match(result.stderr, new RegExp(`Critical gzip payload ${streamed} B exceeds ${budget} B`));
+    const baseline = recordBaseline(root);
+    const counted = Object.values(baseline.pages["index.html"].fullLoad.bytes).reduce((total, size) => total + size, 0);
+    assert.equal(counted, own);
   });
+});
+
+test("the page's requests are read from its markup and stylesheet", () => {
+  const html = `<!doctype html>
+    <link rel="preload" as="font" href="/assets/fonts/latin.woff2" crossorigin>
+    <link rel="stylesheet" href="/assets/styles.css?v=abc123">
+    <link rel="icon" href="/assets/favicon.svg?v=6">
+    <picture><source srcset="/assets/hero-520.webp 520w, /assets/hero-1040.webp 1040w"><img src="/assets/hero-520.jpg" alt="" fetchpriority="high"></picture>
+    <picture><source srcset="/assets/card-800.webp 800w"><img src="/assets/card-800.jpg" alt="" loading="lazy"></picture>
+    <img src="/assets/logo.svg" alt=""><img src="/assets/later.png" alt="" loading="lazy">
+    <p>Plain text</p>
+    <script src="/assets/site.js?v=def456" defer></script>`;
+  const css = `@font-face { font-family: A; src: url("/assets/fonts/latin.woff2"); unicode-range: U+0000-00FF; }
+    @font-face { font-family: A; src: url("/assets/fonts/cyrillic.woff2"); unicode-range: U+0400-045F; }
+    @font-face { font-family: B; src: url("/assets/fonts/hand.woff2"); unicode-range: U+00??; }
+    @font-face { font-family: C; src: url("/assets/fonts/any.woff2"); }`;
+  const requests = pageRequests(html, (path) => (path === "assets/styles.css" ? css : null));
+  assert.deepEqual(requests.firstPaint, [
+    "assets/fonts/latin.woff2",
+    "assets/hero-520.webp",
+    "assets/logo.svg",
+    "assets/styles.css"
+  ]);
+  /* The Cyrillic face covers no text on the page, so a browser never asks
+     for it; the preloaded face is already in the first ring. */
+  assert.deepEqual(requests.fullLoad, ["assets/fonts/any.woff2", "assets/fonts/hand.woff2", "assets/site.js"]);
 });
 
 test("unexpected deployable file types fail", () => {
   withFixture({}, (root) => {
+    recordBaseline(root);
     write(root, "dist/video.mp4", "not really a video\n");
-    const result = run(root, "check-performance-budget.mjs");
+    const result = run(root, "check-delivery-speed.mjs");
     assert.equal(result.status, 1);
     assert.match(result.stderr, /Unexpected deployable file type \.mp4/);
   });
@@ -181,7 +241,7 @@ test("the harness stays out of GitHub language statistics", () => {
       encoding: "utf8"
     }).stdout.trim();
     for (const harness of [
-      "scripts/check-performance-budget.mjs",
+      "scripts/check-delivery-speed.mjs",
       "scripts/check-repository.mjs",
       "scripts/config.mjs",
       "scripts/run-project-checks.mjs",

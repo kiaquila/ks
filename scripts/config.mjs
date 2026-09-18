@@ -58,12 +58,12 @@ export function validateConfig(config, root) {
   } catch (error) {
     errors.push(error.message);
   }
-  if (!Array.isArray(performance.criticalFiles) || performance.criticalFiles.length === 0) {
-    errors.push("performance.criticalFiles must list the exact first-render files");
+  if (!Array.isArray(performance.entryPages) || performance.entryPages.length === 0) {
+    errors.push("performance.entryPages must list the built documents a visitor lands on");
   } else {
-    for (const [index, file] of performance.criticalFiles.entries()) {
+    for (const [index, page] of performance.entryPages.entries()) {
       try {
-        resolveWithin(outputRoot, file, `performance.criticalFiles[${index}]`);
+        resolveWithin(outputRoot, page, `performance.entryPages[${index}]`);
       } catch (error) {
         errors.push(error.message);
       }
@@ -74,28 +74,19 @@ export function validateConfig(config, root) {
     errors.push("performance.allowedExtensions must contain lower-case file extensions");
   }
 
-  const budgets = performance.budgets;
-  if (!isObject(budgets)) return [...errors, "performance.budgets is required"];
-  for (const name of ["totalRawBytes", "totalGzipBytes", "criticalGzipBytes"]) {
-    if (!positiveInteger(budgets[name])) errors.push(`performance.budgets.${name} must be positive`);
+  const delivery = performance.delivery;
+  if (!isObject(delivery)) return [...errors, "performance.delivery is required"];
+  try {
+    resolveWithin(root, delivery.baseline, "performance.delivery.baseline");
+  } catch (error) {
+    errors.push(error.message);
   }
-  if (!isObject(budgets.extensions) || Object.keys(budgets.extensions).length === 0) {
-    errors.push("performance.budgets.extensions must define at least one extension budget");
-  } else {
-    for (const [extension, limits] of Object.entries(budgets.extensions)) {
-      if (!/^\.[a-z0-9]+$/.test(extension) || !isObject(limits)) {
-        errors.push(`Invalid extension budget: ${extension}`);
-        continue;
-      }
-      if (!["rawBytes", "gzipBytes"].some((name) => positiveInteger(limits[name]))) {
-        errors.push(`Extension ${extension} needs a rawBytes or gzipBytes limit`);
-      }
-      for (const [name, value] of Object.entries(limits)) {
-        if (!["rawBytes", "gzipBytes"].includes(name) || !positiveInteger(value)) {
-          errors.push(`Invalid ${extension} budget ${name}`);
-        }
-      }
-    }
+  if (typeof delivery.tolerance !== "number" || !(delivery.tolerance > 0 && delivery.tolerance < 1)) {
+    errors.push("performance.delivery.tolerance must be a fraction between 0 and 1");
+  }
+  if (!isObject(delivery.connection) || !positiveInteger(delivery.connection.downloadKbps) ||
+      !positiveInteger(delivery.connection.rttMs)) {
+    errors.push("performance.delivery.connection needs positive downloadKbps and rttMs");
   }
   return errors;
 }

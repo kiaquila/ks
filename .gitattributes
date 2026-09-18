@@ -4,7 +4,7 @@
 #
 # Delete a line if the project genuinely owns that file as product code, and
 # add project-specific rules below this block.
-scripts/check-performance-budget.mjs linguist-vendored
+scripts/check-delivery-speed.mjs linguist-vendored
 scripts/check-repository.mjs         linguist-vendored
 scripts/config.mjs                   linguist-vendored
 scripts/run-project-checks.mjs       linguist-vendored

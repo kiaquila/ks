@@ -58,8 +58,8 @@
 }
 
 /* The hand-written annotations on the hero portrait. A single static weight,
-   subset to ASCII plus the Spanish lowercase accents the notes actually set —
-   the file has to fit the font budget beside the two working families. */
+   subset to ASCII plus the Spanish lowercase accents the notes actually set,
+   so a third family costs a fraction of a full face. */
 @font-face {
   font-family: "Caveat";
   src: url("/assets/fonts/caveat-latin.woff2") format("woff2");

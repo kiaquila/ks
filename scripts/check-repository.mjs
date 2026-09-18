@@ -36,7 +36,7 @@ for (const path of [
   "CLAUDE.md",
   "README.md",
   "package.json",
-  "scripts/check-performance-budget.mjs",
+  "scripts/check-delivery-speed.mjs",
   "scripts/check-repository.mjs",
   "scripts/config.mjs",
   "scripts/run-project-checks.mjs",
