@@ -108,9 +108,11 @@ KS deploy key, and its former `ks/` tree was removed on 2026-09-17. Neither the
 old repository nor that deleted tree is a backup source or a rollback route.
 The standalone wrapper records ordering in
 `/var/lib/ks-production/latest-candidate-ks`, separate from the monorepo state,
-because Actions run IDs are ordered only within one repository. The current
-installer still contains a migration-only branch for the completed retarget;
-its removal belongs in a separate production-code change with tests.
+because Actions run IDs are ordered only within one repository. The 2026-09-18
+audit found a migration-only branch for the completed retarget; its removal is
+isolated with a regression test in
+[PR #24](https://github.com/kiaquila/ks/pull/24), separate from this
+documentation change.
 
 ## Recovery and rollback
 
