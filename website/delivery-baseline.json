@@ -21,7 +21,7 @@
         }
       },
       "fullLoad": {
-        "ms": 2461,
+        "ms": 2238,
         "bytes": {
           "index.html": 6076,
           "assets/fonts/manrope-latin.woff2": 24576,
@@ -30,8 +30,6 @@
           "assets/styles.css": 19948,
           "assets/fonts/caveat-latin.woff2": 41976,
           "assets/fonts/manrope-cyrillic.woff2": 14544,
-          "assets/fonts/playfair-display-cyrillic.woff2": 21144,
-          "assets/fonts/playfair-display-italic-cyrillic.woff2": 23352,
           "assets/fonts/playfair-display-italic-latin.woff2": 38888,
           "assets/fonts/playfair-display-latin.woff2": 38460,
           "assets/site.js": 4053
@@ -50,7 +48,7 @@
         }
       },
       "fullLoad": {
-        "ms": 2462,
+        "ms": 2239,
         "bytes": {
           "es/index.html": 6282,
           "assets/fonts/manrope-latin.woff2": 24576,
@@ -59,8 +57,6 @@
           "assets/styles.css": 19948,
           "assets/fonts/caveat-latin.woff2": 41976,
           "assets/fonts/manrope-cyrillic.woff2": 14544,
-          "assets/fonts/playfair-display-cyrillic.woff2": 21144,
-          "assets/fonts/playfair-display-italic-cyrillic.woff2": 23352,
           "assets/fonts/playfair-display-italic-latin.woff2": 38888,
           "assets/fonts/playfair-display-latin.woff2": 38460,
           "assets/site.js": 4053

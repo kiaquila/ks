@@ -304,8 +304,12 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   speed**: `scripts/check-delivery-speed.mjs` reads every request each
   entry page makes at load out of the built markup and stylesheet (document,
   stylesheet, preloads and eager images for the first paint; the deferred
-  script and the fonts whose `unicode-range` meets the page's text for the
-  full load — lazy images are not loaded and not counted), counts the bytes
+  script and the fonts for the full load — a face only when text set in
+  its own family and style, read from the cascade (last compound selector,
+  inheritance, custom properties, width media queries), falls in its
+  `unicode-range`, so the Cyrillic of a work summary asks for Manrope's
+  Cyrillic file and not Playfair's (Codex review, 2026-09-18); lazy images
+  are not loaded and not counted), counts the bytes
   as the edge sends them (gzip for text, raw for the rest, each response its
   own stream), and plays the load for one modelled phone — a 390×844 CSS
   viewport at 2×, so a responsive image is charged at the `srcset`

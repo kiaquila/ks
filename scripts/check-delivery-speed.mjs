@@ -200,6 +200,183 @@ export function pickCandidate(srcset, sizes, viewport) {
   return (sorted.find((candidate) => candidate.width >= needed) ?? sorted[sorted.length - 1]).url;
 }
 
+/* --- which text each face sets ---------------------------------------------
+
+   Enough of the cascade to know a text run's family and style: rules whose
+   last compound selector (tag and classes) matches an element, inherited
+   down the tree, custom properties resolved, `@media` width conditions
+   judged for the modelled phone. Specificity is classes over tags, then
+   source order. Attribute selectors, pseudo-classes and combinators are
+   read past — the last compound is what has to match — which is exact for
+   the selectors this stylesheet sets fonts with and conservative for
+   stranger ones. */
+
+const VOID = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+const ITALIC_TAGS = new Set(["em", "i", "cite", "var", "dfn"]);
+
+function decodeEntities(text) {
+  return text.replace(/&(#x[0-9a-f]+|#\d+|[a-z]+);/gi, (entity, body) => {
+    if (body[0] === "#") return String.fromCodePoint(parseInt(body[1] === "x" || body[1] === "X" ? body.slice(2) : body.slice(1), body[1] === "x" || body[1] === "X" ? 16 : 10));
+    return { amp: "&", lt: "<", gt: ">", quot: "\"", apos: "'", nbsp: " " }[body.toLowerCase()] ?? entity;
+  });
+}
+
+/** Custom properties declared on `:root`/`html`, so `var(--font-serif)`
+ *  can be read back to its family list. */
+function customProperties(css) {
+  const props = new Map();
+  for (const [, block] of css.matchAll(/(?:^|[}\s])(?::root|html)\s*\{([^}]*)\}/g)) {
+    for (const [, name, value] of block.matchAll(/(--[\w-]+)\s*:\s*([^;]+)/g)) props.set(name, value.trim());
+  }
+  return props;
+}
+
+const resolveVars = (value, props, depth = 0) =>
+  depth > 8 ? value : value.replace(/var\(\s*(--[\w-]+)\s*(?:,\s*([^)]*))?\)/g, (m, name, fallback) =>
+    resolveVars(props.get(name) ?? fallback ?? "", props, depth + 1));
+
+/** The first family in a `font-family` list, unquoted and lower-cased. */
+const firstFamily = (list) => topLevelEntries(list)[0]?.replace(/^["']|["']$/g, "").trim().toLowerCase() ?? "";
+
+/** Every `@font-face`: family, style, unicode-range and the file it names. */
+export function fontFaces(css) {
+  const faces = [];
+  for (const [, block] of css.matchAll(/@font-face\s*\{([^}]*)\}/gi)) {
+    const url = block.match(/url\(\s*["']?([^"')]+)["']?\s*\)/i)?.[1];
+    if (!url) continue;
+    faces.push({
+      url,
+      family: firstFamily(block.match(/font-family\s*:\s*([^;]+)/i)?.[1] ?? ""),
+      style: (block.match(/font-style\s*:\s*([^;]+)/i)?.[1] ?? "normal").trim().toLowerCase(),
+      range: block.match(/unicode-range\s*:\s*([^;]+)/i)?.[1]?.trim() ?? null
+    });
+  }
+  return faces;
+}
+
+/** Whether an `@media` list applies to the phone for the purpose of fonts:
+ *  width conditions are judged, anything else (hover, motion) is taken as
+ *  applying, which can only over-count a face. */
+function mediaAppliesForFonts(list, viewport) {
+  return topLevelEntries(list).some((query) =>
+    query.replace(/^only\s+/i, "").split(/\s+and\s+/i).every((part) => {
+      const feature = part.trim().match(/^\(\s*(min|max)-width\s*:\s*([^)]+)\)$/i);
+      if (!feature) return true;
+      const limit = cssLength(feature[2], viewport);
+      return feature[1].toLowerCase() === "min" ? viewport.cssWidth >= limit : viewport.cssWidth <= limit;
+    })
+  );
+}
+
+/** Rules that set `font-family` or `font-style`, as {tag, classes, family,
+ *  style, specificity, order} keyed by their last compound selector. */
+function fontRules(css, viewport) {
+  const props = customProperties(css);
+  const rules = [];
+  const walk = (source, applies) => {
+    let depth = 0;
+    let start = 0;
+    let head = "";
+    for (let i = 0; i < source.length; i += 1) {
+      const ch = source[i];
+      if (ch === "{") {
+        if (depth === 0) { head = source.slice(start, i).trim(); start = i + 1; }
+        depth += 1;
+      } else if (ch === "}") {
+        depth -= 1;
+        if (depth === 0) {
+          const body = source.slice(start, i);
+          start = i + 1;
+          if (head.startsWith("@media")) {
+            walk(body, applies && mediaAppliesForFonts(head.slice(6), viewport));
+          } else if (head.startsWith("@")) {
+            if (/^@(supports|layer|container)/.test(head)) walk(body, applies);
+          } else if (applies) {
+            const family = body.match(/(?:^|[;\s])font-family\s*:\s*([^;]+)/)?.[1];
+            const style = body.match(/(?:^|[;\s])font-style\s*:\s*([^;]+)/)?.[1];
+            const shorthand = body.match(/(?:^|[;\s])font\s*:\s*([^;]+)/)?.[1];
+            if (!family && !style && !shorthand) continue;
+            for (const selector of topLevelEntries(head)) {
+              const compound = selector.replace(/::?[\w-]+(\([^)]*\))?/g, "").replace(/\[[^\]]*\]/g, "").trim().split(/\s*[>+~]\s*|\s+/).pop() ?? "";
+              const tag = compound.match(/^[a-z][\w-]*/i)?.[0]?.toLowerCase() ?? null;
+              const classes = [...compound.matchAll(/\.([\w-]+)/g)].map((m) => m[1]);
+              const familyValue = family ? firstFamily(resolveVars(family, props)) : shorthand ? firstFamily(resolveVars(shorthand, props).split(/\d[\w.%]*(?:\s*\/\s*[\w.%]+)?\s+/).pop() ?? "") : null;
+              const styleValue = style ? style.trim().toLowerCase() : shorthand && /\bitalic\b/.test(shorthand) ? "italic" : null;
+              rules.push({
+                /* `html`, `:root` and `*` have no compound left to match an
+                   element by; they set the root the walk starts from. */
+                root: compound === "" || tag === "html",
+                tag,
+                classes,
+                family: familyValue && !/^(inherit|initial|unset|revert)$/.test(familyValue) ? familyValue : null,
+                style: styleValue && !/^(inherit|initial|unset|revert)$/.test(styleValue) ? styleValue : null,
+                specificity: classes.length * 10 + (tag ? 1 : 0),
+                order: rules.length
+              });
+            }
+          }
+        }
+      }
+    }
+  };
+  walk(css.replace(/\/\*[\s\S]*?\*\//g, ""), true);
+  return rules.sort((a, b) => a.specificity - b.specificity || a.order - b.order);
+}
+
+/** The code points set in each family and style on the page, from a walk
+ *  of the markup with the font rules applied and inherited. */
+export function textByFace(html, css, viewport) {
+  const rules = fontRules(css, viewport);
+  const runs = new Map();
+  const stack = [];
+  let current = { family: "", style: "normal" };
+  for (const rule of rules) {
+    if (!rule.root) continue;
+    if (rule.family) current.family = rule.family;
+    if (rule.style) current.style = rule.style;
+  }
+  let skipUntil = null;
+
+  /* From `<body>` on, so the body's own rule applies; the head has no
+     rendered text. */
+  const body = html.replace(/<!--[\s\S]*?-->/g, "").replace(/^[\s\S]*?(?=<body\b)/i, "");
+  const tokens = body.matchAll(/<\/?([a-zA-Z][\w-]*)([^>]*)>|([^<]+)/g);
+  for (const [token, name, attrs, text] of tokens) {
+    if (skipUntil) {
+      if (token.toLowerCase() === `</${skipUntil}>`) skipUntil = null;
+      continue;
+    }
+    if (text !== undefined) {
+      if (text.trim() === "") continue;
+      const key = `${current.family}|${current.style}`;
+      if (!runs.has(key)) runs.set(key, new Set());
+      const set = runs.get(key);
+      for (const ch of decodeEntities(text)) set.add(ch.codePointAt(0));
+      continue;
+    }
+    const tag = name.toLowerCase();
+    if (token.startsWith("</")) {
+      if (stack.length) current = stack.pop();
+      continue;
+    }
+    if (tag === "script" || tag === "style" || tag === "template" || tag === "svg") { skipUntil = tag; continue; }
+    if (VOID.has(tag) || attrs.trim().endsWith("/")) continue;
+    stack.push(current);
+    const classes = new Set((attrs.match(/\sclass=["']([^"']*)["']/)?.[1] ?? "").split(/\s+/).filter(Boolean));
+    let { family, style } = current;
+    if (ITALIC_TAGS.has(tag)) style = "italic";
+    for (const rule of rules) {
+      if (rule.root) continue;
+      if (rule.tag && rule.tag !== tag) continue;
+      if (!rule.classes.every((c) => classes.has(c))) continue;
+      if (rule.family) family = rule.family;
+      if (rule.style) style = rule.style;
+    }
+    current = { family, style };
+  }
+  return runs;
+}
+
 /** Every request a browser makes while loading this page, in two rings:
  *  what the first paint waits for (the document, its stylesheets, whatever
  *  it preloads, and the images it asks for eagerly) and what the full load
@@ -240,18 +417,19 @@ export function pageRequests(html, resolveCss, viewport) {
     add(firstPaint, imageRequest(img, attribute(img, "srcset")));
   }
 
-  const text = new Set(
-    [...html.replace(/<script\b[\s\S]*?<\/script>/gi, "").replace(/<[^>]+>/g, " ")].map((ch) => ch.codePointAt(0))
-  );
+  /* A face is fetched when text set in its family and style falls in its
+     unicode-range — not when any text on the page does: the Cyrillic in a
+     work summary is Manrope's, and charged Playfair's Cyrillic files too
+     until the cascade was read (Codex review, 2026-09-18). */
   for (const path of firstPaint) {
     if (extname(path).toLowerCase() !== ".css") continue;
     const css = resolveCss(path);
     if (css === null) continue;
-    for (const [face] of css.matchAll(/@font-face\s*\{[^}]*\}/gi)) {
-      const url = face.match(/url\(\s*["']?([^"')]+)["']?\s*\)/i)?.[1];
-      if (!url) continue;
-      const range = face.match(/unicode-range\s*:\s*([^;}]+)/i)?.[1];
-      if (!range || rangeCovers(range, text)) add(fullLoad, url);
+    const runs = textByFace(html, css, viewport);
+    for (const face of fontFaces(css)) {
+      const text = runs.get(`${face.family}|${face.style}`);
+      if (!text || text.size === 0) continue;
+      if (!face.range || rangeCovers(face.range, text)) add(fullLoad, face.url);
     }
   }
 

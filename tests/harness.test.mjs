@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { gzipSync } from "node:zlib";
 import test from "node:test";
-import { cssLength, pageRequests, pickCandidate, slotWidth, wireBytes } from "../scripts/check-delivery-speed.mjs";
+import { cssLength, fontFaces, pageRequests, pickCandidate, slotWidth, textByFace, wireBytes } from "../scripts/check-delivery-speed.mjs";
 
 const templateRoot = resolve(import.meta.dirname, "..");
 
@@ -193,12 +193,14 @@ test("the page's requests are read from its markup and stylesheet", () => {
     <picture><source srcset="/assets/hero-520.webp 520w, /assets/hero-1040.webp 1040w"><img src="/assets/hero-520.jpg" alt="" fetchpriority="high"></picture>
     <picture><source srcset="/assets/card-800.webp 800w"><img src="/assets/card-800.jpg" alt="" loading="lazy"></picture>
     <img src="/assets/logo.svg" alt=""><img src="/assets/later.png" alt="" loading="lazy">
-    <p>Plain text</p>
-    <script src="/assets/site.js?v=def456" defer></script>`;
+    <body><p>Plain text</p><p class="hand">by hand</p><p class="serif">serif</p>
+    <script src="/assets/site.js?v=def456" defer></script></body>`;
   const css = `@font-face { font-family: A; src: url("/assets/fonts/latin.woff2"); unicode-range: U+0000-00FF; }
     @font-face { font-family: A; src: url("/assets/fonts/cyrillic.woff2"); unicode-range: U+0400-045F; }
     @font-face { font-family: B; src: url("/assets/fonts/hand.woff2"); unicode-range: U+00??; }
-    @font-face { font-family: C; src: url("/assets/fonts/any.woff2"); }`;
+    @font-face { font-family: C; src: url("/assets/fonts/any.woff2"); }
+    @font-face { font-family: D; src: url("/assets/fonts/unused.woff2"); }
+    body { font-family: A, sans-serif; } .hand { font-family: B; } .serif { font-family: C; }`;
   const phone = { cssWidth: 390, cssHeight: 844, dpr: 2 };
   const requests = pageRequests(html, (path) => (path === "assets/styles.css" ? css : null), phone);
   /* The eager picture has no sizes, so its slot is the viewport: 390 × 2 =
@@ -209,8 +211,9 @@ test("the page's requests are read from its markup and stylesheet", () => {
     "assets/logo.svg",
     "assets/styles.css"
   ]);
-  /* The Cyrillic face covers no text on the page, so a browser never asks
-     for it; the preloaded face is already in the first ring. */
+  /* The Cyrillic face covers no text on the page and family D sets none,
+     so a browser never asks for either; the preloaded face is already in
+     the first ring. */
   assert.deepEqual(requests.fullLoad, ["assets/fonts/any.woff2", "assets/fonts/hand.woff2", "assets/site.js"]);
 });
 
@@ -241,6 +244,55 @@ test("a responsive image is charged at the candidate the modelled phone fetches"
   /* Nothing covers 1200 × 2, so the largest is fetched. */
   assert.equal(pickCandidate(srcset, "100vw", { cssWidth: 1200, cssHeight: 800, dpr: 2 }), "/assets/portrait/calm-776.webp?v=2");
   assert.equal(pickCandidate("/a.png, /b.png 2x", "100vw", phone), "/a.png");
+});
+
+test("a face is fetched for the text its own family and style set, not any text", () => {
+  /* The Cyrillic in a work summary is Manrope's; charging Playfair's
+     Cyrillic files for it put 44 KB in the baseline that no browser fetches
+     (Codex review, 2026-09-18). The cascade is read far enough to tell. */
+  const phone = { cssWidth: 390, cssHeight: 844, dpr: 2 };
+  const css = `
+    :root { --font-body: "Manrope", sans-serif; --font-serif: "Playfair Display", serif; --font-hand: "Caveat", cursive; }
+    body { font-family: var(--font-body); }
+    h1, .numeral { font-family: var(--font-serif); }
+    .band-mail { font-family: var(--font-serif); font-style: italic; }
+    .hand-line { font-family: var(--font-hand); }
+    .card .kicker { font-family: inherit; }
+    @media (min-width: 900px) { .wide-only { font-family: var(--font-hand); } }
+    @media (max-width: 899px) { .narrow-only { font-family: var(--font-hand); } }
+    @font-face { font-family: "Manrope"; src: url("/m-latin.woff2"); unicode-range: U+0000-00FF; }
+    @font-face { font-family: "Manrope"; src: url("/m-cyr.woff2"); unicode-range: U+0400-045F; }
+    @font-face { font-family: "Playfair Display"; font-style: normal; src: url("/p-latin.woff2"); unicode-range: U+0000-00FF; }
+    @font-face { font-family: "Playfair Display"; font-style: normal; src: url("/p-cyr.woff2"); unicode-range: U+0400-045F; }
+    @font-face { font-family: "Playfair Display"; font-style: italic; src: url("/p-it-latin.woff2"); unicode-range: U+0000-00FF; }
+    @font-face { font-family: "Caveat"; src: url("/c-latin.woff2"); unicode-range: U+0000-00FF; }`;
+  const html = `<!doctype html><html><head><title>Кириллица в заголовке не рисуется</title></head><body>
+    <h1>Heading</h1>
+    <p class="card"><span class="kicker">Redesign of «ИИ по делу»</span> — <em>plain</em></p>
+    <p class="numeral">01</p>
+    <a class="band-mail" href="mailto:x">ks@ks-design.art</a>
+    <p class="hand-line"><span>Let's</span> <span>go.</span></p>
+    <p class="wide-only">Desk</p><p class="narrow-only">Phone</p>
+    <script>var cyrillic = "не текст";</script>
+    <svg><text>не текст</text></svg>
+    </body></html>`;
+  const runs = textByFace(html, css, phone);
+  const has = (key, ch) => runs.get(key)?.has(ch.codePointAt(0)) ?? false;
+  assert.equal(has("manrope|normal", "И"), true, "the summary's Cyrillic is Manrope's");
+  assert.equal(has("manrope|italic", "p"), true, "em inside body text is Manrope italic");
+  assert.equal(has("playfair display|normal", "И"), false, "no Playfair text is Cyrillic");
+  assert.equal(has("playfair display|normal", "0"), true);
+  assert.equal(has("playfair display|italic", "@"), true);
+  assert.equal(has("caveat|normal", "L"), true);
+  assert.equal(has("caveat|normal", "P"), true, "the narrow-only rule applies to the phone");
+  assert.equal(has("caveat|normal", "D"), false, "the wide-only rule does not");
+  assert.equal(has("manrope|normal", "D"), true);
+  for (const set of runs.values()) assert.equal(set.has("н".codePointAt(0)), false, "script, svg and head text is not rendered");
+
+  const fetched = fontFaces(css)
+    .filter((face) => runs.get(`${face.family}|${face.style}`)?.size)
+    .map((face) => face.url);
+  assert.deepEqual(fetched, ["/m-latin.woff2", "/m-cyr.woff2", "/p-latin.woff2", "/p-cyr.woff2", "/p-it-latin.woff2", "/c-latin.woff2"]);
 });
 
 test("unexpected deployable file types fail", () => {
