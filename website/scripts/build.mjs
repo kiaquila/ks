@@ -5,6 +5,7 @@
    layers in order, and copies scripts, fonts and images into dist/. No
    framework runtime and no network access. */
 
+import { createHash } from "node:crypto";
 import { cp, mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 
@@ -84,15 +85,29 @@ function reportTranslationReviews() {
   );
 }
 
+/** Ten hex characters of the file's sha256: the pages link the stylesheet
+ *  and the script with `?v=<this>`, so the URL changes exactly when the bytes
+ *  do. Production sends HTML with `no-cache` and these two with a year of
+ *  `immutable`; the version is what makes that pairing safe. */
+const contentVersion = (bytes) =>
+  createHash("sha256").update(bytes).digest("hex").slice(0, 10);
+
 async function main() {
   await rm(dist, { recursive: true, force: true });
   await mkdir(join(dist, "assets"), { recursive: true });
+
+  const stylesheet = await buildStylesheet();
+  const script = await readFile(join(root, "src/js/site.js"));
+  const assetVersions = {
+    "/assets/styles.css": contentVersion(stylesheet),
+    "/assets/site.js": contentVersion(script)
+  };
 
   for (const lang of Object.keys(languages)) {
     const path = languages[lang].path;
     const target = path === "/" ? join(dist, "index.html") : join(dist, path, "index.html");
     await mkdir(resolve(target, ".."), { recursive: true });
-    await writeFile(target, renderPage(lang, ORIGIN), "utf8");
+    await writeFile(target, renderPage(lang, ORIGIN, assetVersions), "utf8");
   }
 
   /* One 404 per language, each beside the pages it covers. Workers Static
@@ -103,15 +118,14 @@ async function main() {
     const path = languages[lang].path;
     const target = path === "/" ? join(dist, "404.html") : join(dist, path, "404.html");
     await mkdir(resolve(target, ".."), { recursive: true });
-    await writeFile(target, renderNotFound(lang, ORIGIN), "utf8");
+    await writeFile(target, renderNotFound(lang, ORIGIN, assetVersions), "utf8");
   }
-  await writeFile(join(dist, "assets/styles.css"), await buildStylesheet(), "utf8");
+  await writeFile(join(dist, "assets/styles.css"), stylesheet, "utf8");
 
   /* The script ships byte for byte as it was written — no strip, no minify.
      Production verifies the deployed file against this source by sha256, so
      any transformation here fails the release; and a reader who opens the
-     shipped script sees the same reasoning the repository does. Budget
-     pressure is answered by writing less, not by shipping something else. */
+     shipped script sees the same reasoning the repository does. */
   for (const file of await readdir(join(root, "src/js"))) {
     if (file.endsWith(".js")) {
       await cp(join(root, "src/js", file), join(dist, "assets", file));
