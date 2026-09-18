@@ -813,12 +813,14 @@
   display: inline-block;
 }
 
-/* The full stop is the wordmark's dot — the gradient's one other use. */
+/* The full stop is the wordmark's dot — the gradient's one other use. The
+   client took the size down a tenth twice (0.2 → 0.18 → 0.162em) and moved
+   it a little further off the last letter (2026-09-17). */
 .hand-dot {
   display: inline-block;
-  width: 0.18em;
-  height: 0.18em;
-  margin-left: 0.06em;
+  width: 0.162em;
+  height: 0.162em;
+  margin-left: 0.1em;
   border-radius: 50%;
   background: var(--brand-dot);
 }

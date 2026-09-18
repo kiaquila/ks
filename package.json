@@ -6,9 +6,11 @@
   "scripts": {
     "check:repository": "node scripts/check-repository.mjs",
     "check:project": "node scripts/run-project-checks.mjs",
-    "check:budget": "node scripts/check-performance-budget.mjs",
+    "check:delivery": "node scripts/check-delivery-speed.mjs",
+    "delivery:baseline": "node scripts/check-delivery-speed.mjs --update",
+    "delivery:live": "node scripts/check-delivery-speed.mjs --url https://ks-design.art",
     "test:harness": "node --test tests/harness.test.mjs tests/codex-review-gate.test.mjs",
-    "preflight": "npm run check:repository && npm run test:harness && npm run check:project && npm run check:budget"
+    "preflight": "npm run check:repository && npm run test:harness && npm run check:project && npm run check:delivery"
   },
   "engines": {
     "node": ">=22.18.0"

@@ -132,7 +132,7 @@ disabled.
 ## Checks
 
 From the repository root — repository policy, harness tests, the website build
-and tests, and the payload budget in one pass (CI runs exactly this):
+and tests, and the delivery-speed check in one pass (CI runs exactly this):
 
 ```bash
 npm run preflight

@@ -84,7 +84,8 @@ rules, heavy tracked capitals. Everything below follows from that.
   the keyboard steps with the arrows or the focused track. The strip is
   script-built — so a no-JS visit keeps the native scroller, which is also what
   phones and tablets get (below 900px the track swipes and the arrows are
-  gone; the old arrow-driven glide went with the script budget). When
+  gone; the old arrow-driven glide went with the script budget then in
+  force). When
   widening, the card nearest the scroller's snapped left edge becomes active
   in the strip (a focused card wins). Narrowing back scrolls only the track
   horizontally to that active card, never the document. The big
@@ -113,8 +114,8 @@ rules, heavy tracked capitals. Everything below follows from that.
   (520), within 3px at 1200×1000 (630) and 1280×800 (540), and low by at most
   9px between 1300 and 1700, which still holds the right candidate at 1×, 1.5×
   and 2×. It lives in the script rather than the markup for two reasons: it
-  would otherwise ship 24 times across the two pages, against an HTML budget
-  with little room, and it would describe a layout a no-JS reader never gets
+  would otherwise ship 24 times across the two pages, against the HTML
+  budget then in force, and it would describe a layout a no-JS reader never gets
   (both Codex review, 2026-09-12). The script's prose was cut to pay for the
   bytes, which is why this paragraph is here and not there. Thumbnails are the same 16:9
   files uncropped, not portrait crops.
@@ -215,8 +216,7 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   (`contact.line`; the owner approved the Spanish on 2026-09-17). It must
   stay inside the Caveat subset — a straight apostrophe, never a typographic
   one — and end in a full stop; tests check both.
-- **The writing costs no JavaScript**, because the 4 KB script budget was
-  already spent. `render.js` sets one `<span>` per letter with its own
+- **The writing costs no JavaScript.** `render.js` sets one `<span>` per letter with its own
   `--d` delay in milliseconds, worked out at build time: an uneven beat
   between letters, a pause at every space, a longer one at an apostrophe or
   comma — a fixed function of the index, so two builds agree. The stylesheet
@@ -234,10 +234,10 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   visually-hidden copy carries the sentence for screen readers; the letter
   spans are `aria-hidden`.
 - **The closing full stop is the wordmark's dot**, not a glyph: `.hand-dot`,
-  `0.18em` across (the client took the show's `0.2em` down a tenth), filled
-  with `--brand-dot`, dropping in with a small bounce after the last letter.
-- The letter spans are paid for in HTML, and the band's rules in CSS; both
-  budgets were raised deliberately for this slide — see "Implementation".
+  `0.162em` across with `0.1em` of air before it (the client took the show's
+  `0.2em` down a tenth on 2026-09-17, then a tenth again and a little further
+  off the last letter the same day), filled with `--brand-dot`, dropping in
+  with a small bounce after the last letter.
 
 ## Content
 
@@ -270,10 +270,21 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   passes CI, deploys, and then fails the release with no message — a comment
   strip did exactly that on 2026-08-29 and cost a red deploy. A test asserts
   the shipped file equals the source.
-- JavaScript budget: **4 KB gzipped**, and because the shipped file is the
-  source file, that one number bounds both what a visitor downloads and what
-  a maintainer writes. If it is ever hit, remove behaviour — or prose — never
-  raise the number and never ship something other than the source.
+- **The stylesheet and the script are linked with `?v=<content hash>`**, ten
+  hex characters of each file's own sha256, worked out by the build and the
+  same on every page of one build. The file names never change — the
+  production deploy verifies `/assets/site.js` by path — only the query
+  does, and only when the bytes do. Production nginx pairs this with
+  `Cache-Control` set by content type from one `map`: a page is `no-cache`
+  (kept, but always revalidated), the two hashed assets are
+  `immutable` for a year, and fonts and images carry no rule and take the
+  edge's default. Both halves exist because on 2026-09-17 a visitor's
+  browser kept a stylesheet across a deploy and drew the rebuilt contact
+  slide with the old rules — the deploy purges the edge, never a browser.
+  The header is added at server level beside the security headers on
+  purpose: an `add_header` inside a `location` silently discards every
+  header inherited from the server block, and a test fails any that appears
+  there.
 - **The layers are concatenated, so a media query in an earlier layer loses to a
   plain rule in a later one.** A component's responsive rules belong in that
   component's layer. This has already bitten once: `.header-cta { display:none }`
@@ -285,16 +296,37 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   work track is a native scroll container until the script rebuilds it as the
   filmstrip (its counter and dots ship empty), and the portrait swaps on
   hover in pure CSS. A test asserts the markup ships nothing pre-hidden.
-- The stylesheet budget is **68 KB raw** (`web-design.config.json`, raised
-  from 60 KB to 64 KB on 2026-09-11 for the filmstrip and to 68 KB on
-  2026-09-17 for the contact slide, deliberately — the comments are part of
-  the file and are not to be gutted to fit). The HTML budget went from 60 KB
-  to **64 KB raw** the same day: it is summed over every document, and the
-  contact line's letter spans — the price of keeping the writing out of the
-  script — cost about 1.2 KB on each language's page. The script budget
-  stayed at 4 KB, and twice in this change behaviour was paid for by cutting
-  the filmstrip's own prose in `site.js` rather than by raising it; the
-  reasoning that was cut lives in this file.
+- **There are no byte budgets** (client decision, 2026-09-17). The 4 KB
+  script ceiling, the per-extension raw and gzip ceilings and the critical
+  gzip ceiling are gone, along with the habit of raising one every time it
+  was hit — a ceiling that moves guards nothing, and one that does not
+  forbids the change that reached it. What is guarded instead is **delivery
+  speed**: `scripts/check-delivery-speed.mjs` reads every request each
+  entry page makes at load out of the built markup and stylesheet (document,
+  stylesheet, preloads and eager images for the first paint; the deferred
+  script and the fonts for the full load — a face only when text set in
+  its own family and style, read from the cascade (last compound selector,
+  inheritance, custom properties, width media queries), falls in its
+  `unicode-range`, so the Cyrillic of a work summary asks for Manrope's
+  Cyrillic file and not Playfair's (Codex review, 2026-09-18); lazy images
+  are not loaded and not counted), counts the bytes
+  as the edge sends them (gzip for text, raw for the rest, each response its
+  own stream), and plays the load for one modelled phone — a 390×844 CSS
+  viewport at 2×, so a responsive image is charged at the `srcset`
+  candidate that phone's `sizes` slot actually selects (the 776w portraits,
+  not the first entry; Codex review, 2026-09-18) — over one modelled
+  connection: 1600 kbps down, 150 ms round trips, three of them for the
+  handshake. It is a model rather than a stopwatch so two runs of one build
+  agree to the millisecond. The numbers are compared with
+  `website/delivery-baseline.json`, and `npm run preflight` — so CI on
+  every pull request — goes red when a page's first paint or full load is
+  more than 3% slower than recorded, naming the files that grew. A change
+  that is meant to be heavier accepts the new number with
+  `npm run delivery:baseline` in the same commit and says why; a change that
+  made the page lighter is told so and offered the same command, so the
+  baseline only ever ratchets on purpose. `npm run delivery:live` times the
+  same requests against production for reading after a deploy; that number
+  is a network measurement and is never compared with anything.
 - **The collapsed menu leaves the tab order through CSS `visibility`, and that
   property is never transitioned.** Clip-path, opacity and pointer-events hide
   it from the eye and the mouse but leave every link keyboard-focusable. Every
@@ -325,8 +357,6 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
 - No external origins at all: no CDN, no analytics, no remote fonts or images.
   The Worker's CSP is `script-src 'self'` and there are no inline `<script>`
   elements — the test enforces both.
-- JavaScript budget: **4 KB gzipped**. If it is ever hit, remove behaviour
-  rather than raising the number.
 - Accessibility: one `h1` per page, AA contrast, visible `:focus-visible`, tap
   targets ≥ 44 px, `prefers-reduced-motion` disables every transition.
 - Production is `https://ks-design.art`. Keep canonical, Open Graph, sitemap,
@@ -433,9 +463,8 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   OFL text beside it. It exists for the annotations only — never for UI or
   running text. A test walks every note string against the subset, because a
   missing glyph falls back to a system script mid-word rather than failing
-  loudly. **The font budget is now nearly spent** — 202 940 B of 204 800 —
-  so widening that subset means re-subsetting another face or raising the
-  budget deliberately, not quietly.
+  loudly. Widening that subset makes the face heavier, and the delivery
+  check will say by how much.
 
 ## Dependencies
 
@@ -487,7 +516,8 @@ Neither is part of `npm run build`; both outputs are committed.
 ## Checks
 
 From the repository root — repository policy, harness tests, the website build
-and tests, and the payload budget in one pass (CI runs exactly this):
+and tests, and the delivery-speed check against its baseline in one pass (CI
+runs exactly this):
 
 ```bash
 npm run preflight
@@ -517,7 +547,8 @@ either page, one `404.html` per locale, the `/en/` redirect), the
 one-meaning-per-section and one-CTA-per-screen rules, the footer row, the
 screenshots' fixed proportion, approved outbound links, local-only assets, the no-JavaScript guarantee,
 the achromatic palette, grey contrast against AA, the accessibility structure,
-and the script budget. Do not weaken a test to make a change pass.
+the content-hashed asset links and the server's cache rules. Do not weaken a
+test to make a change pass.
 
 Visually: 360 px, the 1100–1500 px band (where the air-guaranteed print is
 at its smallest — the notes must clear it, and the print must still read

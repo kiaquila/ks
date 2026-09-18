@@ -4,10 +4,10 @@
    on. Everything here reads dist/, so it tests what actually ships. */
 
 import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
 import { readdir, readFile, stat } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import test, { before } from "node:test";
-import { gzipSync } from "node:zlib";
 
 import {
   CAREER_START_YEAR,
@@ -1119,11 +1119,10 @@ test("each locale prefix serves its own error page", () => {
 
 test("everything set in the hand font stays inside its subset", () => {
   /* Caveat ships as a subset — ASCII plus the Spanish lowercase accents the
-     notes set — to fit beside the two working families inside the woff2
-     budget. A glyph outside it silently falls back mid-word to a system
-     script, so the copy and the subset have to be checked against each
-     other. Widen the subset (and re-measure the budget) before writing a
-     character this rejects. */
+     notes set — so the third family costs a fraction of a full face. A glyph
+     outside it silently falls back mid-word to a system script, so the copy
+     and the subset have to be checked against each other. Widen the subset
+     before writing a character this rejects. */
   const SUBSET = /^[\u0020-\u007E\u00E1\u00E9\u00ED\u00F1\u00F3\u00FA\u00FC]*$/;
   for (const lang of LOCALES) {
     const line = content[lang].contact.line;
@@ -1309,30 +1308,43 @@ test("the favicon set ships whole and the SVG stays the only icon link", async (
   }
 });
 
-test("the shipped JavaScript stays within its budget", async () => {
-  let raw = 0;
-  let gzip = 0;
-  for (const file of await readdir(join(dist, "assets"))) {
-    if (!file.endsWith(".js")) continue;
-    const bytes = await readFile(join(dist, "assets", file));
-    raw += bytes.length;
-    gzip += gzipSync(bytes).length;
+test("the stylesheet and the script are linked by content hash, and the server caches by kind", async () => {
+  /* A returning visitor's browser paired a cached stylesheet with the newly
+     deployed markup on 2026-09-17 and the contact slide rendered bare. So
+     the two assets' URLs carry a hash of their bytes — the same one on every
+     page of the build, changing exactly when the file does — and nginx tells
+     the browser what it may keep: a page is always revalidated, a hashed
+     asset is kept for a year. */
+  const css = await readFile(join(dist, "assets/styles.css"));
+  const js = await readFile(join(dist, "assets/site.js"));
+  const hash = (bytes) => createHash("sha256").update(bytes).digest("hex").slice(0, 10);
+  for (const file of ["index.html", "es/index.html", "404.html", "es/404.html"]) {
+    const html = await readFile(join(dist, file), "utf8");
+    assert.match(html, new RegExp(`<link rel="stylesheet" href="/assets/styles\\.css\\?v=${hash(css)}">`), file);
+    assert.match(html, new RegExp(`<script src="/assets/site\\.js\\?v=${hash(js)}" defer>`), file);
   }
-  /* The page is static and the script is pure enhancement; if this budget is
-     ever hit, the answer is to remove behaviour — or prose — not to raise the
-     number. The shipped file is the source file, so this one figure bounds
-     both. */
-  assert.ok(gzip <= 4 * 1024, `JS is ${gzip} B gzipped, over the 4 KB budget`);
-  assert.ok(raw <= 12 * 1024, `JS is ${raw} B raw, over the 12 KB ceiling`);
+
+  const map = productionNginx.match(/map \$sent_http_content_type \$ks_cache_control \{([^}]*)\}/)?.[1];
+  assert.ok(map, "nginx sets Cache-Control from one map over the content type");
+  assert.match(map, /~\^text\/html\s+"no-cache";/);
+  for (const type of ["text/css", "text/javascript", "application/javascript"]) {
+    assert.ok(map.includes(`~^${type}`) && new RegExp(`~\\^${type}\\s+"public, max-age=31536000, immutable";`).test(map), type);
+  }
+  assert.match(productionNginx, /^\s+add_header Cache-Control \$ks_cache_control always;$/m);
+  /* An add_header inside a location replaces every header inherited from
+     the server block, security ones included — so none may appear there. */
+  for (const [block] of productionNginx.matchAll(/^\s*location\b[^{]*\{[^}]*\}/gm)) {
+    assert.doesNotMatch(block, /add_header/, block);
+  }
 });
 
 test("the script ships exactly as it was written", async () => {
   /* Production verifies the deployed `assets/site.js` against `src/js/site.js`
      by sha256, so any transformation in the build — a comment strip, a
      minifier — deploys green and then fails the release with no message at
-     all. It cost one production deploy to learn: keep the copy a copy. It is
-     also the honest reading of the budget, since the bytes a visitor
-     downloads are then exactly the bytes a maintainer edits. */
+     all. It cost one production deploy to learn: keep the copy a copy. The
+     bytes a visitor downloads are then exactly the bytes a maintainer
+     edits. */
   const shipped = await readFile(join(dist, "assets/site.js"), "utf8");
   assert.equal(shipped, siteScript, "dist/assets/site.js is not a copy of the source");
 });

@@ -37,8 +37,7 @@ const icons = {
     '<path fill="currentColor" d="M21.9 4.3 18.9 19c-.2 1-.8 1.2-1.7.75l-4.6-3.4-2.2 2.15c-.25.25-.45.45-.9.45l.32-4.6L18.3 6.8c.36-.32-.08-.5-.56-.18L7.4 13.16l-4.5-1.4c-.98-.3-1-.98.2-1.45l17.6-6.8c.8-.3 1.5.2 1.2 1.8Z"/>'
   ),
   /* Drawn for this page rather than lifted from the brand kit: the official
-     glyph is a kilobyte of path, twice over, against an HTML budget that the
-     contact line's letter spans had already spent. */
+     glyph is a kilobyte of path, twice over, for a 20px icon. */
   whatsapp: icon(
     '<path fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" d="m3.2 20.8 1.3-4.6a8.7 8.7 0 1 1 3.4 3.3l-4.7 1.3Z"/><path fill="currentColor" d="M9.2 7.5c.4-.3.9-.2 1.1.2l.8 1.7c.1.3.1.6-.1.9l-.6.7c.6 1.1 1.5 2 2.6 2.6l.7-.6c.3-.2.6-.2.9-.1l1.7.8c.4.2.5.7.2 1.1-.7.8-1.6 1.2-2.6 1-3-.6-5.4-3-6-6-.2-1 .2-1.9 1-2.6Z"/>'
   ),
@@ -432,7 +431,18 @@ function contact(copy) {
   </section>`;
 }
 
-function documentShell({ lang, copy, origin, body, description, title, canonicalPath, extraHead = "" }) {
+/** `?v=<hash>` on the stylesheet and the script. The build passes the hash of
+ *  each file's own bytes, so the URL changes exactly when the file does and a
+ *  browser holding the previous one cannot pair it with a page built for the
+ *  new one — on 2026-09-17 a visitor's cached stylesheet met the rebuilt
+ *  contact slide's markup and the slide rendered unstyled. The file names
+ *  stay put: the production deploy verifies `/assets/site.js` by path. */
+function versioned(path, versions) {
+  const version = versions[path];
+  return version ? `${path}?v=${version}` : path;
+}
+
+function documentShell({ lang, copy, origin, body, description, title, canonicalPath, extraHead = "", assetVersions = {} }) {
   const alternates = Object.entries(languages)
     .map(
       ([code, config]) =>
@@ -487,19 +497,19 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
   <link rel="icon" href="/assets/favicon.svg?v=6" type="image/svg+xml" sizes="any">
   <link rel="apple-touch-icon" href="/assets/apple-touch-icon.png?v=6">
   ${fontPreloads}
-  <link rel="stylesheet" href="/assets/styles.css">
+  <link rel="stylesheet" href="${versioned("/assets/styles.css", assetVersions)}">
   ${extraHead}
 </head>
 <body>
   <a class="skip-link" href="#main">${escapeHtml(copy.skipLink)}</a>
 ${body}
-  <script src="/assets/site.js" defer></script>
+  <script src="${versioned("/assets/site.js", assetVersions)}" defer></script>
 </body>
 </html>
 `;
 }
 
-export function renderPage(lang, origin) {
+export function renderPage(lang, origin, assetVersions = {}) {
   const copy = content[lang];
   const years = experienceYears();
 
@@ -520,11 +530,12 @@ export function renderPage(lang, origin) {
     body,
     title: copy.meta.title,
     description: copy.meta.description,
-    canonicalPath: languages[lang].path
+    canonicalPath: languages[lang].path,
+    assetVersions
   });
 }
 
-export function renderNotFound(lang, origin) {
+export function renderNotFound(lang, origin, assetVersions = {}) {
   const copy = content[lang];
   /* None of the section ids exist here, so the header's anchors are qualified
      with the home path instead of pointing at nothing. */
@@ -552,6 +563,7 @@ export function renderNotFound(lang, origin) {
     title: `${copy.notFound.title} · ks-design`,
     description: copy.notFound.body,
     canonicalPath: languages[lang].path,
-    extraHead: '<meta name="robots" content="noindex">'
+    extraHead: '<meta name="robots" content="noindex">',
+    assetVersions
   });
 }

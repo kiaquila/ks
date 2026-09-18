@@ -20,10 +20,9 @@
   ],
   "performance": {
     "outputDirectory": "website/dist",
-    "criticalFiles": [
+    "entryPages": [
       "index.html",
-      "assets/styles.css",
-      "assets/site.js"
+      "es/index.html"
     ],
     "allowedExtensions": [
       ".css",
@@ -39,33 +38,17 @@
       ".woff2",
       ".xml"
     ],
-    "budgets": {
-      "totalRawBytes": 2621440,
-      "totalGzipBytes": 2359296,
-      "criticalGzipBytes": 46080,
-      "extensions": {
-        ".html": {
-          "rawBytes": 65536
-        },
-        ".css": {
-          "rawBytes": 69632
-        },
-        ".js": {
-          "rawBytes": 49152,
-          "gzipBytes": 20480
-        },
-        ".woff2": {
-          "rawBytes": 204800
-        },
-        ".jpg": {
-          "rawBytes": 983040
-        },
-        ".png": {
-          "rawBytes": 655360
-        },
-        ".webp": {
-          "rawBytes": 655360
-        }
+    "delivery": {
+      "baseline": "website/delivery-baseline.json",
+      "tolerance": 0.03,
+      "connection": {
+        "downloadKbps": 1600,
+        "rttMs": 150
+      },
+      "viewport": {
+        "cssWidth": 390,
+        "cssHeight": 844,
+        "dpr": 2
       }
     }
   }
