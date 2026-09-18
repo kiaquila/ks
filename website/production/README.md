@@ -37,7 +37,9 @@ or a red/missing check fails closed before production credentials are exposed.
 
 The workflow is [`.github/workflows/ks-production-deploy.yml`](../../.github/workflows/ks-production-deploy.yml).
 It uses the GitHub Environment `production`, whose deployment branch policy
-must allow `main` only. Configure these Environment values:
+must allow `main` only. Its current protection is one custom branch policy for
+`main`; there is no wait timer or required-reviewer rule, and administrators
+may bypass the Environment. Configure these Environment values:
 
 | Kind | Name | Purpose |
 | --- | --- | --- |
@@ -48,6 +50,10 @@ must allow `main` only. Configure these Environment values:
 | Variable | `TAILSCALE_AUDIENCE` | Audience configured for the GitHub workload identity |
 | Secret | `CLOUDFLARE_API_TOKEN` | Token scoped to Cache Purge for the single zone |
 | Secret | `KS_DESIGN_SSH_PRIVATE_KEY` | Deploy-only key for the `ksdeploy` account on cz |
+
+The environment currently contains exactly those five variables and two
+secrets. GitHub exposes their names and update times for audit, but not the
+secret values; do not copy credentials into this document.
 
 Both jobs run on GitHub-hosted infrastructure. Only the registration and
 deployment jobs join the private Tailnet through Tailscale workload identity
@@ -80,31 +86,54 @@ when `website/` itself has not changed. The root source mirror is
 key is `/root/.ssh/ks-production-source` and is separate from the GitHub
 Actions SSH key.
 
-One-time cz setup first creates an Ed25519 key at
-`/root/.ssh/ks-production-source`, adds its public half to this private
-repository as a **read-only GitHub deploy key**, and pins GitHub's SSH host key
-in `/root/.ssh/known_hosts`. The private key must remain root-readable only;
-it is never a GitHub Environment secret. Then install the reviewed wrapper and
-create the restricted account and staging directory. This is an administrator
-operation; normal production recovery uses a GitHub Actions re-run rather than
-an interactive SSH session:
+One-time cz setup creates an Ed25519 key at
+`/root/.ssh/ks-production-source`, adds its public half to this repository as a
+**read-only GitHub deploy key**, and pins GitHub's SSH host key in
+`/root/.ssh/known_hosts`. The current GitHub key is named
+`ks-production-source-readonly`, is verified and read-only, and has fingerprint
+`SHA256:RPnJD/95nb0aNttwCKbeaJVbbW1KTvf7laGmGWgYGA0`. The private key remains
+root-readable only and is not the GitHub Environment secret used by Actions.
+Then install the reviewed wrapper and create the restricted account and staging
+directory. This is an administrator operation; normal production recovery
+uses the checked workflow rather than an interactive SSH session:
 
 ```bash
 sudo website/production/install-deploy-access.sh 'ssh-ed25519 AAAA… github-production'
 ```
 
-On the existing production host, the installer recognizes the old
-`kiaquila/web-design` source mirror and retargets its `origin` to `kiaquila/ks`.
-Before running it, move the public half of
-`/root/.ssh/ks-production-source` from the old repository's deploy keys to
-`kiaquila/ks` as read-only, or replace the pair and add the replacement public
-key there; the key must authenticate to the standalone repository before the
-installer fetches its new `main`.
+The 2026-08-27 cutover retargeted the existing source mirror from
+`kiaquila/web-design` to `kiaquila/ks` and moved the read-only source key to the
+standalone repository. That migration is complete: `kiaquila/web-design` has no
+KS deploy key, and its former `ks/` tree was removed on 2026-09-17. Neither the
+old repository nor that deleted tree is a backup source or a rollback route.
 The standalone wrapper records ordering in
 `/var/lib/ks-production/latest-candidate-ks`, separate from the monorepo state,
-because Actions run IDs are ordered only within one repository. The retarget,
-fetch, and wrapper installation hold the same lock as production registration
-and deploy.
+because Actions run IDs are ordered only within one repository. The current
+installer still contains a migration-only branch for the completed retarget;
+its removal belongs in a separate production-code change with tests.
+
+## Recovery and rollback
+
+A normal source rollback is a reviewed revert in `kiaquila/ks` followed by the
+same gated `main` workflow. The deleted `kiaquila/web-design:ks/` tree cannot be
+used for it. The server also retains revision-tagged
+`ks-design-portfolio:<full-sha>` Docker images as local emergency rollback
+packages, but the automation never selects an older image and there is no
+scripted rollback command; using one is an explicit administrator recovery.
+
+In the 2026-09-18 read-only audit, production was healthy on
+`bee5adf5a28cf1a8f83704faead0596db5a06002` and the immediately preceding
+rollback package was
+`ks-design-portfolio:20fa80961aa41955ce73d96ba7a22a4f67663aa5`
+(`sha256:1ef6553c693baadba4c2a405668c02e29a6fe6e307f142a4f449754e4e03845c`).
+Treat those values as a dated audit record, not a permanent rollback target;
+re-check the running revision and local image inventory before any recovery.
+
+The same audit verified that `/var/lib/ks-production/source.git` has origin
+`git@github.com:kiaquila/ks.git` and `refs/remotes/origin/main` at
+`bee5adf5a28cf1a8f83704faead0596db5a06002`. The mirror, source private key,
+known-hosts file and candidate state are root-only; the forced-command
+`authorized_keys` file is root-owned and group-readable by `ksdeploy`.
 
 The first server installation, or an intentional TLS/edge refresh, is:
 
@@ -150,3 +179,10 @@ uses `npm run stage:deploy` for `main`, and uses
 previews are available at `*-ks.ks-design.workers.dev`. The permanent Worker
 URL `ks.ks-design.workers.dev` remains disabled and is not a production
 fallback.
+
+For the same audited revision, the latest
+[KS Production Deploy](https://github.com/kiaquila/ks/actions/runs/35347910401)
+completed successfully, including `production-required-checks`,
+`production-register-latest` and `production-deploy`. The external
+[Workers Builds: ks](https://dash.cloudflare.com/7f84bdf4279121edf62bc07caf300da2/workers/services/view/ks/production/builds/63a74d42-88f8-49c8-ac9c-10d0cccc4243)
+check also completed successfully on that exact SHA.
