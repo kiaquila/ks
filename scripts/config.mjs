@@ -88,6 +88,11 @@ export function validateConfig(config, root) {
       !positiveInteger(delivery.connection.rttMs)) {
     errors.push("performance.delivery.connection needs positive downloadKbps and rttMs");
   }
+  if (!isObject(delivery.viewport) || !positiveInteger(delivery.viewport.cssWidth) ||
+      !positiveInteger(delivery.viewport.cssHeight) ||
+      typeof delivery.viewport.dpr !== "number" || !(delivery.viewport.dpr > 0)) {
+    errors.push("performance.delivery.viewport needs positive cssWidth, cssHeight and dpr");
+  }
   return errors;
 }
 

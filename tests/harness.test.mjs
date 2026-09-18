@@ -6,7 +6,7 @@ import { join, resolve } from "node:path";
 import { spawnSync } from "node:child_process";
 import { gzipSync } from "node:zlib";
 import test from "node:test";
-import { pageRequests, wireBytes } from "../scripts/check-delivery-speed.mjs";
+import { cssLength, pageRequests, pickCandidate, slotWidth, wireBytes } from "../scripts/check-delivery-speed.mjs";
 
 const templateRoot = resolve(import.meta.dirname, "..");
 
@@ -199,16 +199,48 @@ test("the page's requests are read from its markup and stylesheet", () => {
     @font-face { font-family: A; src: url("/assets/fonts/cyrillic.woff2"); unicode-range: U+0400-045F; }
     @font-face { font-family: B; src: url("/assets/fonts/hand.woff2"); unicode-range: U+00??; }
     @font-face { font-family: C; src: url("/assets/fonts/any.woff2"); }`;
-  const requests = pageRequests(html, (path) => (path === "assets/styles.css" ? css : null));
+  const phone = { cssWidth: 390, cssHeight: 844, dpr: 2 };
+  const requests = pageRequests(html, (path) => (path === "assets/styles.css" ? css : null), phone);
+  /* The eager picture has no sizes, so its slot is the viewport: 390 × 2 =
+     780 device pixels, which the 1040w candidate is the first to cover. */
   assert.deepEqual(requests.firstPaint, [
     "assets/fonts/latin.woff2",
-    "assets/hero-520.webp",
+    "assets/hero-1040.webp",
     "assets/logo.svg",
     "assets/styles.css"
   ]);
   /* The Cyrillic face covers no text on the page, so a browser never asks
      for it; the preloaded face is already in the first ring. */
   assert.deepEqual(requests.fullLoad, ["assets/fonts/any.woff2", "assets/fonts/hand.woff2", "assets/site.js"]);
+});
+
+test("a responsive image is charged at the candidate the modelled phone fetches", () => {
+  /* Taking the first srcset entry charged the 520w portrait to a phone that
+     asks for the 776w one, so the larger file could grow unseen (Codex
+     review, 2026-09-18). The browser's choice is reproduced instead: the
+     slot `sizes` gives the viewport, times the pixel ratio, covered by the
+     smallest candidate that can. */
+  const phone = { cssWidth: 390, cssHeight: 844, dpr: 2 };
+  const laptop = { cssWidth: 1280, cssHeight: 800, dpr: 1 };
+  assert.equal(cssLength("min(84vw, 416px)", phone), 327.6);
+  assert.equal(cssLength("calc(42vw - 220px)", laptop), 317.6);
+  assert.equal(cssLength("clamp(3.375rem, 6vw, 6.25rem)", laptop), 76.8);
+  assert.equal(cssLength("54svh", phone), 455.76);
+  assert.throws(() => cssLength("url(x)", phone));
+
+  const hero = "(max-width: 1099px) min(84vw, 416px), min(54svh, calc(42vw - 220px))";
+  assert.equal(slotWidth(hero, phone), 327.6);
+  assert.equal(slotWidth(hero, laptop), Math.min(432, 317.6));
+  assert.equal(slotWidth("(min-width:900px) min(38vw,470px), (max-width:719px) 86vw, 44vw", phone), 335.4);
+  assert.equal(slotWidth("(min-width:900px) min(38vw,470px), (max-width:719px) 86vw, 44vw", { cssWidth: 800, cssHeight: 600, dpr: 1 }), 352);
+  assert.equal(slotWidth(undefined, phone), 390);
+
+  const srcset = "/assets/portrait/calm-520.webp?v=2 520w, /assets/portrait/calm-776.webp?v=2 776w";
+  assert.equal(pickCandidate(srcset, hero, phone), "/assets/portrait/calm-776.webp?v=2");
+  assert.equal(pickCandidate(srcset, hero, laptop), "/assets/portrait/calm-520.webp?v=2");
+  /* Nothing covers 1200 × 2, so the largest is fetched. */
+  assert.equal(pickCandidate(srcset, "100vw", { cssWidth: 1200, cssHeight: 800, dpr: 2 }), "/assets/portrait/calm-776.webp?v=2");
+  assert.equal(pickCandidate("/a.png, /b.png 2x", "100vw", phone), "/a.png");
 });
 
 test("unexpected deployable file types fail", () => {

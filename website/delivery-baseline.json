@@ -3,25 +3,30 @@
     "downloadKbps": 1600,
     "rttMs": 150
   },
+  "viewport": {
+    "cssWidth": 390,
+    "cssHeight": 844,
+    "dpr": 2
+  },
   "pages": {
     "index.html": {
       "firstPaint": {
-        "ms": 1295,
+        "ms": 1549,
         "bytes": {
           "index.html": 6076,
           "assets/fonts/manrope-latin.woff2": 24576,
-          "assets/portrait/calm-520.webp": 21222,
-          "assets/portrait/wink-520.webp": 37216,
+          "assets/portrait/calm-776.webp": 39362,
+          "assets/portrait/wink-776.webp": 69742,
           "assets/styles.css": 19948
         }
       },
       "fullLoad": {
-        "ms": 2207,
+        "ms": 2461,
         "bytes": {
           "index.html": 6076,
           "assets/fonts/manrope-latin.woff2": 24576,
-          "assets/portrait/calm-520.webp": 21222,
-          "assets/portrait/wink-520.webp": 37216,
+          "assets/portrait/calm-776.webp": 39362,
+          "assets/portrait/wink-776.webp": 69742,
           "assets/styles.css": 19948,
           "assets/fonts/caveat-latin.woff2": 41976,
           "assets/fonts/manrope-cyrillic.woff2": 14544,
@@ -35,22 +40,22 @@
     },
     "es/index.html": {
       "firstPaint": {
-        "ms": 1296,
+        "ms": 1550,
         "bytes": {
           "es/index.html": 6282,
           "assets/fonts/manrope-latin.woff2": 24576,
-          "assets/portrait/calm-520.webp": 21222,
-          "assets/portrait/wink-520.webp": 37216,
+          "assets/portrait/calm-776.webp": 39362,
+          "assets/portrait/wink-776.webp": 69742,
           "assets/styles.css": 19948
         }
       },
       "fullLoad": {
-        "ms": 2208,
+        "ms": 2462,
         "bytes": {
           "es/index.html": 6282,
           "assets/fonts/manrope-latin.woff2": 24576,
-          "assets/portrait/calm-520.webp": 21222,
-          "assets/portrait/wink-520.webp": 37216,
+          "assets/portrait/calm-776.webp": 39362,
+          "assets/portrait/wink-776.webp": 69742,
           "assets/styles.css": 19948,
           "assets/fonts/caveat-latin.woff2": 41976,
           "assets/fonts/manrope-cyrillic.woff2": 14544,

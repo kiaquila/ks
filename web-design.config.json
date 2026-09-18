@@ -44,6 +44,11 @@
       "connection": {
         "downloadKbps": 1600,
         "rttMs": 150
+      },
+      "viewport": {
+        "cssWidth": 390,
+        "cssHeight": 844,
+        "dpr": 2
       }
     }
   }

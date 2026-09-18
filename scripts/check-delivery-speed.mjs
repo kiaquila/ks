@@ -11,8 +11,9 @@
    The number is a model, not a stopwatch: every request the page makes at
    load is found in the built markup and stylesheet, the bytes the wire
    carries are counted (gzip for text, as the edge sends it, raw for the
-   rest), and the load is played over one modelled connection — a fixed
-   round trip and a fixed downlink, the "slow 4G" a phone on a bad day gets.
+   rest; a responsive image by the candidate a modelled phone would pick),
+   and the load is played over one modelled connection — a fixed round trip
+   and a fixed downlink, the "slow 4G" that phone gets on a bad day.
    A model has what a stopwatch on a laptop cannot have: two runs of the same
    build agree to the millisecond, so a regression is a regression and not
    noise. `--url <origin>` runs the same requests against a live site and
@@ -67,7 +68,137 @@ function toOutputPath(url) {
 }
 
 const attribute = (tag, name) => tag.match(new RegExp(`\\s${name}=["']([^"']*)["']`, "i"))?.[1];
-const firstCandidate = (srcset) => srcset.split(",")[0].trim().split(/\s+/)[0];
+
+/* --- the phone the load is modelled on --------------------------------------
+
+   A responsive image is not one request but a choice, and the browser makes
+   it from the viewport, the pixel ratio and the `sizes` attribute. Taking the
+   first `srcset` candidate would charge the 520w portrait to a phone that
+   asks for the 776w one (Codex review, 2026-09-18), and the larger file could
+   then grow without moving the number. So the model has a viewport, and the
+   candidate is chosen the way the browser chooses it. */
+
+/** A CSS length in `sizes`, evaluated to CSS pixels for the viewport:
+ *  numbers with px, vw, vh/svh, rem and em, inside calc(), min(), max() and
+ *  clamp(). Written as a small parser rather than an eval — the strings are
+ *  our own, but nothing here should be able to run anything. */
+export function cssLength(expression, viewport) {
+  const src = expression.trim();
+  let at = 0;
+  const peek = () => src[at];
+  const skip = () => { while (/\s/.test(src[at] ?? "")) at += 1; };
+  const fail = () => { throw new Error(`Cannot evaluate sizes length "${expression}"`); };
+
+  function sum() {
+    let value = product();
+    for (;;) {
+      skip();
+      if (peek() === "+") { at += 1; value += product(); }
+      else if (peek() === "-") { at += 1; value -= product(); }
+      else return value;
+    }
+  }
+  function product() {
+    let value = unary();
+    for (;;) {
+      skip();
+      if (peek() === "*") { at += 1; value *= unary(); }
+      else if (peek() === "/") { at += 1; value /= unary(); }
+      else return value;
+    }
+  }
+  function unary() {
+    skip();
+    if (peek() === "-") { at += 1; return -unary(); }
+    if (peek() === "(") { at += 1; const value = sum(); skip(); if (peek() !== ")") fail(); at += 1; return value; }
+    const call = src.slice(at).match(/^(calc|min|max|clamp)\(/i);
+    if (call) {
+      at += call[0].length;
+      const args = [sum()];
+      for (;;) {
+        skip();
+        if (peek() === ",") { at += 1; args.push(sum()); }
+        else if (peek() === ")") { at += 1; break; }
+        else fail();
+      }
+      switch (call[1].toLowerCase()) {
+        case "calc": if (args.length !== 1) fail(); return args[0];
+        case "min": return Math.min(...args);
+        case "max": return Math.max(...args);
+        default: if (args.length !== 3) fail(); return Math.min(Math.max(args[1], args[0]), args[2]);
+      }
+    }
+    const number = src.slice(at).match(/^(\d*\.?\d+)(px|vw|vh|svh|dvh|lvh|rem|em)?/i);
+    if (!number) fail();
+    at += number[0].length;
+    const value = Number(number[1]);
+    switch ((number[2] ?? "px").toLowerCase()) {
+      case "px": return value;
+      case "vw": return value * viewport.cssWidth / 100;
+      case "rem": case "em": return value * 16;
+      default: return value * viewport.cssHeight / 100;
+    }
+  }
+  const value = sum();
+  skip();
+  if (at !== src.length) fail();
+  return value;
+}
+
+/** `(min-width: 900px) and (max-width: 1099px)` against the viewport; the
+ *  only media features `sizes` uses here. Anything else is taken as false,
+ *  which falls through to the next size. */
+function mediaMatches(condition, viewport) {
+  const parts = condition.split(/\s+and\s+/i);
+  return parts.every((part) => {
+    const feature = part.match(/^\(\s*(min|max)-width\s*:\s*([^)]+)\)$/i);
+    if (!feature) return false;
+    const limit = cssLength(feature[2], viewport);
+    return feature[1].toLowerCase() === "min" ? viewport.cssWidth >= limit : viewport.cssWidth <= limit;
+  });
+}
+
+/** Comma-separated entries, but not the commas inside `min(a, b)`. */
+function topLevelEntries(list) {
+  const entries = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i <= list.length; i += 1) {
+    const ch = list[i];
+    if (ch === "(") depth += 1;
+    else if (ch === ")") depth -= 1;
+    else if ((ch === "," && depth === 0) || i === list.length) {
+      entries.push(list.slice(start, i).trim());
+      start = i + 1;
+    }
+  }
+  return entries.filter(Boolean);
+}
+
+/** The slot width `sizes` gives this viewport, in CSS pixels: the first
+ *  entry whose condition holds, else the bare fallback, else 100vw. */
+export function slotWidth(sizes, viewport) {
+  for (const entry of topLevelEntries(sizes ?? "")) {
+    const conditional = entry.match(/^(\(.*\))\s+(.+)$/);
+    if (!conditional) return cssLength(entry, viewport);
+    if (mediaMatches(conditional[1], viewport)) return cssLength(conditional[2], viewport);
+  }
+  return viewport.cssWidth;
+}
+
+/** The candidate the browser fetches: the smallest whose width covers the
+ *  slot at the device pixel ratio, or the largest when none does. A srcset
+ *  without width descriptors is taken by its first entry. */
+export function pickCandidate(srcset, sizes, viewport) {
+  const candidates = topLevelEntries(srcset).map((part) => {
+    const [url, descriptor] = part.split(/\s+/);
+    return { url, width: descriptor?.endsWith("w") ? Number(descriptor.slice(0, -1)) : null };
+  });
+  if (candidates.some((candidate) => candidate.width === null)) return candidates[0].url;
+  const needed = slotWidth(sizes, viewport) * viewport.dpr;
+  const sorted = candidates.sort((a, b) => a.width - b.width);
+  return (sorted.find((candidate) => candidate.width >= needed) ?? sorted[sorted.length - 1]).url;
+}
 
 /** Every request a browser makes while loading this page, in two rings:
  *  what the first paint waits for (the document, its stylesheets, whatever
@@ -75,7 +206,7 @@ const firstCandidate = (srcset) => srcset.split(",")[0].trim().split(/\s+/)[0];
  *  adds (the deferred script and the fonts the stylesheet declares for the
  *  text on the page). Lazy images are left out — they are not requested
  *  until scrolled to, so they cost the visitor nothing at load. */
-export function pageRequests(html, resolveCss) {
+export function pageRequests(html, resolveCss, viewport) {
   const firstPaint = new Set();
   const fullLoad = new Set();
   const add = (set, url) => {
@@ -90,20 +221,23 @@ export function pageRequests(html, resolveCss) {
   for (const [tag] of html.matchAll(/<script\b[^>]*>/gi)) add(fullLoad, attribute(tag, "src"));
 
   /* A `<picture>` is one request: the browser takes the first source it can
-     show, and the smallest candidate stands for the phone the connection is
-     modelled on. */
+     show and, from its srcset, the candidate that covers the slot `sizes`
+     gives the modelled phone. */
+  const imageRequest = (tag, srcset) => {
+    if (!srcset) return attribute(tag, "src");
+    return pickCandidate(srcset, attribute(tag, "sizes"), viewport);
+  };
   const pictures = new Set();
   for (const [block] of html.matchAll(/<picture\b[\s\S]*?<\/picture>/gi)) {
     const img = block.match(/<img\b[^>]*>/i)?.[0] ?? "";
     pictures.add(img);
     if (/\sloading=["']lazy["']/i.test(img)) continue;
     const source = block.match(/<source\b[^>]*>/i)?.[0];
-    const srcset = source && attribute(source, "srcset");
-    add(firstPaint, srcset ? firstCandidate(srcset) : attribute(img, "src"));
+    add(firstPaint, source ? imageRequest(source, attribute(source, "srcset")) : imageRequest(img, attribute(img, "srcset")));
   }
   for (const [img] of html.matchAll(/<img\b[^>]*>/gi)) {
     if (pictures.has(img) || /\sloading=["']lazy["']/i.test(img)) continue;
-    add(firstPaint, attribute(img, "src"));
+    add(firstPaint, imageRequest(img, attribute(img, "srcset")));
   }
 
   const text = new Set(
@@ -188,7 +322,7 @@ export function measure(root) {
     const requests = pageRequests(html, (path) => {
       const file = resolveWithin(output, path, `stylesheet ${path}`);
       return existsSync(file) ? readFileSync(file, "utf8") : null;
-    });
+    }, performance.delivery.viewport);
     const tally = (paths) => {
       const bytes = {};
       for (const path of paths) {
@@ -321,20 +455,24 @@ async function main() {
 
   const current = measure(root);
   const { delivery } = current.config.performance;
-  const { connection } = delivery;
-  console.log(`Delivery over ${connection.downloadKbps} kbps at ${connection.rttMs} ms round trips:\n${report(current)}`);
+  const { connection, viewport } = delivery;
+  console.log(
+    `Delivery to a ${viewport.cssWidth}×${viewport.cssHeight} @${viewport.dpr}x phone` +
+      ` over ${connection.downloadKbps} kbps at ${connection.rttMs} ms round trips:\n${report(current)}`
+  );
 
   const baselinePath = resolveWithin(root, delivery.baseline, "performance.delivery.baseline");
   if (update) {
-    const record = { connection, pages: current.pages };
+    const record = { connection, viewport, pages: current.pages };
     writeFileSync(baselinePath, `${JSON.stringify(record, null, 2)}\n`);
     console.log(`Recorded as the baseline in ${delivery.baseline}.`);
   } else if (!existsSync(baselinePath)) {
     current.failures.push(`No baseline at ${delivery.baseline}; run check-delivery-speed.mjs --update to record this build as the one to beat`);
   } else {
     const baseline = JSON.parse(readFileSync(baselinePath, "utf8"));
-    if (JSON.stringify(baseline.connection) !== JSON.stringify(connection)) {
-      current.failures.push("The baseline was recorded over a different connection; run check-delivery-speed.mjs --update to re-record it");
+    if (JSON.stringify(baseline.connection) !== JSON.stringify(connection) ||
+        JSON.stringify(baseline.viewport) !== JSON.stringify(viewport)) {
+      current.failures.push("The baseline was recorded for a different connection or phone; run check-delivery-speed.mjs --update to re-record it");
     } else {
       const { failures, notes } = compare(current, baseline, delivery.tolerance);
       current.failures.push(...failures);

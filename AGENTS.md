@@ -307,10 +307,13 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   script and the fonts whose `unicode-range` meets the page's text for the
   full load — lazy images are not loaded and not counted), counts the bytes
   as the edge sends them (gzip for text, raw for the rest, each response its
-  own stream), and plays the load over one modelled connection — 1600 kbps
-  down, 150 ms round trips, three of them for the handshake. It is a model
-  rather than a stopwatch so two runs of one build agree to the
-  millisecond. The numbers are compared with
+  own stream), and plays the load for one modelled phone — a 390×844 CSS
+  viewport at 2×, so a responsive image is charged at the `srcset`
+  candidate that phone's `sizes` slot actually selects (the 776w portraits,
+  not the first entry; Codex review, 2026-09-18) — over one modelled
+  connection: 1600 kbps down, 150 ms round trips, three of them for the
+  handshake. It is a model rather than a stopwatch so two runs of one build
+  agree to the millisecond. The numbers are compared with
   `website/delivery-baseline.json`, and `npm run preflight` — so CI on
   every pull request — goes red when a page's first paint or full load is
   more than 3% slower than recorded, naming the files that grew. A change
