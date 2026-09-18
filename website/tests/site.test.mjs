@@ -1102,6 +1102,24 @@ test("production runs as an isolated, hardened container", () => {
   );
 });
 
+test("the production installer never retargets an existing source mirror", () => {
+  /* The one-time web-design cutover is complete. A future installer run may
+     initialize a mirror with no origin or accept the exact standalone origin,
+     but it must fail closed on every other existing remote instead of silently
+     repointing trusted source state. */
+  assert.match(
+    productionAccessInstaller,
+    /^source_remote="git@github\.com:kiaquila\/ks\.git"$/m
+  );
+  assert.doesNotMatch(productionAccessInstaller, /kiaquila\/web-design/);
+  assert.doesNotMatch(productionAccessInstaller, /previous_source_remote/);
+  assert.doesNotMatch(productionAccessInstaller, /remote set-url origin/);
+  assert.match(
+    productionAccessInstaller,
+    /\[\[ "\$\(git --git-dir="\$source_git_dir" remote get-url origin\)" == "\$source_remote" \]\] \|\|\s*\n\s*fail "Trusted source mirror remote is invalid\."/
+  );
+});
+
 test("the retired /en/ prefix still resolves for anyone holding the old link", () => {
   /* English moved from /en/ to the origin root. The prefix was public, so it
      redirects permanently rather than answering 404. */
