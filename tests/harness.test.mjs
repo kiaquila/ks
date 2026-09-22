@@ -371,8 +371,10 @@ test("the OSV scan reports findings and fails the workflow", () => {
   const workflow = readFileSync(join(templateRoot, ".github/workflows/ci.yml"), "utf8");
   assert.match(workflow, /osv-scanner-action@[a-f0-9]{40}/);
   assert.match(workflow, /osv-reporter-action@[a-f0-9]{40}/);
+  const cleanup = workflow.indexOf("rm -f -- osv-results.json");
+  const scanner = workflow.indexOf("osv-scanner-action@");
+  assert.ok(cleanup >= 0 && cleanup < scanner);
   assert.match(workflow, /id: scan/);
-  assert.match(workflow, /steps\.scan\.outcome == 'failure'/);
   assert.match(workflow, /\[ ! -s "\$\{RESULTS\}" \]/);
   assert.match(workflow, /--gh-annotations=true/);
   assert.match(workflow, /--fail-on-vuln=true/);
