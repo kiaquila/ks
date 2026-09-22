@@ -37,6 +37,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Scan dependencies
+        id: scan
         uses: google/osv-scanner-action/osv-scanner-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
         with:
           scan-args: |-
@@ -45,6 +46,16 @@ jobs:
             --recursive
             .
         continue-on-error: true
+
+      - name: Verify dependency scan completed
+        if: ${{ steps.scan.outcome == 'failure' }}
+        env:
+          RESULTS: osv-results.json
+        run: |
+          if [ ! -s "${RESULTS}" ]; then
+            echo "::error::OSV Scanner failed without writing ${RESULTS}; refusing to report a clean scan."
+            exit 1
+          fi
 
       - name: Report vulnerabilities
         uses: google/osv-scanner-action/osv-reporter-action@a345acffa64b0eaede81a3d9aae6141214d9c8fc # v2.6.0
