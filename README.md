@@ -81,14 +81,21 @@ part of that project, which is a record of work done rather than an offer.
 
 ### Portfolio entries
 
-All six projects live in this repository and are linked to their public
-stages, in the order the carousel shows them:
-[Chaijaná Noir](https://chaijana.ks-design.workers.dev),
-[Alex Neon](https://alex-neon.ks-design.workers.dev),
-[Ember](https://ember.ks-design.art/),
-[Mikhail Orlov](https://misha.ks-design.workers.dev/),
-[Dream Board](https://dreamboard.ks-design.art/) and
-[Fathom](https://fathom.ks-design.art/). The card images are
+The six projects are maintained in separate standalone repositories; this
+repository contains only the portfolio copy and card screenshots that present
+them. In carousel order they are
+[Chaijaná Noir](https://chaijana.ks-design.workers.dev)
+([repository](https://github.com/kiaquila/chaijana), private),
+[Alex Neon](https://alex-neon.ks-design.workers.dev)
+([repository](https://github.com/kiaquila/alex-neon)),
+[Ember](https://ember.ks-design.art/)
+([repository](https://github.com/kiaquila/ember)),
+[Mikhail Orlov](https://misha.ks-design.workers.dev/)
+([repository](https://github.com/kiaquila/misha)),
+[Dream Board](https://dreamboard.ks-design.art/)
+([repository](https://github.com/kiaquila/dreamboard)) and
+[Fathom](https://fathom.ks-design.art/)
+([repository](https://github.com/kiaquila/fathom)). The card images are
 screenshots of those stages at the section's 16:9 proportion, regenerated with
 the commands in [`AGENTS.md`](./AGENTS.md).
 
@@ -128,6 +135,11 @@ are documented in
 Workers Builds creates pull-request previews from this repository at
 `*-ks.ks-design.workers.dev`; its permanent `ks.ks-design.workers.dev` route is
 disabled.
+
+The former `ks/` project tree was removed from `kiaquila/web-design` after the
+standalone migration. It is historical provenance, not a backup source tree or
+a production rollback path; current recovery starts from this repository and
+the procedure in [`website/production/README.md`](./website/production/README.md).
 
 ## Checks
 
