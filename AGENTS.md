@@ -269,6 +269,15 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
 - Static, no framework: `src/content.js` (copy), `src/render.js` (markup),
   five style layers `src/styles/{tokens,base,layout,components,sections}.css`
   concatenated in that order, and one classic script `src/js/site.js`.
+  The build drops the CSS comments from the shipped stylesheet (2026-10-02:
+  19.9 KB → 7.5 KB gzip on the render-blocking request; a pixel comparison
+  at 1440×900 and 1280×800 matched byte for byte). The comments stay in
+  `src/styles/` for readers of the source. The rendered pages drop their
+  `<!-- -->` comments the same way. Whitespace is left alone in both: the
+  tests read the shipped CSS by its formatting, collapsing it saved 0.3 KB
+  gzip, and in HTML the spaces between inline elements are visible text
+  (the hand-written line is words of `<span>`s). This is the stylesheet and
+  the pages only — the script is never transformed, see below.
 - **`assets/site.js` ships byte for byte as it was written.** The build only
   copies it: no strip, no minify. The production deploy verifies the
   deployed file against `src/js/site.js` by sha256, so any transformation
@@ -280,10 +289,17 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   same on every page of one build. The file names never change — the
   production deploy verifies `/assets/site.js` by path — only the query
   does, and only when the bytes do. Production nginx pairs this with
-  `Cache-Control` set by content type from one `map`: a page is `no-cache`
-  (kept, but always revalidated), the two hashed assets are
-  `immutable` for a year, and fonts and images carry no rule and take the
-  edge's default. Both halves exist because on 2026-09-17 a visitor's
+  `Cache-Control` set by content type from one `map`: a page is
+  `no-cache, no-transform` (kept, but always revalidated; `no-transform`
+  asks the edge to serve it as built — Cloudflare's injected analytics
+  beacon broke the CSP and its email obfuscation hid the address from
+  crawlers), the two hashed assets are `immutable` for a year, and fonts
+  and images are `immutable` for a year when their URL carries `?v=` and
+  take the edge's default when it does not. The fonts are linked with
+  their own content hash for that reason — in the stylesheet's `url()`s and
+  in the preload alike — and the images with the hand-bumped versions
+  above; a test fails any `/assets/` font or image a page links without
+  one (2026-10-02). Both halves exist because on 2026-09-17 a visitor's
   browser kept a stylesheet across a deploy and drew the rebuilt contact
   slide with the old rules — the deploy purges the edge, never a browser.
   The header is added at server level beside the security headers on

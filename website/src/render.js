@@ -68,15 +68,17 @@ const icons = {
 
 /** One responsive image with a WebP source and a JPEG fallback. */
 function picture({ dir, base, alt, widths, height, sizes, className, lazy = true, decorative = false, version }) {
-  const [small, large] = widths;
+  const small = widths[0];
+  const large = widths.at(-1);
   const altAttr = decorative ? 'alt="" aria-hidden="true"' : `alt="${escapeHtml(alt)}"`;
   /* `version` cache-busts an asset whose pixels changed in place under the
      same file name; bump it on retouches so no browser or CDN keeps serving
      the previous frame. */
   const q = version ? `?v=${version}` : "";
+  const srcset = (ext) => widths.map((width) => `/assets/${dir}/${base}-${width}.${ext}${q} ${width}w`).join(", ");
   return `<picture${className ? ` class="${className}"` : ""}>
-        <source type="image/webp" sizes="${sizes}" srcset="/assets/${dir}/${base}-${small}.webp${q} ${small}w, /assets/${dir}/${base}-${large}.webp${q} ${large}w">
-        <img src="/assets/${dir}/${base}-${small}.jpg${q}" sizes="${sizes}" srcset="/assets/${dir}/${base}-${small}.jpg${q} ${small}w, /assets/${dir}/${base}-${large}.jpg${q} ${large}w" ${altAttr} width="${large}" height="${height}"${lazy ? ' loading="lazy" decoding="async"' : ' fetchpriority="high" decoding="async"'}>
+        <source type="image/webp" sizes="${sizes}" srcset="${srcset("webp")}">
+        <img src="/assets/${dir}/${base}-${small}.jpg${q}" sizes="${sizes}" srcset="${srcset("jpg")}" ${altAttr} width="${large}" height="${height}"${lazy ? ' loading="lazy" decoding="async"' : ' fetchpriority="high" decoding="async"'}>
       </picture>`;
 }
 
@@ -138,9 +140,12 @@ const portraitSizes =
 
 const portraitVersions = { calm: 4, wink: 3 };
 
+const portraitWidths = [520, 640, 776];
+
 const portraitPreload = () => {
   const url = (width) => `/assets/portrait/calm-${width}.webp?v=${portraitVersions.calm}`;
-  return `<link rel="preload" as="image" type="image/webp" href="${url(776)}" imagesrcset="${url(520)} 520w, ${url(776)} 776w" imagesizes="${portraitSizes}" fetchpriority="high">`;
+  const srcset = portraitWidths.map((width) => `${url(width)} ${width}w`).join(", ");
+  return `<link rel="preload" as="image" type="image/webp" href="${url(portraitWidths.at(-1))}" imagesrcset="${srcset}" imagesizes="${portraitSizes}" fetchpriority="high">`;
 };
 
 function hero(copy, years) {
@@ -156,7 +161,7 @@ function hero(copy, years) {
         dir: "portrait",
         base: state,
         alt: copy.hero.portraitAlt,
-        widths: [520, 776],
+        widths: portraitWidths,
         height: 970,
         sizes: portraitSizes,
         className: `portrait-frame portrait-${state}`,
@@ -471,7 +476,7 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
   )
     .map(
       (font) =>
-        `<link rel="preload" as="font" type="font/woff2" href="/assets/fonts/${font}.woff2" crossorigin>`
+        `<link rel="preload" as="font" type="font/woff2" href="${versioned(`/assets/fonts/${font}.woff2`, assetVersions)}" crossorigin>`
     )
     .join("\n  ");
 
