@@ -521,8 +521,10 @@ test("the structured data states only what the page states", () => {
     assert.equal(byType.Person.name, identity.name);
     assert.equal(byType.Person.jobTitle, copy.meta.jobTitle);
     assert.equal(byType.Person.email, `mailto:${links.email}`);
-    assert.equal(byType.WebPage.url, `https://ks-design.art${languages[lang].path}`);
-    assert.equal(byType.WebPage.inLanguage, languages[lang].locale);
+    assert.equal(byType.ProfilePage.url, `https://ks-design.art${languages[lang].path}`);
+    assert.equal(byType.ProfilePage.inLanguage, languages[lang].locale);
+    assert.equal(byType.ProfilePage.mainEntity["@id"], byType.Person["@id"]);
+    assert.equal(byType.WebPage, undefined);
 
     const offers = byType.Person.makesOffer;
     assert.equal(offers.length, copy.services.items.length);
@@ -556,6 +558,21 @@ test("every image the structured data names exists in dist", async () => {
     for (const [, path] of urls) {
       assert.ok((await stat(join(dist, path.slice(1)))).isFile(), `${lang}: ${path} is not built`);
     }
+  }
+});
+
+test("the calm portrait is preloaded as it is requested, and the wink waits", () => {
+  for (const lang of LOCALES) {
+    const preload = pages[lang].match(/<link rel="preload" as="image"[^>]*>/)[0];
+    const calm = pages[lang].match(/<picture class="portrait-frame portrait-calm">[\s\S]*?<\/picture>/)[0];
+    const wink = pages[lang].match(/<picture class="portrait-frame portrait-wink">[\s\S]*?<\/picture>/)[0];
+    const source = calm.match(/<source type="image\/webp" sizes="([^"]+)" srcset="([^"]+)">/);
+    assert.ok(preload.includes(`imagesrcset="${source[2]}"`), `${lang}: preload srcset differs from the source`);
+    assert.ok(preload.includes(`imagesizes="${source[1]}"`), `${lang}: preload sizes differ from the source`);
+    assert.match(calm, /<img [^>]*fetchpriority="high"/);
+    assert.doesNotMatch(calm, /loading="lazy"/);
+    assert.match(wink, /<img [^>]*loading="lazy"/);
+    assert.doesNotMatch(wink, /fetchpriority="high"/);
   }
 });
 
