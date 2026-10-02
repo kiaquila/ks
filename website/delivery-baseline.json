@@ -20,7 +20,7 @@
         }
       },
       "fullLoad": {
-        "ms": 1854,
+        "ms": 2203,
         "bytes": {
           "index.html": 6919,
           "assets/fonts/manrope-latin.woff2": 24576,
@@ -30,6 +30,7 @@
           "assets/fonts/manrope-cyrillic.woff2": 14544,
           "assets/fonts/playfair-display-italic-latin.woff2": 38888,
           "assets/fonts/playfair-display-latin.woff2": 38460,
+          "assets/portrait/wink-776.webp": 69742,
           "assets/site.js": 4033
         }
       }
@@ -45,7 +46,7 @@
         }
       },
       "fullLoad": {
-        "ms": 1856,
+        "ms": 2204,
         "bytes": {
           "es/index.html": 7146,
           "assets/fonts/manrope-latin.woff2": 24576,
@@ -55,6 +56,7 @@
           "assets/fonts/manrope-cyrillic.woff2": 14544,
           "assets/fonts/playfair-display-italic-latin.woff2": 38888,
           "assets/fonts/playfair-display-latin.woff2": 38460,
+          "assets/portrait/wink-776.webp": 69742,
           "assets/site.js": 4033
         }
       }

@@ -309,7 +309,10 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   inheritance, custom properties, width media queries), falls in its
   `unicode-range`, so the Cyrillic of a work summary asks for Manrope's
   Cyrillic file and not Playfair's (Codex review, 2026-09-18); lazy images
-  are not loaded and not counted), counts the bytes
+  are not counted, except those in the first `<section>` — the first slide
+  is one screen, so a lazy image there, like the wink frame, still loads at
+  once and is charged to the full load (Codex review, 2026-10-02)), counts
+  the bytes
   as the edge sends them (gzip for text, raw for the rest, each response its
   own stream), and plays the load for one modelled phone — a 390×844 CSS
   viewport at 2×, so a responsive image is charged at the `srcset`
