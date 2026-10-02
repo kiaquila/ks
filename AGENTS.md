@@ -356,7 +356,10 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   phones the header row's gaps shrink rather than the targets.
 - No external origins at all: no CDN, no analytics, no remote fonts or images.
   The Worker's CSP is `script-src 'self'` and there are no inline `<script>`
-  elements — the test enforces both.
+  elements — the test enforces both. The one exception is the
+  `application/ld+json` data block on each locale page: the browser never
+  executes it, `<` is escaped inside it, and a test pins it as the only one
+  and checks every fact in it against `content.js`.
 - Accessibility: one `h1` per page, AA contrast, visible `:focus-visible`, tap
   targets ≥ 44 px, `prefers-reduced-motion` disables every transition.
 - Production is `https://ks-design.art`. Keep canonical, Open Graph, sitemap,
