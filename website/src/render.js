@@ -9,7 +9,7 @@
    desktop, and the deck scrolls with snap points. Everything still reads as a
    plain document on phones and without CSS. */
 
-import { content, experienceYears, languages, links, ogImages } from "./content.js";
+import { content, experienceYears, identity, languages, links, ogImages } from "./content.js";
 
 const escapeHtml = (value = "") =>
   String(value)
@@ -450,6 +450,11 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
     )
     .join("\n  ");
 
+  const ogLocaleAlternates = Object.entries(languages)
+    .filter(([code]) => code !== lang)
+    .map(([, config]) => `<meta property="og:locale:alternate" content="${config.ogLocale}">`)
+    .join("\n  ");
+
   /* Cyrillic is only preloaded for the page that actually sets Russian text
      above the fold; the English page would download it for nothing. */
   const fontPreloads = (lang === "ru"
@@ -472,14 +477,20 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
   <link rel="canonical" href="${origin}${canonicalPath}">
   ${alternates}
   <link rel="alternate" hreflang="x-default" href="${origin}/">
+  <meta name="author" content="${escapeHtml(identity.name)}">
+  <meta property="og:site_name" content="${escapeHtml(identity.brand)}">
   <meta property="og:title" content="${escapeHtml(copy.meta.ogTitle)}">
   <meta property="og:description" content="${escapeHtml(copy.meta.ogDescription)}">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="${languages[lang].ogLocale}">
+  ${ogLocaleAlternates}
   <meta property="og:url" content="${origin}${canonicalPath}">
   <meta property="og:image" content="${origin}/assets/${ogImages[lang]}">
+  <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="${escapeHtml(copy.meta.ogTitle)}">
+  <meta name="twitter:card" content="summary_large_image">
   <meta name="theme-color" content="#ffffff">
   <meta name="color-scheme" content="light">
   <!-- Browsers cache a favicon far past the page that asked for it, so a
@@ -509,6 +520,142 @@ ${body}
 `;
 }
 
+const priceSpecification = (price) => ({
+  "@type": "PriceSpecification",
+  priceCurrency: "USD",
+  [price.startsWith("USD") ? "price" : "minPrice"]: Number(price.replace(/\D/g, ""))
+});
+
+const profiles = [links.linkedin, links.instagram, links.github, links.telegram];
+
+function structuredData(lang, copy, origin) {
+  const page = `${origin}${languages[lang].path}`;
+  const person = { "@id": `${origin}/#person` };
+  const website = { "@id": `${origin}/#website` };
+  const graph = [
+    {
+      "@type": "WebSite",
+      ...website,
+      url: `${origin}/`,
+      name: identity.brand,
+      inLanguage: Object.values(languages).map((config) => config.locale),
+      publisher: person
+    },
+    {
+      "@type": "WebPage",
+      "@id": `${page}#webpage`,
+      url: page,
+      name: copy.meta.title,
+      description: copy.meta.description,
+      inLanguage: languages[lang].locale,
+      isPartOf: website,
+      about: person,
+      primaryImageOfPage: `${origin}/assets/${ogImages[lang]}`
+    },
+    {
+      "@type": "Person",
+      ...person,
+      name: identity.name,
+      jobTitle: copy.meta.jobTitle,
+      url: `${origin}/`,
+      image: `${origin}/assets/portrait/calm-776.jpg?v=2`,
+      email: `mailto:${links.email}`,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: identity.locality,
+        addressCountry: identity.country
+      },
+      brand: { "@type": "Brand", name: identity.brand },
+      sameAs: profiles,
+      makesOffer: copy.services.items.map((item) => ({
+        "@type": "Offer",
+        itemOffered: { "@type": "Service", name: item.name, description: item.note },
+        priceSpecification: priceSpecification(item.price)
+      }))
+    },
+    {
+      "@type": "ItemList",
+      "@id": `${page}#work`,
+      name: copy.work.title,
+      itemListElement: copy.work.items.map((item, index) => ({
+        "@type": "ListItem",
+        position: index + 1,
+        item: {
+          "@type": "CreativeWork",
+          name: item.name,
+          description: item.summary,
+          url: item.href,
+          image: `${origin}/assets/work/${item.image}-1200.jpg?v=2`,
+          dateCreated: item.year,
+          creator: person
+        }
+      }))
+    }
+  ];
+  const json = JSON.stringify({ "@context": "https://schema.org", "@graph": graph });
+  return `<script type="application/ld+json">${json.replaceAll("<", "\\u003c")}</script>`;
+}
+
+export function renderLlms(origin) {
+  const copy = content.en;
+  const years = experienceYears();
+  const plain = (value) => String(value).replaceAll("%YEARS%", String(years));
+  const about = copy.hero.notes.flatMap((note) => [
+    `- ${plain(note.text)}`,
+    ...(note.items ?? []).map((item) => `  - ${item}`)
+  ]);
+  const pages = Object.keys(languages).map(
+    (code) => `- [${content[code].meta.title}](${origin}${languages[code].path}): ${content[code].meta.description}`
+  );
+  const services = copy.services.items.map(
+    (item) => `- ${item.name}, ${item.price}: ${item.note} ${item.features.join("; ")}.`
+  );
+  const steps = copy.process.steps.map((step, index) => `${index + 1}. ${step.title}: ${step.body}`);
+  const work = copy.work.items.map(
+    (item) => `- [${item.name}](${item.href}): ${item.kind}, ${item.year}. ${item.summary}`
+  );
+  const contacts = [
+    `- Email: ${links.email}`,
+    ...["linkedin", "telegram", "whatsapp", "instagram", "github"].map(
+      (name) => `- ${copy.contact.social[name]}: ${links[name]}`
+    ),
+    `- ${copy.contact.location}`
+  ];
+
+  return [
+    `# ${identity.brand} — ${identity.name}`,
+    "",
+    `> ${copy.meta.description}`,
+    "",
+    ...about,
+    "",
+    "## Pages",
+    "",
+    ...pages,
+    "",
+    `## ${copy.services.title}`,
+    "",
+    copy.services.currencyNote,
+    "",
+    ...services,
+    "",
+    copy.services.hostingNote,
+    "",
+    `## ${copy.process.title}`,
+    "",
+    ...steps,
+    "",
+    `## ${copy.work.title}`,
+    "",
+    ...work,
+    "",
+    `## ${copy.contact.band.title}`,
+    "",
+    ...contacts,
+    ""
+  ].join("\n");
+}
+
 export function renderPage(lang, origin, assetVersions = {}) {
   const copy = content[lang];
   const years = experienceYears();
@@ -531,6 +678,7 @@ export function renderPage(lang, origin, assetVersions = {}) {
     title: copy.meta.title,
     description: copy.meta.description,
     canonicalPath: languages[lang].path,
+    extraHead: `<meta name="robots" content="max-image-preview:large">\n  ${structuredData(lang, copy, origin)}`,
     assetVersions
   });
 }

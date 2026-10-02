@@ -62,10 +62,18 @@ export const localesAwaitingReview = [];
  *  named here so those three cannot disagree. */
 export const ogImages = { en: "og-en.png", es: "og-es.png" };
 
+export const identity = {
+  name: "Kristina Aquila",
+  brand: "ks-design",
+  locality: "Buenos Aires",
+  country: "AR"
+};
+
 export const content = {
   en: {
     meta: {
       title: "ks-design — Kristina Aquila, web designer",
+      jobTitle: "Web designer",
       description:
         "Landing pages and websites designed to pull people in and sell. I work with AI, so it lands faster and costs less. Based in Buenos Aires, working remotely.",
       ogTitle: "I'll design something that pulls people in",
@@ -300,6 +308,7 @@ export const content = {
   es: {
     meta: {
       title: "ks-design — Kristina Aquila, diseñadora web",
+      jobTitle: "Diseñadora web",
       description:
         "Diseño de landings y sitios web que atrapan y venden. Trabajo con IA, así que sale más rápido y más barato. Estoy en Buenos Aires y trabajo en remoto.",
       ogTitle: "Te hago un diseño que atrapa",

@@ -15,7 +15,7 @@ import {
   localesAwaitingReview,
   ogImages
 } from "../src/content.js";
-import { renderNotFound, renderPage } from "../src/render.js";
+import { renderLlms, renderNotFound, renderPage } from "../src/render.js";
 
 const root = resolve(import.meta.dirname, "..");
 const dist = join(root, "dist");
@@ -140,14 +140,26 @@ async function main() {
     "utf8"
   );
 
+  const lastmod = new Date().toISOString().slice(0, 10);
+  const alternates = [
+    ...Object.entries(languages).map(([code, config]) => [code, config.path]),
+    ["x-default", "/"]
+  ]
+    .map(([code, path]) => `    <xhtml:link rel="alternate" hreflang="${code}" href="${ORIGIN}${path}"/>`)
+    .join("\n");
   const urls = Object.values(languages)
-    .map((config) => `  <url><loc>${ORIGIN}${config.path}</loc></url>`)
+    .map(
+      (config) =>
+        `  <url>\n    <loc>${ORIGIN}${config.path}</loc>\n    <lastmod>${lastmod}</lastmod>\n${alternates}\n  </url>`
+    )
     .join("\n");
   await writeFile(
     join(dist, "sitemap.xml"),
-    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls}\n</urlset>\n`,
+    `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">\n${urls}\n</urlset>\n`,
     "utf8"
   );
+
+  await writeFile(join(dist, "llms.txt"), renderLlms(ORIGIN), "utf8");
 
   console.log(
     `Built the KS portfolio into dist/ (${Object.keys(languages).join(", ")}).`

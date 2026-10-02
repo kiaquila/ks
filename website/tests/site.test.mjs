@@ -13,6 +13,7 @@ import {
   CAREER_START_YEAR,
   content,
   experienceYears,
+  identity,
   languages,
   links,
   localesAwaitingReview,
@@ -495,8 +496,92 @@ test("fonts, images and scripts are all served from this origin", async () => {
 test("no inline script survives, so the worker can keep script-src 'self'", () => {
   for (const key of DOCUMENTS) {
     const inline = pages[key].match(/<script(?![^>]*\bsrc=)[^>]*>/g) ?? [];
-    assert.deepEqual(inline, [], `${key}: inline <script> would break the CSP`);
+    const expected = key === "notFound" ? [] : ['<script type="application/ld+json">'];
+    assert.deepEqual(inline, expected, `${key}: inline <script> would break the CSP`);
   }
+});
+
+const structuredGraph = (key) => {
+  const [, json] = pages[key].match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  assert.doesNotMatch(json, /</, `${key}: a raw < could close the data block early`);
+  return JSON.parse(json)["@graph"];
+};
+
+test("the structured data states only what the page states", () => {
+  const approved = new Set(
+    [links.linkedin, links.telegram, links.instagram, links.github, ...Object.values(links.work)].map(
+      (url) => new URL(url).origin
+    )
+  );
+  for (const lang of LOCALES) {
+    const copy = content[lang];
+    const graph = structuredGraph(lang);
+    const byType = Object.fromEntries(graph.map((node) => [node["@type"], node]));
+
+    assert.equal(byType.Person.name, identity.name);
+    assert.equal(byType.Person.jobTitle, copy.meta.jobTitle);
+    assert.equal(byType.Person.email, `mailto:${links.email}`);
+    assert.equal(byType.WebPage.url, `https://ks-design.art${languages[lang].path}`);
+    assert.equal(byType.WebPage.inLanguage, languages[lang].locale);
+
+    const offers = byType.Person.makesOffer;
+    assert.equal(offers.length, copy.services.items.length);
+    offers.forEach((offer, index) => {
+      const item = copy.services.items[index];
+      const spec = offer.priceSpecification;
+      assert.equal(offer.itemOffered.name, item.name);
+      assert.equal(spec.priceCurrency, "USD");
+      assert.equal(spec.price ?? spec.minPrice, Number(item.price.replace(/\D/g, "")));
+      assert.equal("minPrice" in spec, !item.price.startsWith("USD"), `${lang}: ${item.price}`);
+    });
+
+    const works = byType.ItemList.itemListElement.map((entry) => entry.item);
+    assert.deepEqual(
+      works.map((work) => [work.name, work.url]),
+      copy.work.items.map((item) => [item.name, item.href])
+    );
+
+    for (const [, url] of JSON.stringify(graph).matchAll(/"(https?:\/\/[^"]+)"/g)) {
+      const { origin } = new URL(url);
+      if (origin === "https://ks-design.art" || origin === "https://schema.org") continue;
+      assert.ok(approved.has(origin), `${lang}: unapproved origin in structured data ${origin}`);
+    }
+  }
+});
+
+test("every image the structured data names exists in dist", async () => {
+  for (const lang of LOCALES) {
+    const urls = [...JSON.stringify(structuredGraph(lang)).matchAll(/"https:\/\/ks-design\.art(\/assets\/[^"?]+)/g)];
+    assert.ok(urls.length > 0);
+    for (const [, path] of urls) {
+      assert.ok((await stat(join(dist, path.slice(1)))).isFile(), `${lang}: ${path} is not built`);
+    }
+  }
+});
+
+test("the social tags describe the page for every network", () => {
+  for (const lang of LOCALES) {
+    assert.match(pages[lang], /<meta name="twitter:card" content="summary_large_image">/);
+    assert.match(pages[lang], new RegExp(`<meta property="og:site_name" content="${identity.brand}">`));
+    for (const [code, config] of Object.entries(languages)) {
+      const alternate = new RegExp(`<meta property="og:locale:alternate" content="${config.ogLocale}">`);
+      code === lang
+        ? assert.doesNotMatch(pages[lang], alternate)
+        : assert.match(pages[lang], alternate);
+    }
+  }
+});
+
+test("llms.txt carries the offer, the work and the contacts in plain words", async () => {
+  const llms = await readFile(join(dist, "llms.txt"), "utf8");
+  const copy = content.en;
+  assert.match(llms, new RegExp(`^# ${identity.brand} — ${identity.name}\\n`));
+  assert.doesNotMatch(llms, /%YEARS%|TODO/);
+  assert.ok(llms.includes(`${experienceYears()}+ years`));
+  for (const item of copy.services.items) assert.ok(llms.includes(`${item.name}, ${item.price}`), item.name);
+  for (const item of copy.work.items) assert.ok(llms.includes(`](${item.href})`), item.name);
+  for (const lang of LOCALES) assert.ok(llms.includes(`](https://ks-design.art${languages[lang].path})`));
+  assert.ok(llms.includes(links.email));
 });
 
 /* --- structure and accessibility ---------------------------------------------- */
@@ -1050,6 +1135,17 @@ test("robots.txt and the sitemap list every language", async () => {
       sitemap.includes(`<loc>https://ks-design.art${languages[lang].path}</loc>`),
       `the sitemap is missing ${languages[lang].path}`
     );
+  }
+  const entries = sitemap.match(/<url>[\s\S]*?<\/url>/g);
+  assert.equal(entries.length, LOCALES.length);
+  for (const entry of entries) {
+    assert.match(entry, /<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+    for (const [code, path] of [...LOCALES.map((lang) => [lang, languages[lang].path]), ["x-default", "/"]]) {
+      assert.ok(
+        entry.includes(`<xhtml:link rel="alternate" hreflang="${code}" href="https://ks-design.art${path}"/>`),
+        `a sitemap entry is missing the ${code} alternate`
+      );
+    }
   }
 });
 
