@@ -576,6 +576,21 @@ test("the calm portrait is preloaded as it is requested, and the wink waits", ()
   }
 });
 
+test("Manrope falls back to a metric-matched Arial, so the swap does not move text", () => {
+  for (const token of ["--font-display", "--font-body"]) {
+    assert.match(css, new RegExp(`${token}: "Manrope", "Manrope Fallback",`));
+  }
+  const faces = [...css.matchAll(/@font-face\s*\{[^}]*font-family: "Manrope Fallback";[^}]*\}/g)].map(([face]) => face);
+  assert.equal(faces.length, 2);
+  for (const face of faces) {
+    assert.match(face, /src: local\("Arial[^"]*"\)/);
+    assert.doesNotMatch(face, /url\(/);
+    for (const property of ["size-adjust", "ascent-override", "descent-override", "line-gap-override"]) {
+      assert.match(face, new RegExp(`${property}: [\\d.]+%;`), property);
+    }
+  }
+});
+
 test("the social tags describe the page for every network", () => {
   for (const lang of LOCALES) {
     assert.match(pages[lang], /<meta name="twitter:card" content="summary_large_image">/);

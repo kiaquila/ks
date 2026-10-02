@@ -29,7 +29,12 @@ rules, heavy tracked capitals. Everything below follows from that.
   (client decision, 2026-08-28) is **Caveat**, the hand-written voice of the
   hero portrait's hover annotations and, since 2026-09-17, of the one line
   over the contact band — and of nothing else; see "The hero portrait" and
-  "The contact slide". Do not add a fourth family.
+  "The contact slide". Do not add a fourth family. `Manrope Fallback` is
+  not one: it is the visitor's own Arial, loaded from nothing, with
+  `size-adjust` and ascent/descent overrides measured against Manrope in
+  Chrome (2026-10-02: 102.2% for 200–500, 95.1% for 600–800, widths within
+  0.1%), so the `swap` to the webfont does not reflow the text. Re-measure
+  if the Manrope file changes.
 - Headings are uppercase with open tracking (`0.06em`–`0.09em`), not tight
   display type.
 - **The header is set in two voices, not one.** The wordmark and the
