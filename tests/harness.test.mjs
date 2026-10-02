@@ -217,6 +217,20 @@ test("the page's requests are read from its markup and stylesheet", () => {
   assert.deepEqual(requests.fullLoad, ["assets/fonts/any.woff2", "assets/fonts/hand.woff2", "assets/site.js"]);
 });
 
+test("a lazy image on the first screen is charged to the full load", () => {
+  const html = `<!doctype html><body>
+    <section class="hero">
+      <picture><source srcset="/assets/calm-776.webp 776w"><img src="/assets/calm-776.jpg" alt="" fetchpriority="high"></picture>
+      <picture><source srcset="/assets/wink-776.webp 776w"><img src="/assets/wink-776.jpg" alt="" loading="lazy"></picture>
+      <img src="/assets/badge.png" alt="" loading="lazy">
+    </section>
+    <section><picture><source srcset="/assets/card-800.webp 800w"><img src="/assets/card-800.jpg" alt="" loading="lazy"></picture></section>
+  </body>`;
+  const requests = pageRequests(html, () => null, { cssWidth: 390, cssHeight: 844, dpr: 2 });
+  assert.deepEqual(requests.firstPaint, ["assets/calm-776.webp"]);
+  assert.deepEqual(requests.fullLoad, ["assets/badge.png", "assets/wink-776.webp"]);
+});
+
 test("a responsive image is charged at the candidate the modelled phone fetches", () => {
   /* Taking the first srcset entry charged the 520w portrait to a phone that
      asks for the 776w one, so the larger file could grow unseen (Codex

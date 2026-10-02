@@ -309,7 +309,10 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   inheritance, custom properties, width media queries), falls in its
   `unicode-range`, so the Cyrillic of a work summary asks for Manrope's
   Cyrillic file and not Playfair's (Codex review, 2026-09-18); lazy images
-  are not loaded and not counted), counts the bytes
+  are not counted, except those in the first `<section>` — the first slide
+  is one screen, so a lazy image there, like the wink frame, still loads at
+  once and is charged to the full load (Codex review, 2026-10-02)), counts
+  the bytes
   as the edge sends them (gzip for text, raw for the rest, each response its
   own stream), and plays the load for one modelled phone — a 390×844 CSS
   viewport at 2×, so a responsive image is charged at the `srcset`
@@ -381,8 +384,16 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   2026-08-28 after a two-day experiment with a separate Why me slide. The
   wink frame is the composite described in `README.md` (the rock-expression
   face registered onto the calm body); its production rules live in git
-  history with the retired experiments. Both frames sit at `?v=2`: their
-  pixels are the ones production has always served.
+  history with the retired experiments. The wink frame sits at `?v=2`: its
+  pixels are the ones production has always served, grain included — a
+  re-encode at the calm frame's weight smoothed the skin, so it was kept.
+  The calm frame's WebP files were re-encoded at quality 80 on 2026-10-01
+  (20% lighter, visually unchanged) and sit at `?v=3`; `portraitVersions`
+  in `render.js` holds both numbers.
+- The calm frame is the mobile LCP element. It is preloaded from the head
+  with the same `imagesrcset`/`imagesizes` as its `<source>`, and the wink
+  frame is `loading="lazy"`: it is in the viewport, so it still loads right
+  after layout, but no longer competes with the calm frame for bandwidth.
 - The cross-fade is ~140 ms on purpose: at that speed the eye reads a cut —
   the requested gif feel — not a slideshow dissolve. Touch toggles the swap
   through `data-active` (set by the script), keyboard through focus. The

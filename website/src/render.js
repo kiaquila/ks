@@ -133,6 +133,16 @@ function header(lang, copy, anchorBase = "") {
   </header>`;
 }
 
+const portraitSizes =
+  "(max-width: 1099px) min(84vw, 416px), min(54svh, calc(42vw - 220px))";
+
+const portraitVersions = { calm: 3, wink: 2 };
+
+const portraitPreload = () => {
+  const url = (width) => `/assets/portrait/calm-${width}.webp?v=${portraitVersions.calm}`;
+  return `<link rel="preload" as="image" type="image/webp" href="${url(776)}" imagesrcset="${url(520)} 520w, ${url(776)} 776w" imagesizes="${portraitSizes}" fetchpriority="high">`;
+};
+
 function hero(copy, years) {
   /* Two stacked frames that cross-fade on hover. The calm frame carries the
      alt text; the second is decorative, so a screen reader is told about one
@@ -140,8 +150,6 @@ function hero(copy, years) {
      on both sides of the 1100px breakpoint — keep the three numbers in step
      with sections.css, or the browser picks a candidate for a box that does
      not exist and the print renders soft on a dense screen. */
-  const portraitSizes =
-    "(max-width: 1099px) min(84vw, 416px), min(54svh, calc(42vw - 220px))";
   const frames = ["calm", "wink"]
     .map((state, index) =>
       picture({
@@ -152,9 +160,9 @@ function hero(copy, years) {
         height: 971,
         sizes: portraitSizes,
         className: `portrait-frame portrait-${state}`,
-        lazy: false,
+        lazy: index === 1,
         decorative: index === 1,
-        version: 2
+        version: portraitVersions[state]
       })
     )
     .join("\n      ");
@@ -542,7 +550,7 @@ function structuredData(lang, copy, origin) {
       publisher: person
     },
     {
-      "@type": "WebPage",
+      "@type": "ProfilePage",
       "@id": `${page}#webpage`,
       url: page,
       name: copy.meta.title,
@@ -550,6 +558,7 @@ function structuredData(lang, copy, origin) {
       inLanguage: languages[lang].locale,
       isPartOf: website,
       about: person,
+      mainEntity: person,
       primaryImageOfPage: `${origin}/assets/${ogImages[lang]}`
     },
     {
@@ -557,8 +566,9 @@ function structuredData(lang, copy, origin) {
       ...person,
       name: identity.name,
       jobTitle: copy.meta.jobTitle,
+      description: copy.meta.description,
       url: `${origin}/`,
-      image: `${origin}/assets/portrait/calm-776.jpg?v=2`,
+      image: `${origin}/assets/portrait/calm-776.jpg?v=${portraitVersions.calm}`,
       email: `mailto:${links.email}`,
       address: {
         "@type": "PostalAddress",
@@ -678,7 +688,7 @@ export function renderPage(lang, origin, assetVersions = {}) {
     title: copy.meta.title,
     description: copy.meta.description,
     canonicalPath: languages[lang].path,
-    extraHead: `<meta name="robots" content="max-image-preview:large">\n  ${structuredData(lang, copy, origin)}`,
+    extraHead: `${portraitPreload()}\n  <meta name="robots" content="max-image-preview:large">\n  ${structuredData(lang, copy, origin)}`,
     assetVersions
   });
 }

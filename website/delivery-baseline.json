@@ -11,54 +11,52 @@
   "pages": {
     "index.html": {
       "firstPaint": {
-        "ms": 1552,
+        "ms": 1165,
         "bytes": {
-          "index.html": 6871,
+          "index.html": 6919,
           "assets/fonts/manrope-latin.woff2": 24576,
-          "assets/portrait/calm-776.webp": 39362,
-          "assets/portrait/wink-776.webp": 69742,
+          "assets/portrait/calm-776.webp": 31644,
           "assets/styles.css": 19853
         }
       },
       "fullLoad": {
-        "ms": 2242,
+        "ms": 2203,
         "bytes": {
-          "index.html": 6871,
+          "index.html": 6919,
           "assets/fonts/manrope-latin.woff2": 24576,
-          "assets/portrait/calm-776.webp": 39362,
-          "assets/portrait/wink-776.webp": 69742,
+          "assets/portrait/calm-776.webp": 31644,
           "assets/styles.css": 19853,
           "assets/fonts/caveat-latin.woff2": 41976,
           "assets/fonts/manrope-cyrillic.woff2": 14544,
           "assets/fonts/playfair-display-italic-latin.woff2": 38888,
           "assets/fonts/playfair-display-latin.woff2": 38460,
+          "assets/portrait/wink-776.webp": 69742,
           "assets/site.js": 4033
         }
       }
     },
     "es/index.html": {
       "firstPaint": {
-        "ms": 1553,
+        "ms": 1166,
         "bytes": {
-          "es/index.html": 7095,
+          "es/index.html": 7146,
           "assets/fonts/manrope-latin.woff2": 24576,
-          "assets/portrait/calm-776.webp": 39362,
-          "assets/portrait/wink-776.webp": 69742,
+          "assets/portrait/calm-776.webp": 31644,
           "assets/styles.css": 19853
         }
       },
       "fullLoad": {
-        "ms": 2243,
+        "ms": 2204,
         "bytes": {
-          "es/index.html": 7095,
+          "es/index.html": 7146,
           "assets/fonts/manrope-latin.woff2": 24576,
-          "assets/portrait/calm-776.webp": 39362,
-          "assets/portrait/wink-776.webp": 69742,
+          "assets/portrait/calm-776.webp": 31644,
           "assets/styles.css": 19853,
           "assets/fonts/caveat-latin.woff2": 41976,
           "assets/fonts/manrope-cyrillic.woff2": 14544,
           "assets/fonts/playfair-display-italic-latin.woff2": 38888,
           "assets/fonts/playfair-display-latin.woff2": 38460,
+          "assets/portrait/wink-776.webp": 69742,
           "assets/site.js": 4033
         }
       }

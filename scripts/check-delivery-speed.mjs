@@ -404,17 +404,22 @@ export function pageRequests(html, resolveCss, viewport) {
     if (!srcset) return attribute(tag, "src");
     return pickCandidate(srcset, attribute(tag, "sizes"), viewport);
   };
+  const firstScreen = html.match(/<section\b[\s\S]*?<\/section>/i)?.[0] ?? "";
+  const ringFor = (markup) =>
+    !/\sloading=["']lazy["']/i.test(markup) ? firstPaint : firstScreen.includes(markup) ? fullLoad : null;
   const pictures = new Set();
   for (const [block] of html.matchAll(/<picture\b[\s\S]*?<\/picture>/gi)) {
     const img = block.match(/<img\b[^>]*>/i)?.[0] ?? "";
     pictures.add(img);
-    if (/\sloading=["']lazy["']/i.test(img)) continue;
+    const ring = ringFor(block);
+    if (!ring) continue;
     const source = block.match(/<source\b[^>]*>/i)?.[0];
-    add(firstPaint, source ? imageRequest(source, attribute(source, "srcset")) : imageRequest(img, attribute(img, "srcset")));
+    add(ring, source ? imageRequest(source, attribute(source, "srcset")) : imageRequest(img, attribute(img, "srcset")));
   }
   for (const [img] of html.matchAll(/<img\b[^>]*>/gi)) {
-    if (pictures.has(img) || /\sloading=["']lazy["']/i.test(img)) continue;
-    add(firstPaint, imageRequest(img, attribute(img, "srcset")));
+    const ring = ringFor(img);
+    if (pictures.has(img) || !ring) continue;
+    add(ring, imageRequest(img, attribute(img, "srcset")));
   }
 
   /* A face is fetched when text set in its family and style falls in its
