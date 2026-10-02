@@ -101,7 +101,7 @@
     left: min(35%, calc(100% - var(--print-w) - 232px));
     top: calc(20svh - 10px);
     width: var(--print-w);
-    aspect-ratio: 776 / 971;
+    aspect-ratio: 776 / 970;
   }
 }
 

@@ -136,7 +136,7 @@ function header(lang, copy, anchorBase = "") {
 const portraitSizes =
   "(max-width: 1099px) min(84vw, 416px), min(54svh, calc(42vw - 220px))";
 
-const portraitVersions = { calm: 3, wink: 2 };
+const portraitVersions = { calm: 4, wink: 3 };
 
 const portraitPreload = () => {
   const url = (width) => `/assets/portrait/calm-${width}.webp?v=${portraitVersions.calm}`;
@@ -157,7 +157,7 @@ function hero(copy, years) {
         base: state,
         alt: copy.hero.portraitAlt,
         widths: [520, 776],
-        height: 971,
+        height: 970,
         sizes: portraitSizes,
         className: `portrait-frame portrait-${state}`,
         lazy: index === 1,

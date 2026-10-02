@@ -389,12 +389,12 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   2026-08-28 after a two-day experiment with a separate Why me slide. The
   wink frame is the composite described in `README.md` (the rock-expression
   face registered onto the calm body); its production rules live in git
-  history with the retired experiments. The wink frame sits at `?v=2`: its
-  pixels are the ones production has always served, grain included — a
-  re-encode at the calm frame's weight smoothed the skin, so it was kept.
-  The calm frame's WebP files were re-encoded at quality 80 on 2026-10-01
-  (20% lighter, visually unchanged) and sit at `?v=3`; `portraitVersions`
-  in `render.js` holds both numbers.
+  history with the retired experiments. On 2026-10-02 the owner's side
+  replaced both frames with a new photographed pair at 776×970 / 520×650
+  (the box's `aspect-ratio` and the `height` in `render.js` follow it): calm
+  sits at `?v=4`, wink at `?v=3`, both held in `portraitVersions` in
+  `render.js` — bump the one whose pixels change. The social cards were
+  re-rendered from the new calm frame the same day.
 - The calm frame is the mobile LCP element. It is preloaded from the head
   with the same `imagesrcset`/`imagesizes` as its `<source>`, and the wink
   frame is `loading="lazy"`: it is in the viewport, so it still loads right
