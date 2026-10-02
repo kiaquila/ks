@@ -110,7 +110,7 @@
   position: relative;
   isolation: isolate;
   /* The exact aspect of the source pair — zero crop, zero drift. */
-  aspect-ratio: 776 / 971;
+  aspect-ratio: 776 / 970;
   overflow: hidden;
   border-radius: var(--radius-md);
   background: var(--ground-sunk);

@@ -29,7 +29,12 @@ rules, heavy tracked capitals. Everything below follows from that.
   (client decision, 2026-08-28) is **Caveat**, the hand-written voice of the
   hero portrait's hover annotations and, since 2026-09-17, of the one line
   over the contact band — and of nothing else; see "The hero portrait" and
-  "The contact slide". Do not add a fourth family.
+  "The contact slide". Do not add a fourth family. `Manrope Fallback` is
+  not one: it is the visitor's own Arial, loaded from nothing, with
+  `size-adjust` and ascent/descent overrides measured against Manrope in
+  Chrome (2026-10-02: 102.2% for 200–500, 95.1% for 600–800, widths within
+  0.1%), so the `swap` to the webfont does not reflow the text. Re-measure
+  if the Manrope file changes.
 - Headings are uppercase with open tracking (`0.06em`–`0.09em`), not tight
   display type.
 - **The header is set in two voices, not one.** The wordmark and the
@@ -264,6 +269,15 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
 - Static, no framework: `src/content.js` (copy), `src/render.js` (markup),
   five style layers `src/styles/{tokens,base,layout,components,sections}.css`
   concatenated in that order, and one classic script `src/js/site.js`.
+  The build drops the CSS comments from the shipped stylesheet (2026-10-02:
+  19.9 KB → 7.5 KB gzip on the render-blocking request; a pixel comparison
+  at 1440×900 and 1280×800 matched byte for byte). The comments stay in
+  `src/styles/` for readers of the source. The rendered pages drop their
+  `<!-- -->` comments the same way. Whitespace is left alone in both: the
+  tests read the shipped CSS by its formatting, collapsing it saved 0.3 KB
+  gzip, and in HTML the spaces between inline elements are visible text
+  (the hand-written line is words of `<span>`s). This is the stylesheet and
+  the pages only — the script is never transformed, see below.
 - **`assets/site.js` ships byte for byte as it was written.** The build only
   copies it: no strip, no minify. The production deploy verifies the
   deployed file against `src/js/site.js` by sha256, so any transformation
@@ -275,10 +289,17 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   same on every page of one build. The file names never change — the
   production deploy verifies `/assets/site.js` by path — only the query
   does, and only when the bytes do. Production nginx pairs this with
-  `Cache-Control` set by content type from one `map`: a page is `no-cache`
-  (kept, but always revalidated), the two hashed assets are
-  `immutable` for a year, and fonts and images carry no rule and take the
-  edge's default. Both halves exist because on 2026-09-17 a visitor's
+  `Cache-Control` set by content type from one `map`: a page is
+  `no-cache, no-transform` (kept, but always revalidated; `no-transform`
+  asks the edge to serve it as built — Cloudflare's injected analytics
+  beacon broke the CSP and its email obfuscation hid the address from
+  crawlers), the two hashed assets are `immutable` for a year, and fonts
+  and images are `immutable` for a year when their URL carries `?v=` and
+  take the edge's default when it does not. The fonts are linked with
+  their own content hash for that reason — in the stylesheet's `url()`s and
+  in the preload alike — and the images with the hand-bumped versions
+  above; a test fails any `/assets/` font or image a page links without
+  one (2026-10-02). Both halves exist because on 2026-09-17 a visitor's
   browser kept a stylesheet across a deploy and drew the rebuilt contact
   slide with the old rules — the deploy purges the edge, never a browser.
   The header is added at server level beside the security headers on
@@ -384,12 +405,12 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   2026-08-28 after a two-day experiment with a separate Why me slide. The
   wink frame is the composite described in `README.md` (the rock-expression
   face registered onto the calm body); its production rules live in git
-  history with the retired experiments. The wink frame sits at `?v=2`: its
-  pixels are the ones production has always served, grain included — a
-  re-encode at the calm frame's weight smoothed the skin, so it was kept.
-  The calm frame's WebP files were re-encoded at quality 80 on 2026-10-01
-  (20% lighter, visually unchanged) and sit at `?v=3`; `portraitVersions`
-  in `render.js` holds both numbers.
+  history with the retired experiments. On 2026-10-02 the owner's side
+  replaced both frames with a new photographed pair at 776×970 / 520×650
+  (the box's `aspect-ratio` and the `height` in `render.js` follow it): calm
+  sits at `?v=4`, wink at `?v=3`, both held in `portraitVersions` in
+  `render.js` — bump the one whose pixels change. The social cards were
+  re-rendered from the new calm frame the same day.
 - The calm frame is the mobile LCP element. It is preloaded from the head
   with the same `imagesrcset`/`imagesizes` as its `<source>`, and the wink
   frame is `loading="lazy"`: it is in the viewport, so it still loads right

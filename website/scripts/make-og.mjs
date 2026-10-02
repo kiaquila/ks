@@ -19,6 +19,7 @@ import { execFile } from "node:child_process";
 import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
+import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 
 import { content, ogImages } from "../src/content.js";
@@ -30,7 +31,9 @@ const CHROME_CANDIDATES = [
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
   "/Applications/Chromium.app/Contents/MacOS/Chromium",
   "/usr/bin/google-chrome",
-  "/usr/bin/chromium"
+  "/usr/bin/chromium",
+  "C:/Program Files/Google/Chrome/Application/chrome.exe",
+  "C:/Program Files (x86)/Google/Chrome/Application/chrome.exe"
 ];
 
 async function findChrome() {
@@ -113,7 +116,7 @@ async function main() {
         "--window-size=1200,630",
         "--virtual-time-budget=4000",
         `--screenshot=${target}`,
-        `file://${page}`
+        pathToFileURL(page).href
       ]);
       console.log(`Rendered ${target}`);
     }

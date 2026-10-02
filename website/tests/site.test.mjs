@@ -488,7 +488,7 @@ test("fonts, images and scripts are all served from this origin", async () => {
   /* Every font the stylesheet asks for must exist, or the page silently falls
      back to a system face and the type scale shifts. */
   const fonts = await readdir(join(dist, "assets/fonts"));
-  for (const [, url] of css.matchAll(/url\("\/assets\/fonts\/([^"]+)"\)/g)) {
+  for (const [, url] of css.matchAll(/url\("\/assets\/fonts\/([^"?]+)(?:\?v=[0-9a-f]+)?"\)/g)) {
     assert.ok(fonts.includes(url), `missing font file: ${url}`);
   }
 });
@@ -574,6 +574,26 @@ test("the calm portrait is preloaded as it is requested, and the wink waits", ()
     assert.match(wink, /<img [^>]*loading="lazy"/);
     assert.doesNotMatch(wink, /fetchpriority="high"/);
   }
+});
+
+test("Manrope falls back to a metric-matched Arial, so the swap does not move text", () => {
+  for (const token of ["--font-display", "--font-body"]) {
+    assert.match(css, new RegExp(`${token}: "Manrope", "Manrope Fallback",`));
+  }
+  const faces = [...css.matchAll(/@font-face\s*\{[^}]*font-family: "Manrope Fallback";[^}]*\}/g)].map(([face]) => face);
+  assert.equal(faces.length, 2);
+  for (const face of faces) {
+    assert.match(face, /src: local\("Arial[^"]*"\)/);
+    assert.doesNotMatch(face, /url\(/);
+    for (const property of ["size-adjust", "ascent-override", "descent-override", "line-gap-override"]) {
+      assert.match(face, new RegExp(`${property}: [\\d.]+%;`), property);
+    }
+  }
+});
+
+test("the shipped stylesheet and pages carry no source comments", () => {
+  assert.doesNotMatch(css, /\/\*/);
+  for (const key of DOCUMENTS) assert.doesNotMatch(pages[key], /<!--/, key);
 });
 
 test("the social tags describe the page for every network", () => {
@@ -1457,9 +1477,29 @@ test("the stylesheet and the script are linked by content hash, and the server c
 
   const map = productionNginx.match(/map \$sent_http_content_type \$ks_cache_control \{([^}]*)\}/)?.[1];
   assert.ok(map, "nginx sets Cache-Control from one map over the content type");
-  assert.match(map, /~\^text\/html\s+"no-cache";/);
+  assert.match(map, /~\^text\/html\s+"no-cache, no-transform";/);
   for (const type of ["text/css", "text/javascript", "application/javascript"]) {
     assert.ok(map.includes(`~^${type}`) && new RegExp(`~\\^${type}\\s+"public, max-age=31536000, immutable";`).test(map), type);
+  }
+  const versioned = productionNginx.match(/map \$arg_v \$ks_versioned_cache \{([^}]*)\}/)?.[1];
+  assert.ok(versioned, "fonts and images are kept for a year only when versioned");
+  assert.match(versioned, /""\s+"";/);
+  assert.match(versioned, /default\s+"public, max-age=31536000, immutable";/);
+  for (const type of ["image/", "font/"]) {
+    assert.match(map, new RegExp(`~\\^${type}\\s+\\$ks_versioned_cache;`), type);
+  }
+  for (const file of ["index.html", "es/index.html"]) {
+    const html = await readFile(join(dist, file), "utf8");
+    for (const [, url] of html.matchAll(/(?:href|src|srcset|imagesrcset)="([^"]+)"/g)) {
+      for (const candidate of url.split(",").map((part) => part.trim().split(/\s+/)[0])) {
+        if (/^\/assets\/.+\.(woff2|webp|jpg|png|svg)/.test(candidate)) {
+          assert.match(candidate, /\?v=/, `${file}: ${candidate} would be cached a year without a version`);
+        }
+      }
+    }
+  }
+  for (const [, url] of css.toString().matchAll(/url\("([^"]+)"\)/g)) {
+    assert.match(url, /\?v=[0-9a-f]{10}$/, `the stylesheet links ${url} without its content hash`);
   }
   assert.match(productionNginx, /^\s+add_header Cache-Control \$ks_cache_control always;$/m);
   /* An add_header inside a location replaces every header inherited from

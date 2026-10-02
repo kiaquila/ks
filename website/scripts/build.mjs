@@ -92,13 +92,27 @@ function reportTranslationReviews() {
 const contentVersion = (bytes) =>
   createHash("sha256").update(bytes).digest("hex").slice(0, 10);
 
+const withoutComments = (html) => html.replace(/[ \t]*<!--[\s\S]*?-->\n?/g, "");
+
 async function main() {
   await rm(dist, { recursive: true, force: true });
   await mkdir(join(dist, "assets"), { recursive: true });
 
-  const stylesheet = await buildStylesheet();
+  const fontVersions = {};
+  for (const file of await readdir(join(root, "assets/fonts"))) {
+    if (file.endsWith(".woff2")) {
+      fontVersions[`/assets/fonts/${file}`] = contentVersion(await readFile(join(root, "assets/fonts", file)));
+    }
+  }
+  const stylesheet = (await buildStylesheet())
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\n\s*\n+/g, "\n")
+    .replace(/url\("(\/assets\/fonts\/[^"?]+)"\)/g, (match, path) =>
+      fontVersions[path] ? `url("${path}?v=${fontVersions[path]}")` : match
+    );
   const script = await readFile(join(root, "src/js/site.js"));
   const assetVersions = {
+    ...fontVersions,
     "/assets/styles.css": contentVersion(stylesheet),
     "/assets/site.js": contentVersion(script)
   };
@@ -107,7 +121,7 @@ async function main() {
     const path = languages[lang].path;
     const target = path === "/" ? join(dist, "index.html") : join(dist, path, "index.html");
     await mkdir(resolve(target, ".."), { recursive: true });
-    await writeFile(target, renderPage(lang, ORIGIN, assetVersions), "utf8");
+    await writeFile(target, withoutComments(renderPage(lang, ORIGIN, assetVersions)), "utf8");
   }
 
   /* One 404 per language, each beside the pages it covers. Workers Static
@@ -118,7 +132,7 @@ async function main() {
     const path = languages[lang].path;
     const target = path === "/" ? join(dist, "404.html") : join(dist, path, "404.html");
     await mkdir(resolve(target, ".."), { recursive: true });
-    await writeFile(target, renderNotFound(lang, ORIGIN, assetVersions), "utf8");
+    await writeFile(target, withoutComments(renderNotFound(lang, ORIGIN, assetVersions)), "utf8");
   }
   await writeFile(join(dist, "assets/styles.css"), stylesheet, "utf8");
 

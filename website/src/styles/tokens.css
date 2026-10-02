@@ -41,8 +41,8 @@
   --glass-edge: rgb(255 255 255 / 0.75);
 
   /* --- type --- */
-  --font-display: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  --font-body: "Manrope", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-display: "Manrope", "Manrope Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Manrope", "Manrope Fallback", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   --font-serif: "Playfair Display", Georgia, "Times New Roman", serif;
   /* The one hand-written voice: the hover annotations on the hero portrait,
      nowhere else (client decision, 2026-08-28). Legible script, not scrawl. */
