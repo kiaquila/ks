@@ -1139,7 +1139,7 @@ test("robots.txt and the sitemap list every language", async () => {
   const entries = sitemap.match(/<url>[\s\S]*?<\/url>/g);
   assert.equal(entries.length, LOCALES.length);
   for (const entry of entries) {
-    assert.match(entry, /<lastmod>\d{4}-\d{2}-\d{2}<\/lastmod>/);
+    assert.doesNotMatch(entry, /<lastmod>/);
     for (const [code, path] of [...LOCALES.map((lang) => [lang, languages[lang].path]), ["x-default", "/"]]) {
       assert.ok(
         entry.includes(`<xhtml:link rel="alternate" hreflang="${code}" href="https://ks-design.art${path}"/>`),

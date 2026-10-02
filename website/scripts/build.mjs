@@ -140,7 +140,6 @@ async function main() {
     "utf8"
   );
 
-  const lastmod = new Date().toISOString().slice(0, 10);
   const alternates = [
     ...Object.entries(languages).map(([code, config]) => [code, config.path]),
     ["x-default", "/"]
@@ -150,7 +149,7 @@ async function main() {
   const urls = Object.values(languages)
     .map(
       (config) =>
-        `  <url>\n    <loc>${ORIGIN}${config.path}</loc>\n    <lastmod>${lastmod}</lastmod>\n${alternates}\n  </url>`
+        `  <url>\n    <loc>${ORIGIN}${config.path}</loc>\n${alternates}\n  </url>`
     )
     .join("\n");
   await writeFile(
