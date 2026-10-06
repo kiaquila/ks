@@ -415,7 +415,7 @@ function contact(copy) {
   const social = ["linkedin", "telegram", "whatsapp", "instagram", "github"]
     .map(
       (name) =>
-        `<a href="${escapeHtml(links[name])}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(copy.contact.social[name])}">${icons[name]}</a>`
+        `<a href="${escapeHtml(links[name])}" data-contact="${name}" target="_blank" rel="noopener noreferrer" aria-label="${escapeHtml(copy.contact.social[name])}">${icons[name]}</a>`
     )
     .join("");
 
@@ -428,7 +428,7 @@ function contact(copy) {
         <div class="band-inner container">
           <h2 class="band-title" id="contact-title">${escapeHtml(copy.contact.band.title)}</h2>
           <div class="band-row">
-            <a class="band-mail" href="${mailto}">${escapeHtml(links.email)}</a>
+            <a class="band-mail" href="${mailto}" data-contact="email">${escapeHtml(links.email)}</a>
             <span class="band-rule" aria-hidden="true"></span>
             <div class="band-social">${social}</div>
           </div>
@@ -528,6 +528,7 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
   <a class="skip-link" href="#main">${escapeHtml(copy.skipLink)}</a>
 ${body}
   <script src="${versioned("/assets/site.js", assetVersions)}" defer></script>
+  <script src="${versioned("/assets/analytics.js", assetVersions)}" defer></script>
 </body>
 </html>
 `;

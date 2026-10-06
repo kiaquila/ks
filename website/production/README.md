@@ -4,6 +4,10 @@ Production serves the static build at `https://ks-design.art` from the `cz`
 server. Cloudflare Workers remains a disposable stage, not the production
 origin.
 
+Self-hosted Plausible CE runs separately on this host at
+`https://stats.ks-design.art`. Its installation, same-origin tracker routes
+and daily backup procedure are documented in [analytics/README.md](analytics/README.md).
+
 ## Isolation contract
 
 - Compose project: `ks-design-portfolio`

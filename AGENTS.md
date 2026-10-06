@@ -378,7 +378,12 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
 - **Every tap target is at least 44px**, including both language words, the
   footer social icons and the carousel arrows. A test measures the rules. On
   phones the header row's gaps shrink rather than the targets.
-- No external origins at all: no CDN, no analytics, no remote fonts or images.
+- No external origins at all: no CDN, no remote fonts or images.
+  Plausible Community Edition is the approved analytics exception (client
+  decision, 2026-10-06): the small local loader runs only on `ks-design.art`
+  after page load, and host Nginx proxies the tracker and event endpoint through
+  `/stats/script.js` and `/stats/event`. Keep previews out of production stats,
+  strip cookies at the analytics proxy, and never expose the dashboard there.
   The Worker's CSP is `script-src 'self'` and there are no inline `<script>`
   elements — the test enforces both. The one exception is the
   `application/ld+json` data block on each locale page: the browser never
