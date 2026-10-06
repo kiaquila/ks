@@ -511,11 +511,10 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
 The only dependency is `wrangler`, and it is needed for deployment, never for
 `npm run build` or the tests — those use Node builtins alone.
 
-Wrangler `4.135.0` still resolves Miniflare's direct `undici` dependency to
-`7.29.0`, which is affected by GHSA-3wwx-pv8p-q78v. The `package.json`
-override pins `undici` to the fixed `7.29.1` until Wrangler adopts a fixed
-version upstream. Remove the override only after a Wrangler update resolves a
-fixed version on its own; regenerate the lockfile with
+Wrangler `4.144.0` resolves Miniflare's direct `undici` dependency to the fixed
+`7.29.1`, so the earlier `package.json` override has been retired. Keep it
+unpinned so future Wrangler updates can take upstream security fixes;
+regenerate the lockfile with
 `npm install --package-lock-only` whenever dependency resolution changes.
 
 ## Regenerating assets
