@@ -24,13 +24,18 @@ the portfolio update and fails if they change.
 
 ## DNS
 
-Spaceship Advanced DNS carries these records with a 30-minute TTL:
+Cloudflare manages authoritative DNS; Spaceship is the registrar. These are
+the origin records, not necessarily the IPs returned by public DNS when a
+record is proxied:
 
 | Host | Type | Value |
 | --- | --- | --- |
 | `@` | `A` | `178.105.95.17` |
 | `@` | `AAAA` | `2a01:4f8:1c18:af10::1` |
 | `www` | `CNAME` | `ks-design.art` |
+| `stats` | `A` | `178.105.95.17` |
+
+The analytics `stats` record is proxied with automatic TTL.
 
 ## Deployment
 

@@ -14,7 +14,11 @@ are not exposed; the application binds only to `127.0.0.1:3200`.
 Copy this directory to a private staging directory on `cz`, then run
 `sudo bash <staging-directory>/install-server.sh`. The installer preserves
 the existing secret and databases. It installs the HTTPS virtual host and
-backup timer. A Cloudflare-proxied A record for `stats.ks-design.art` must
+backup timer, and refuses to launch if the effective Compose image is not
+the pinned security release. The release check uses the host's Python 3
+standard JSON parser. Run `sudo bash <staging-directory>/check-release.sh`
+from `/opt/plausible-ce` for a read-only check before installation.
+A Cloudflare-proxied A record for `stats.ks-design.art` must
 already point to this server. The ACME webroot and trusted Cloudflare real-IP
 configuration are shared with the existing host setup.
 

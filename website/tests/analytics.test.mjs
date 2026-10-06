@@ -1,7 +1,11 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { delimiter, join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import test from 'node:test';
 import vm from 'node:vm';
+import { fileURLToPath } from 'node:url';
 
 const source = readFileSync(new URL('../src/js/analytics.js', import.meta.url), 'utf8');
 
@@ -75,4 +79,40 @@ test('contact clicks are queued before the tracker loads; other clicks are ignor
   } } });
   assert.equal(state.window.plausible.q.length, 1);
   assert.equal(state.window.plausible.q[0][0], 'Contact telegram');
+});
+
+test('installer release guard reads effective Compose JSON and rejects unpinned releases', () => {
+  const directory = mkdtempSync(join(tmpdir(), 'ks-plausible-test-'));
+  const docker = join(directory, 'docker');
+  writeFileSync(docker, `#!${process.execPath}
+const assert = require('node:assert/strict');
+assert.deepEqual(process.argv.slice(2), ['compose', '-p', 'ks-plausible', 'config', '--format', 'json']);
+console.log(process.env.PLAUSIBLE_TEST_CONFIG);
+`);
+  chmodSync(docker, 0o700);
+  const script = fileURLToPath(new URL('../production/analytics/check-release.sh', import.meta.url));
+  try {
+    for (const image of [
+      'ghcr.io/plausible/community-edition:v3.2.1',
+      'ghcr.io/plausible/community-edition:v3.2.0',
+      'ghcr.io/plausible/community-edition:latest',
+      'untrusted/plausible:v3.2.1',
+    ]) {
+      const result = spawnSync('bash', [script], {
+        encoding: 'utf8',
+        env: { ...process.env, PATH: `${directory}${delimiter}${process.env.PATH}`,
+          PLAUSIBLE_TEST_CONFIG: JSON.stringify({ services: { plausible: { image } } }) },
+      });
+      assert.equal(result.status, image.endsWith('community-edition:v3.2.1') ? 0 : 1,
+        result.stderr || result.stdout);
+    }
+    const invalid = spawnSync('bash', [script], {
+      encoding: 'utf8',
+      env: { ...process.env, PATH: `${directory}${delimiter}${process.env.PATH}`,
+        PLAUSIBLE_TEST_CONFIG: '{}' },
+    });
+    assert.notEqual(invalid.status, 0);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

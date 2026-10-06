@@ -16,6 +16,7 @@ fi
 chmod 0600 "$destination/.env"
 
 cd "$destination"
+bash "$source_dir/check-release.sh"
 docker compose -p ks-plausible up -d --wait --wait-timeout 180
 
 site=/etc/nginx/sites-available/stats.ks-design.art.conf
