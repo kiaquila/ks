@@ -4,6 +4,10 @@ Production serves the static build at `https://ks-design.art` from the `cz`
 server. Cloudflare Workers remains a disposable stage, not the production
 origin.
 
+Self-hosted Plausible CE runs separately on this host at
+`https://stats.ks-design.art`. Its installation, same-origin tracker routes
+and daily backup procedure are documented in [analytics/README.md](analytics/README.md).
+
 ## Isolation contract
 
 - Compose project: `ks-design-portfolio`
@@ -20,13 +24,18 @@ the portfolio update and fails if they change.
 
 ## DNS
 
-Spaceship Advanced DNS carries these records with a 30-minute TTL:
+Cloudflare manages authoritative DNS; Spaceship is the registrar. These are
+the origin records, not necessarily the IPs returned by public DNS when a
+record is proxied:
 
 | Host | Type | Value |
 | --- | --- | --- |
 | `@` | `A` | `178.105.95.17` |
 | `@` | `AAAA` | `2a01:4f8:1c18:af10::1` |
 | `www` | `CNAME` | `ks-design.art` |
+| `stats` | `A` | `178.105.95.17` |
+
+The analytics `stats` record is proxied with automatic TTL.
 
 ## Deployment
 

@@ -111,10 +111,12 @@ async function main() {
       fontVersions[path] ? `url("${path}?v=${fontVersions[path]}")` : match
     );
   const script = await readFile(join(root, "src/js/site.js"));
+  const analytics = await readFile(join(root, "src/js/analytics.js"));
   const assetVersions = {
     ...fontVersions,
     "/assets/styles.css": contentVersion(stylesheet),
-    "/assets/site.js": contentVersion(script)
+    "/assets/site.js": contentVersion(script),
+    "/assets/analytics.js": contentVersion(analytics)
   };
 
   for (const lang of Object.keys(languages)) {

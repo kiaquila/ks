@@ -14,7 +14,8 @@
       "command": [
         "node",
         "--test",
-        "website/tests/site.test.mjs"
+        "website/tests/site.test.mjs",
+        "website/tests/analytics.test.mjs"
       ]
     }
   ],

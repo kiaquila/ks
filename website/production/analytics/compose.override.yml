@@ -1,0 +1,21 @@
+services:
+  plausible_db:
+    mem_limit: 256m
+  plausible_events_db:
+    mem_limit: 1024m
+    volumes:
+      - ./backup.xml:/etc/clickhouse-server/config.d/backup.xml:ro
+  plausible:
+    mem_limit: 768m
+    ports:
+      - "127.0.0.1:3200:8000"
+    environment:
+      DISABLE_REGISTRATION: invite_only
+      ENABLE_EMAIL_VERIFICATION: "false"
+      MAILER_ADAPTER: Bamboo.LocalAdapter
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8000/api/health"]
+      interval: 30s
+      timeout: 5s
+      start_period: 60s
+      retries: 5
