@@ -1,8 +1,8 @@
 # Plausible Community Edition
 
-The production dashboard is https://stats.ks-design.art. The administrator
-email is `krisredlips@gmail.com`. Passwords are set by the administrator in the
-browser, never stored in this repository.
+The production dashboard is https://stats.ks-design.art. Administrator
+credentials are configured inside Plausible. Passwords are set by the
+administrator in the browser, never stored in this repository.
 
 ## Installation
 
