@@ -54,7 +54,7 @@ test('tracker waits for load and idle, and uses only same-origin endpoints', () 
   assert.equal(script.tag, 'script');
   assert.equal(script.src, '/stats/script.js');
   assert.equal(script.dataset.api, '/stats/event');
-  assert.equal(script.dataset.domain, 'ks-design.art');
+  assert.equal(script.dataset.domain, 'ks');
   assert.equal(script.defer, true);
 });
 
@@ -66,6 +66,11 @@ test('already loaded pages and browsers without idle callbacks still load the tr
     state.pending[0].callback();
     assert.equal(state.scripts.length, 1);
   }
+});
+
+test('old dashboard bookmark redirects to the short URL without losing filters', () => {
+  const config = readFileSync(new URL('../production/analytics/stats.conf', import.meta.url), 'utf8');
+  assert.match(config, /location = \/ks-design\.art\s*\{\s*return 302 \/ks\$is_args\$args;/);
 });
 
 test('contact clicks are queued before the tracker loads; other clicks are ignored', () => {
