@@ -1,6 +1,6 @@
 # Plausible Community Edition
 
-The production dashboard is https://stats.ks-design.art. Administrator
+The production dashboard is https://stats.ks-design.art/ks. Administrator
 credentials are configured inside Plausible. Passwords are set by the
 administrator in the browser, never stored in this repository.
 
@@ -22,7 +22,7 @@ A Cloudflare-proxied A record for `stats.ks-design.art` must
 already point to this server. The ACME webroot and trusted Cloudflare real-IP
 configuration are shared with the existing host setup.
 
-After creating the first account, add `ks-design.art` as a site and custom
+After creating the first account, add `ks` as the internal site identifier and custom
 event goals named `Contact email`, `Contact telegram`, `Contact whatsapp`,
 `Contact linkedin`, `Contact instagram`, and `Contact github`.
 Registration is invite-only after the initial account. SMTP is not configured;
@@ -35,6 +35,14 @@ and `/stats/event`. Reinstall that configuration using the existing
 `production/install-edge.sh` procedure when introducing these routes.
 Website code still goes through the normal reviewed production deployment.
 The loader runs only on `ks-design.art`, after page load and an idle callback.
+Its `data-domain` is `ks`, the internal Plausible identifier, not the public
+portfolio hostname. Plausible uses that identifier for its dashboard URL.
+The existing site was renamed from `ks-design.art` to `ks` on 2026-10-07;
+its history and goals stay with the same site. The old dashboard root redirects
+to `/ks`, preserving query parameters. Settings and deep links use `/ks/...`.
+When renaming again, update the loader and deploy within Plausible's 72-hour
+old-name ingestion window. Do not create a second site or modify the hostname
+guard, canonical URLs, or public portfolio domain.
 Preview/local builds do not send analytics. The routes strip request cookies
 and response `Set-Cookie` headers; the website CSP stays `script-src 'self'`.
 

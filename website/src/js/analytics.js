@@ -13,7 +13,7 @@
     const script = document.createElement("script");
     script.src = "/stats/script.js";
     script.defer = true;
-    script.dataset.domain = "ks-design.art";
+    script.dataset.domain = "ks";
     script.dataset.api = "/stats/event";
     document.head.append(script);
   };
