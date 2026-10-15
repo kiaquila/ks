@@ -188,13 +188,17 @@ export function isAcceptableCodexSummaryComment(comment, headSha, requestedAt, s
   const receipt = body.startsWith("<!-- codex-review-receipt:v1 -->");
   const text = receipt ? body.slice("<!-- codex-review-receipt:v1 -->".length).trimStart() : body;
   const summary = text.replace(/\s*<details>\s*<summary>[^<]*About Codex in GitHub<\/summary>[\s\S]*<\/details>\s*$/, "");
+  const verdict = summary.match(/^Codex Review: Didn't find any major issues\.([^\r\n]*)\s+\*\*Reviewed commit:\*\*\s*`([a-f0-9]{10}(?:[a-f0-9]{30})?)`\s*$/i);
+  // Native receipts add varying encouragement after the fixed verdict. Keep
+  // that decoration compatible, but reject a second finding or review state.
+  const conflictingSuffix = /\b(?:but|however|found|findings?|issues?|problems?|pending|running|progress|incomplete|unresolved|failed|error|changes|blocked|regressions?)\b/i;
   if (!/^[a-f0-9]{40}$/i.test(String(headSha || "")) ||
       containsBlockingCodexSeverity(body) ||
       (body.match(/<!--/g) || []).length !== (receipt ? 1 : 0) ||
       (body.match(/Codex Review:/gi) || []).length !== 1 ||
       (body.match(/\*\*Reviewed commit:\*\*/gi) || []).length !== 1 ||
-      !/^Codex Review: Didn't find any major issues\.(?:[ \t]*(?::rocket:|🚀|👍|Keep it up!))?\s+\*\*Reviewed commit:\*\*\s*`[a-f0-9]{10}(?:[a-f0-9]{30})?`\s*$/i.test(summary)) return false;
-  const reviewedSha = summary.match(/\*\*Reviewed commit:\*\*\s*`([a-f0-9]+)`/i)?.[1];
+      !verdict || conflictingSuffix.test(verdict[1])) return false;
+  const reviewedSha = verdict[2];
   return isAfterRequest &&
     isTrustedCodexLogin(comment?.user?.login) &&
     /^Codex Review:\s*Didn't find any major issues\./im.test(body) &&

@@ -463,6 +463,7 @@ test("observed receipt and legacy envelopes require one unambiguous positive ver
   );
   assert.equal(accept(receiptBody), true);
   assert.equal(accept(receiptBody.replace(":rocket:", "Keep it up!")), true);
+  assert.equal(accept(receiptBody.replace(":rocket:", "Another round soon, please!")), true);
   assert.equal(accept(receiptBody.replace(headSha.slice(0, 10), headSha)), true);
   assert.equal(accept(receiptBody.replace("<!-- codex-review-receipt:v1 -->\n\n", "")), true);
   const invalid = [
@@ -474,6 +475,8 @@ test("observed receipt and legacy envelopes require one unambiguous positive ver
     `<!-- codex-review-receipt:v1 -->\n${receiptBody}`,
     receiptBody.replace("<details>", `**Reviewed commit:** \`${"0".repeat(10)}\`\n<details>`),
     receiptBody.replace("Didn't find any major issues.", "Found a P2 issue."),
+    receiptBody.replace(":rocket:", "However, unresolved findings remain."),
+    receiptBody.replace(":rocket:", "Review is still in progress."),
     receiptBody.replace("Didn't find any major issues.", "Review in progress."),
     receiptBody.replace("<details>", "P1: regression remains\n<details>"),
     `${receiptBody}\nCodex Review: Found problems.`,
