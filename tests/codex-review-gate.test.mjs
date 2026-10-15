@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { readFileSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { spawnSync } from "node:child_process";
 
 const repositoryRoot = resolve(
   process.env.WEB_DESIGN_REPOSITORY_ROOT || resolve(import.meta.dirname, "..")
@@ -18,6 +21,7 @@ const publisher = await import(pathToFileURL(
 
 const {
   classifyCodexNativeReview,
+  evaluateCodexReviewEvidence,
   createCodexReviewRequestMarkerBody,
   extractCodexReviewRequestMarker,
   isAcceptableCodexSummaryComment,
@@ -36,7 +40,7 @@ const {
 } = rerun;
 const { checkRunPayload, publishCodexReviewCheck } = publisher;
 
-const headSha = "abc123def456";
+const headSha = "abc123def456".padEnd(40, "0");
 const codexUser = { login: "chatgpt-codex-connector[bot]" };
 
 function markerBody() {
@@ -163,7 +167,7 @@ test("native Codex reviews are current-head and P0-P2 blocking", () => {
   }], headSha), "pass");
   assert.equal(classifyCodexNativeReview(review, [{
     pull_request_review_id: 20,
-    body: "![P2 Badge] Blocking issue",
+    body: "P3 context, then ![P2 Badge] Blocking issue",
     user: codexUser
   }], headSha), "fail");
   assert.equal(classifyCodexNativeReview({
@@ -171,7 +175,7 @@ test("native Codex reviews are current-head and P0-P2 blocking", () => {
     state: "APPROVED"
   }, [{
     pull_request_review_id: 20,
-    body: "![P2 Badge] Blocking issue",
+    body: "P3 context, then ![P2 Badge] Blocking issue",
     user: codexUser
   }], headSha), "fail", "approved reviews must still inspect inline findings");
   assert.equal(classifyCodexNativeReview(review, [{
@@ -421,4 +425,225 @@ test("rerun helper calls the Actions endpoint for a failed head-bound run", asyn
     },
     { path: "/repos/owner/repo/actions/runs/42/rerun", method: "POST" }
   ]);
+});
+
+const receiptBody = `<!-- codex-review-receipt:v1 -->
+
+Codex Review: Didn't find any major issues. :rocket:
+
+**Reviewed commit:** \`${headSha.slice(0, 10)}\`
+
+<details> <summary>ℹ️ About Codex in GitHub</summary>
+<br/>
+
+[Your team has set up Codex to review pull requests in this repo](https://chatgpt.com/codex/cloud/settings/general). Reviews are triggered when you
+- Open a pull request for review
+- Mark a draft as ready
+- Comment "@codex review".
+
+If Codex has suggestions, it will comment; otherwise it will react with 👍.
+
+Codex can also answer questions or update the PR. Try commenting "@codex address that feedback".
+</details>`;
+const receiptComment = {
+  id: 31, body: receiptBody, user: codexUser,
+  created_at: "2026-08-05T12:01:00Z", updated_at: "2026-08-05T12:01:00Z"
+};
+const structuredBody = `<!-- codex-pull-request-review-summary -->
+<!-- codex-review-state:v1 ${JSON.stringify({
+  code_review: { commit_sha: headSha, has_any_findings: false, has_unresolved_findings: false, status: "completed" },
+  security_review: { commit_sha: null, has_any_findings: null, has_unresolved_findings: null, status: null }
+})} -->
+
+## Codex Review Summary`;
+
+test("observed receipt and legacy envelopes require one unambiguous positive verdict and SHA", () => {
+  const accept = (body, other = {}) => isAcceptableCodexSummaryComment(
+    { ...receiptComment, body, ...other }, headSha, "2026-08-05T12:00:00Z", "10"
+  );
+  assert.equal(accept(receiptBody), true);
+  assert.equal(accept(receiptBody.replace(":rocket:", "Keep it up!")), true);
+  assert.equal(accept(receiptBody.replace(headSha.slice(0, 10), headSha)), true);
+  assert.equal(accept(receiptBody.replace("<!-- codex-review-receipt:v1 -->\n\n", "")), true);
+  const invalid = [
+    receiptBody.replace(headSha.slice(0, 10), "0000000000"),
+    receiptBody.replace(headSha.slice(0, 10), `${headSha.slice(0, 10)}000000000000000000000000000000`),
+    receiptBody.replace(/\*\*Reviewed commit:\*\*[^\n]+/, ""),
+    receiptBody.replace("v1", "v2"),
+    receiptBody.replace("v1 -->", "v1"),
+    `<!-- codex-review-receipt:v1 -->\n${receiptBody}`,
+    receiptBody.replace("<details>", `**Reviewed commit:** \`${"0".repeat(10)}\`\n<details>`),
+    receiptBody.replace("Didn't find any major issues.", "Found a P2 issue."),
+    receiptBody.replace("Didn't find any major issues.", "Review in progress."),
+    receiptBody.replace("<details>", "P1: regression remains\n<details>"),
+    `${receiptBody}\nCodex Review: Found problems.`,
+    receiptBody.replace("<br/>", "<br/>Codex Review: Found problems."),
+    receiptBody.replace("<br/>", `**Reviewed commit:** \`${"0".repeat(10)}\``),
+    `${receiptBody}\n${structuredBody}`,
+    structuredBody,
+    "Completed 👍"
+  ];
+  for (const body of invalid) assert.equal(accept(body), false, body);
+  assert.equal(accept(receiptBody, { user: { login: "fake-codex[bot]" } }), false);
+  assert.equal(accept(receiptBody, { updated_at: "2026-08-05T11:59:00Z" }), false);
+});
+
+test("workflow and runtime route created/edited receipts and existing summary updates identically", () => {
+  const workflow = readFileSync(resolve(repositoryRoot, ".github/workflows/codex-review-rerun.yml"), "utf8");
+  assert.match(workflow, /issue_comment:\s*types: \[created, edited\]/);
+  assert.match(workflow, /ref: \$\{\{ github.event.repository.default_branch \}\}/);
+  assert.match(workflow, /node scripts\/codex-review-rerun.mjs/);
+  assert.match(workflow, /cancel-in-progress: false/);
+  const condition = workflow.match(/    if: \|\n([\s\S]+?)    runs-on:/)[1];
+  const workflowRoutes = new Function("github", "startsWith", `return (${condition});`);
+  for (const action of ["created", "edited"]) {
+    for (const body of ["Codex Review: Found a P2 issue.", receiptBody, structuredBody]) {
+      for (const login of [codexUser.login, "fake-codex[bot]", "github-actions[bot]", "kiaquila"]) {
+        const event = { action, issue: { pull_request: {} }, comment: {
+          ...receiptComment, body, user: { login },
+          created_at: "2026-08-04T12:00:00Z", updated_at: "2026-08-05T12:01:00Z"
+        } };
+        const expected = login === codexUser.login;
+        assert.equal(shouldRouteCodexReviewRerunEvent(event), expected);
+        assert.equal(workflowRoutes({ event, event_name: "issue_comment" }, (s, p) => s.startsWith(p)), expected);
+      }
+    }
+  }
+  assert.equal(shouldRouteCodexReviewRerunEvent({ action: "edited", issue: {}, comment: receiptComment }), false);
+  for (const user of [codexUser, { login: "fake-codex[bot]" }]) {
+    const event = { review: { user }, issue: {}, comment: {} };
+    assert.equal(Boolean(workflowRoutes({ event, event_name: "pull_request_review" })), shouldRouteCodexReviewRerunEvent(event));
+  }
+});
+
+test("summary updates only wake the gate and cannot supply a verdict", () => {
+  for (const body of [structuredBody, structuredBody.replace('"completed"', '"in_progress"'),
+    structuredBody.replace('"has_any_findings":false', '"has_any_findings":true'),
+    structuredBody.replace(headSha, "0".repeat(40)), `${structuredBody}\n${structuredBody}`,
+    structuredBody.replace('"code_review":', '"code_review":null,"duplicate":')]) {
+    assert.equal(isAcceptableCodexSummaryComment({ ...receiptComment, body }, headSha), false);
+  }
+});
+
+test("new requests cannot clear native failures or any unresolved Codex thread", () => {
+  const evidence = {
+    headSha, comments: [receiptComment], reviews: [], reviewComments: [], threads: [],
+    requestMarker: { sourceCommentCreatedAt: "2026-08-05T12:00:00Z", sourceCommentId: "10" }
+  };
+  assert.equal(evaluateCodexReviewEvidence(evidence), "pass");
+  assert.equal(evaluateCodexReviewEvidence({ ...evidence, reviews: [{
+    id: 21, user: codexUser, commit_id: headSha, state: "CHANGES_REQUESTED",
+    submitted_at: "2026-08-05T11:59:00Z"
+  }] }), "fail");
+  const thread = { isResolved: false, comments: { nodes: [{ author: codexUser, body: "P3 advisory" }] } };
+  assert.equal(evaluateCodexReviewEvidence({ ...evidence, threads: [thread] }), "fail");
+  assert.equal(evaluateCodexReviewEvidence({ ...evidence, requestMarker: null, threads: [thread] }), "fail");
+  assert.equal(evaluateCodexReviewEvidence({ ...evidence, threads: [{ ...thread, isResolved: true }] }), "pass");
+  assert.equal(evaluateCodexReviewEvidence({ ...evidence, headSha: "0".repeat(40) }), "pending");
+  assert.equal(evaluateCodexReviewEvidence({ ...evidence, comments: [{ ...receiptComment, body: structuredBody }] }), "pending");
+});
+
+test("rerun coalesces already evaluated evidence and aborts a push during active wait", async () => {
+  for (const active of [false, true]) {
+    const calls = [];
+    let reads = 0;
+    const request = async (_token, _repository, path, options = {}) => {
+      calls.push({ path, method: options.method || "GET" });
+      if (path.endsWith("/pulls/36")) return { head: { sha: reads > 1 ? "0".repeat(40) : headSha } };
+      reads++;
+      return { workflow_runs: [{ id: 42, event: "pull_request", head_sha: headSha,
+        status: active && reads === 1 ? "in_progress" : "completed",
+        run_started_at: "2026-08-05T12:02:00Z", created_at: "2026-08-05T12:00:00Z" }] };
+    };
+    const result = await rerunCodexReviewForHead({ token: "token", repository: "owner/repo", headSha,
+      prNumber: 36, evidenceUpdatedAt: active ? undefined : "2026-08-05T12:01:00Z", request, sleep: async () => {} });
+    assert.equal(result.action, active ? "stale" : "already_evaluated");
+    assert.equal(calls.some(({ method }) => method === "POST"), false);
+  }
+  let posts = 0;
+  const request = async (_token, _repo, path, options = {}) => {
+    if (options.method === "POST") { posts++; return null; }
+    if (path.endsWith("/pulls/36")) return { head: { sha: headSha } };
+    return { workflow_runs: [{ id: 42, event: "pull_request", head_sha: headSha, status: "completed",
+      run_started_at: "2026-08-05T12:01:00Z", created_at: "2026-08-05T12:00:00Z" }] };
+  };
+  await rerunCodexReviewForHead({ token: "token", repository: "owner/repo", headSha, prNumber: 36,
+    evidenceUpdatedAt: "2026-08-05T12:02:00Z", request });
+  assert.equal(posts, 1, "an edit after the previous attempt must get a new attempt");
+});
+
+// Run the actual entry point against API fixtures, including the last HEAD read.
+function runGate({ moveHead = false, requireHeadMatch = true, threadError = false } = {}) {
+  const script = `
+    let headReads = 0;
+    globalThis.fetch = async (url) => {
+      let data;
+      if (url.endsWith('/pulls/36')) data = { head: { sha: ${JSON.stringify(headSha)} } };
+      if (url.endsWith('/pulls/36') && ++headReads > 3 && ${moveHead}) data.head.sha = '0'.repeat(40);
+      if (url.includes('/issues/36/comments?')) data = ${JSON.stringify([
+        { id: 11, body: markerBody(), created_at: "2026-08-05T12:00:01Z", user: { login: "github-actions[bot]" } },
+        receiptComment
+      ])};
+      if (url.includes('/pulls/36/reviews?') || url.includes('/pulls/36/comments?')) data = [];
+      if (url.endsWith('/graphql')) data = ${threadError} ? { errors: [{ message: 'Denied' }] } :
+        { data: { repository: { pullRequest: { reviewThreads: { nodes: [], pageInfo: { hasNextPage: false } } } } } };
+      if (!data) throw new Error('Unexpected API: ' + url);
+      return { ok: true, json: async () => data };
+    };
+    await import(${JSON.stringify(pathToFileURL(resolve(repositoryRoot, "scripts/codex-review-gate.mjs")).href)});
+  `;
+  return spawnSync(process.execPath, ["--input-type=module", "-e", script], { encoding: "utf8", timeout: 10000,
+    env: { ...process.env, GITHUB_TOKEN: "fixture", GITHUB_REPOSITORY: "owner/repo", CODEX_REVIEW_PR_NUMBER: "36",
+      CODEX_REVIEW_HEAD_SHA: headSha, CODEX_REVIEW_REQUIRE_HEAD_MATCH: String(requireHeadMatch),
+      CODEX_REVIEW_WAIT_MS: "50", CODEX_REVIEW_POLL_MS: "5", CODEX_REVIEW_DEBOUNCE_MS: "0",
+      CODEX_REVIEW_BOOTSTRAP: "false", GITHUB_STEP_SUMMARY: "" } });
+}
+
+test("actual gate accepts receipt, fails closed on thread errors, and rejects a mid-evaluation push", () => {
+  const success = runGate();
+  assert.equal(success.status, 0, success.stderr);
+  assert.match(success.stdout, /Codex Review passed/);
+  const moved = runGate({ moveHead: true });
+  assert.equal(moved.status, 1, moved.stdout);
+  assert.match(moved.stderr, /head moved/);
+  const denied = runGate({ threadError: true });
+  assert.equal(denied.status, 1);
+  assert.match(denied.stderr, /complete review-thread evidence/);
+});
+
+test("actual rerun entry point uses an edited summary's update time and fresh API head", () => {
+  const directory = mkdtempSync(resolve(tmpdir(), "ks-review-event-"));
+  const eventPath = resolve(directory, "event.json");
+  try {
+    const event = { action: "edited", issue: { number: 36, pull_request: {} }, comment: {
+      ...receiptComment, body: structuredBody, created_at: "2026-08-04T12:00:00Z",
+      updated_at: "2026-08-05T12:02:00Z"
+    } };
+    writeFileSync(eventPath, JSON.stringify(event));
+    const scriptPath = resolve(repositoryRoot, "scripts/codex-review-rerun.mjs");
+    const script = `
+      process.argv[1] = ${JSON.stringify(scriptPath)};
+      globalThis.fetch = async (url, options) => {
+        let data;
+        if (url.endsWith('/pulls/36')) data = { head: { sha: ${JSON.stringify(headSha)} } };
+        if (url.includes('/actions/workflows/')) {
+          if (!url.includes(${JSON.stringify(headSha)})) throw new Error('Wrong head');
+          data = { workflow_runs: [{ id: 42, event: 'pull_request', head_sha: ${JSON.stringify(headSha)},
+            status: 'completed', run_started_at: '2026-08-05T12:01:00Z', created_at: '2026-08-05T12:00:00Z' }] };
+        }
+        if (url.endsWith('/actions/runs/42/rerun') && options.method === 'POST') { console.log('RERUN_POST'); data = {}; }
+        if (!data) throw new Error('Unexpected API: ' + url);
+        return { ok: true, text: async () => JSON.stringify(data) };
+      };
+      await import(${JSON.stringify(pathToFileURL(scriptPath).href)});
+    `;
+    const result = spawnSync(process.execPath, ["--input-type=module", "-e", script], {
+      encoding: "utf8", timeout: 10000, env: { ...process.env, GITHUB_TOKEN: "fixture",
+        GITHUB_REPOSITORY: "owner/repo", GITHUB_EVENT_PATH: eventPath }
+    });
+    assert.equal(result.status, 0, result.stderr);
+    assert.match(result.stdout, /RERUN_POST/);
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
 });

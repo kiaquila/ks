@@ -166,3 +166,21 @@ Every pull request also goes through the Codex review gate: the `Codex Review`
 check stays red until Codex has reviewed the current head. Request a review by
 commenting `@codex review <current-full-head-sha>` on the pull request — the
 trusted gate binds the request to that exact 40-character head SHA.
+
+The rerun workflow wakes on trusted Codex formal reviews and on created or
+edited legacy, receipt, and pull-request summary comments. The structured
+summary is a wakeup only: its state marker, a reaction, or a completion label
+cannot pass the gate. Passing evidence is a current-head formal review or an
+unambiguous no-findings receipt naming the reviewed commit (its native
+10-character prefix or full SHA). Existing P0–P2 failures and all unresolved
+Codex review threads remain blocking across new requests. Reruns wait for an
+active gate, coalesce already evaluated updates, and recheck the PR head before
+requeueing; validation also rechecks it after reading evidence.
+
+Gate and rerun scripts execute from the default branch. When updating their
+event routing, the PR's new routing cannot bootstrap itself. After the trusted
+request marker and real native receipt/formal review exist, rerun the existing
+`Codex Review` pull-request workflow from Actions (for example,
+`gh run rerun <run-id>`). This evaluates the real review with the installed
+default-branch gate. Never publish a replacement success or execute proposed
+gate scripts with elevated permissions to install a gate update.

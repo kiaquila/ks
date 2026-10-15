@@ -2,9 +2,7 @@
 
 import { appendFileSync } from "node:fs";
 import {
-  isAcceptableCodexSummaryComment,
-  isStrictlyAfterCodexReviewRequest,
-  latestCodexNativeReviewResult,
+  evaluateCodexReviewEvidence,
   latestCodexReviewRequestMarker,
   latestTrustedCodexReviewCommand
 } from "./codex-review-helpers.mjs";
@@ -26,11 +24,13 @@ if (!token || !repository || !prNumber) {
 
 const [owner, repo] = repository.split("/");
 
-async function request(path) {
+async function request(path, options = {}) {
   const response = await fetch(`https://api.github.com${path}`, {
+    ...options,
     headers: {
       authorization: `Bearer ${token}`,
       accept: "application/vnd.github+json",
+      "content-type": "application/json",
       "x-github-api-version": "2022-11-28"
     }
   });
@@ -38,6 +38,35 @@ async function request(path) {
     throw new Error(`${response.status} ${response.statusText}: ${await response.text()}`);
   }
   return response.json();
+}
+
+async function fetchReviewThreads() {
+  const threads = [];
+  let cursor = null;
+  do {
+    const result = await request("/graphql", {
+      method: "POST",
+      body: JSON.stringify({
+        query: `query($owner:String!,$repo:String!,$number:Int!,$cursor:String) {
+          repository(owner:$owner,name:$repo) { pullRequest(number:$number) {
+            reviewThreads(first:100,after:$cursor) {
+              nodes { isResolved comments(first:100) { nodes { author { login } } pageInfo { hasNextPage } } }
+              pageInfo { hasNextPage endCursor }
+            }
+          } }
+        }`,
+        variables: { owner, repo, number: Number(prNumber), cursor }
+      })
+    });
+    const connection = result.data?.repository?.pullRequest?.reviewThreads;
+    if (result.errors?.length || !connection ||
+        (connection.pageInfo.hasNextPage && !connection.pageInfo.endCursor) || connection.nodes.some((thread) =>
+      thread.comments.pageInfo.hasNextPage
+    )) throw new Error("Could not read complete review-thread evidence.");
+    threads.push(...connection.nodes);
+    cursor = connection.pageInfo.hasNextPage ? connection.pageInfo.endCursor : null;
+  } while (cursor);
+  return threads;
 }
 
 async function listPaginated(path) {
@@ -72,30 +101,13 @@ async function fetchEvidence() {
     timeline = await listPaginated(`/repos/${owner}/${repo}/issues/${prNumber}/timeline`);
     requestMarker = latestTrustedCodexReviewCommand(comments, timeline, headSha);
   }
-  if (!requestMarker) return "missing_marker";
-
-  const [reviews, reviewComments] = await Promise.all([
+  const [reviews, reviewComments, threads] = await Promise.all([
     listPaginated(`/repos/${owner}/${repo}/pulls/${prNumber}/reviews`),
-    listPaginated(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`)
+    listPaginated(`/repos/${owner}/${repo}/pulls/${prNumber}/comments`),
+    fetchReviewThreads()
   ]);
-  const reviewsAfterRequest = reviews.filter((review) =>
-    isStrictlyAfterCodexReviewRequest(review.submitted_at, requestMarker)
-  );
-  const nativeResult = latestCodexNativeReviewResult(
-    reviewsAfterRequest,
-    reviewComments,
-    headSha
-  );
-  if (nativeResult) return nativeResult;
-
-  return comments.some((comment) => isAcceptableCodexSummaryComment(
-    comment,
-    headSha,
-    requestMarker.sourceCommentCreatedAt || requestMarker.requestedAt || requestMarker.commentCreatedAt,
-    requestMarker.sourceCommentId
-  ))
-    ? "pass"
-    : "pending";
+  const result = evaluateCodexReviewEvidence({ comments, reviews, reviewComments, threads, headSha, requestMarker });
+  return await currentHeadMatches() ? result : "stale";
 }
 
 if (Number.isFinite(debounceMs) && debounceMs > 0) {
@@ -129,6 +141,10 @@ while (Date.now() - started <= maxWaitMs) {
 }
 
 if (outcome === "stale") {
+  if (requireHeadMatch) {
+    console.error(`Codex Review failed: PR head moved from ${headSha} during validation.`);
+    process.exit(1);
+  }
   console.log(`Codex Review skipped stale run for ${headSha}; PR head moved.`);
   process.exit(0);
 }
