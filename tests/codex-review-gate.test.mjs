@@ -488,7 +488,9 @@ test("observed receipt and legacy envelopes require one unambiguous positive ver
   ];
   for (const body of invalid) assert.equal(accept(body), false, body);
   assert.equal(accept(receiptBody, { user: { login: "fake-codex[bot]" } }), false);
-  assert.equal(accept(receiptBody, { updated_at: "2026-08-05T11:59:00Z" }), false);
+  assert.equal(accept(receiptBody, {
+    created_at: "2026-08-05T11:59:00Z", updated_at: "2026-08-05T12:02:00Z"
+  }), false, "editing an old receipt cannot manufacture evidence of a new review");
 });
 
 test("workflow and runtime route created/edited receipts and existing summary updates identically", () => {

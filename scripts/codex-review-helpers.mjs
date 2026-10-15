@@ -176,7 +176,7 @@ export function latestCodexNativeReviewResult(reviews = [], reviewComments = [],
 export function isAcceptableCodexSummaryComment(comment, headSha, requestedAt, sourceCommentId) {
   const body = String(comment?.body || "");
   const shortSha = String(headSha || "").slice(0, 10);
-  const commentCreatedAt = Date.parse(comment?.updated_at || comment?.created_at || "");
+  const commentCreatedAt = Date.parse(comment?.created_at || "");
   const requestTime = Date.parse(requestedAt || "");
   const ordering = commentCreatedAt === requestTime
     ? compareNumericIds(comment?.id, sourceCommentId) > 0
