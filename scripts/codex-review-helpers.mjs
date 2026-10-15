@@ -131,8 +131,8 @@ export function latestTrustedCodexReviewCommand(comments = [], timeline = [], he
 }
 
 export function extractCodexPriority(body) {
-  const match = String(body || "").match(/\bP([0-3])\b/i);
-  return match ? Number(match[1]) : null;
+  const priorities = [...String(body || "").matchAll(/\bP([0-3])\b/gi)].map((match) => Number(match[1]));
+  return priorities.length ? Math.min(...priorities) : null;
 }
 
 export function containsBlockingCodexSeverity(body) {
@@ -183,9 +183,44 @@ export function isAcceptableCodexSummaryComment(comment, headSha, requestedAt, s
     : commentCreatedAt > requestTime;
   const isAfterRequest = !requestedAt ||
     (Number.isFinite(commentCreatedAt) && Number.isFinite(requestTime) && ordering);
+  // Only the observed receipt envelope and optional GitHub help footer are
+  // allowed. In particular, a second verdict/SHA or state marker is ambiguous.
+  const receipt = body.startsWith("<!-- codex-review-receipt:v1 -->");
+  const text = receipt ? body.slice("<!-- codex-review-receipt:v1 -->".length).trimStart() : body;
+  const summary = text.replace(/\s*<details>\s*<summary>[^<]*About Codex in GitHub<\/summary>[\s\S]*<\/details>\s*$/, "");
+  const verdict = summary.match(/^Codex Review: Didn't find any major issues\.([^\r\n]*)\s+\*\*Reviewed commit:\*\*\s*`([a-f0-9]{10}(?:[a-f0-9]{30})?)`\s*$/i);
+  // Native receipts add varying encouragement after the fixed verdict. Keep
+  // that decoration compatible, but reject a second finding or review state.
+  const conflictingSuffix = /\b(?:but|however|found|findings?|issues?|problems?|pending|running|progress|incomplete|unresolved|failed|error|changes|blocked|regressions?)\b/i;
+  if (!/^[a-f0-9]{40}$/i.test(String(headSha || "")) ||
+      containsBlockingCodexSeverity(body) ||
+      (body.match(/<!--/g) || []).length !== (receipt ? 1 : 0) ||
+      (body.match(/Codex Review:/gi) || []).length !== 1 ||
+      (body.match(/\*\*Reviewed commit:\*\*/gi) || []).length !== 1 ||
+      !verdict || conflictingSuffix.test(verdict[1])) return false;
+  const reviewedSha = verdict[2];
   return isAfterRequest &&
     isTrustedCodexLogin(comment?.user?.login) &&
     /^Codex Review:\s*Didn't find any major issues\./im.test(body) &&
     Boolean(shortSha) &&
-    new RegExp(`\\*\\*Reviewed commit:\\*\\*\\s*\\\`${shortSha}\\\``, "i").test(body);
+    (normalize(reviewedSha) === normalize(shortSha) || normalize(reviewedSha) === normalize(headSha));
+}
+
+export function evaluateCodexReviewEvidence({ comments, reviews, reviewComments, threads, headSha, requestMarker }) {
+  // A new request cannot hide existing findings, including outdated threads.
+  if (threads.some((thread) => !thread.isResolved && thread.comments.nodes.some((comment) =>
+    isTrustedCodexLogin(comment.author?.login)
+  ))) return "fail";
+  if (latestCodexNativeReviewResult(reviews, reviewComments, headSha) === "fail") return "fail";
+  if (!requestMarker) return "missing_marker";
+  const recentReviews = reviews.filter((review) =>
+    isStrictlyAfterCodexReviewRequest(review.submitted_at, requestMarker)
+  );
+  const nativeResult = latestCodexNativeReviewResult(recentReviews, reviewComments, headSha);
+  if (nativeResult) return nativeResult;
+  return comments.some((comment) => isAcceptableCodexSummaryComment(
+    comment, headSha,
+    requestMarker.sourceCommentCreatedAt || requestMarker.requestedAt || requestMarker.commentCreatedAt,
+    requestMarker.sourceCommentId
+  )) ? "pass" : "pending";
 }
