@@ -56,11 +56,18 @@ Caveat (OFL, beside the other font licenses).
 | Instagram | [ks_aquila](https://www.instagram.com/ks_aquila) | client |
 | GitHub | [kiaquila](https://github.com/kiaquila) | client, 2026-09-11 |
 | Pinterest | [ks_aquila](https://www.pinterest.com/ks_aquila/) | client, 2026-08-27 |
-| AI channel (RU audience) | [@vibecodesh](https://t.me/vibecodesh) | client, 2026-08-27 |
-| Mentored AI-engineers community | Client-confirmed; no public link on the site | client, 2026-08-27; link retired 2026-09-11 |
-| Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert (leading a TG channel and an AI engineers community), aesthetics and authenticity; no links | client, 2026-08-28; links dropped 2026-09-11 |
-| In web development since | 2017 | client |
-| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11 |
+| AI channel and AI-engineers community | Not mentioned on the site: Russian-speaking audience, irrelevant to clients | client, 2026-10-19 |
+| Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert, aesthetics and authenticity; no links | client, 2026-08-28; links dropped 2026-09-11; TG channel and community bullets dropped 2026-10-19 |
+| In web development since | 2017 — technical writer at a large e-commerce company, then QA and JS test automation; web design with AI recently | client; background 2026-10-19 |
+| Site launched | August 2026 | client, 2026-10-19 |
+| Ideal client | Small businesses (pastry shop, coffee shop, beauty salon…) and solo entrepreneurs (consultants, therapists, tutors…) | client, 2026-10-19 |
+| Markets | Argentina and English-speaking countries, except those with heavy legal requirements (cookies etc.) | client, 2026-10-19 |
+| Working languages | English; Spanish for LatAm, through a translator | client, 2026-10-19 |
+| Primary search phrases | `small business website design`, `diseño web para emprendedores`; also `one page website design`, `diseño de páginas web para pequeños negocios`; niche: `coffee shop website design`, `website design for therapists`, `diseño web para cafeterías`, `diseño web para psicólogos` | client, 2026-10-19 |
+| Other profiles, awards, publications | None | client, 2026-10-19 |
+| Lab studies (Ember, Dream Board, Fathom) | Web art is one of the main directions: animation, screensavers, exhibitions | client, 2026-10-19 |
+| "Design: ks-design" credit on client sites | Already placed wherever the client allows it | client, 2026-10-19 |
+| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11; the new SEO and audience copy of 2026-10-19 awaits review and is listed in `localesAwaitingReview` |
 
 Every string lives in [`website/src/content.js`](./website/src/content.js).
 Nothing on the page is written anywhere else.
