@@ -526,7 +526,7 @@ test("the structured data states only what the page states", () => {
     assert.equal(byType.WebPage, undefined);
     assert.deepEqual(byType.Person.knowsAbout, copy.about.topics);
     assert.equal(byType.Person.areaServed, undefined, "areaServed belongs on the offers, not Person");
-    assert.deepEqual(byType.Person.knowsLanguage, identity.workLanguages);
+    assert.deepEqual(byType.Person.knowsLanguage, ["en"]);
     assert.equal(byType.WebSite.datePublished, identity.launched);
 
     const offers = byType.Person.makesOffer;
@@ -537,6 +537,16 @@ test("the structured data states only what the page states", () => {
       assert.equal(offer.itemOffered.name, item.name);
       assert.equal(offer.itemOffered.serviceType, item.name);
       assert.deepEqual(offer.areaServed, copy.about.areaServed);
+      assert.match(
+        offer.areaServed[1],
+        lang === "en" ? /excluding.*heavy legal requirements/ : /excepto.*requisitos legales exigentes/
+      );
+      const channel = offer.itemOffered.availableChannel;
+      assert.equal(channel["@type"], "ServiceChannel");
+      assert.equal(channel.serviceUrl, `https://ks-design.art${languages[lang].path}#contact`);
+      assert.deepEqual(channel.availableLanguage, ["en", "es"]);
+      assert.equal(channel.description, copy.about.workLanguages);
+      assert.match(channel.description, lang === "en" ? /translation support/ : /apoyo de traducción/);
       assert.deepEqual(offer.itemOffered.audience, {
         "@type": "BusinessAudience",
         audienceType: copy.about.audience
@@ -630,6 +640,7 @@ test("llms.txt carries the offer, the work and the contacts in plain words", asy
   assert.ok(llms.includes(links.email));
   for (const key of ["background", "method", "webArt"]) assert.ok(llms.includes(copy.about[key]), key);
   assert.ok(llms.includes(copy.about.workLanguages));
+  assert.match(llms, /excluding those with heavy legal requirements/);
 });
 
 /* --- structure and accessibility ---------------------------------------------- */

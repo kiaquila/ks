@@ -584,7 +584,7 @@ function structuredData(lang, copy, origin) {
       },
       brand: { "@type": "Brand", name: identity.brand },
       sameAs: profiles,
-      knowsLanguage: identity.workLanguages,
+      knowsLanguage: identity.knownLanguages,
       knowsAbout: copy.about.topics,
       makesOffer: copy.services.items.map((item) => ({
         "@type": "Offer",
@@ -594,6 +594,12 @@ function structuredData(lang, copy, origin) {
           name: item.name,
           serviceType: item.name,
           description: item.note,
+          availableChannel: {
+            "@type": "ServiceChannel",
+            serviceUrl: `${page}#contact`,
+            availableLanguage: identity.serviceLanguages,
+            description: copy.about.workLanguages
+          },
           audience: { "@type": "BusinessAudience", audienceType: copy.about.audience }
         },
         priceSpecification: priceSpecification(item.price)

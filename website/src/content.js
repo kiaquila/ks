@@ -69,7 +69,8 @@ export const identity = {
   locality: "Buenos Aires",
   country: "AR",
   launched: "2026-08",
-  workLanguages: ["en", "es"]
+  knownLanguages: ["en"],
+  serviceLanguages: ["en", "es"]
 };
 
 export const content = {
@@ -87,7 +88,10 @@ export const content = {
       audience: "Small businesses and solo entrepreneurs",
       audienceExamples:
         "pastry shops, coffee shops and beauty salons; consultants, therapists and tutors",
-      areaServed: ["Argentina", "English-speaking countries"],
+      areaServed: [
+        "Argentina",
+        "English-speaking countries, excluding those with heavy legal requirements"
+      ],
       workLanguages: "English; Spanish for Latin America with translation support",
       background: `In web development since ${CAREER_START_YEAR}: a technical writer at a large e-commerce company, then QA and JavaScript test automation. Now designs websites with AI.`,
       method:
@@ -338,7 +342,10 @@ export const content = {
       audience: "Pequeños negocios y emprendedores",
       audienceExamples:
         "pastelerías, cafeterías y salones de belleza; consultores, psicólogos y profesores particulares",
-      areaServed: ["Argentina", "Países de habla inglesa"],
+      areaServed: [
+        "Argentina",
+        "Países de habla inglesa, excepto aquellos con requisitos legales exigentes"
+      ],
       workLanguages: "Inglés; español para Latinoamérica con apoyo de traducción",
       background: `En desarrollo web desde ${CAREER_START_YEAR}: redactora técnica en una gran empresa de e-commerce, después QA y automatización de pruebas en JavaScript. Hoy diseña sitios web con IA.`,
       method:
