@@ -374,10 +374,9 @@ test("Contact is reachable at every width and duplicated at none", () => {
 
 test("English is the default and Spanish is the prefixed second locale", () => {
   assert.deepEqual(Object.keys(languages), ["en", "es"]);
-  /* The owner approved the Dream Board and Fathom cards on 2026-09-11. A new
-     or reworded translation goes back on this list — and into this
-     assertion — until she signs it off. */
-  assert.deepEqual(localesAwaitingReview, []);
+  /* The new Spanish SEO and audience copy has not been signed off yet;
+     the build must keep naming it until the owner reviews it. */
+  assert.deepEqual(localesAwaitingReview, ["es"]);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");
   assert.match(pages.en, /<html lang="en">/);
@@ -525,6 +524,10 @@ test("the structured data states only what the page states", () => {
     assert.equal(byType.ProfilePage.inLanguage, languages[lang].locale);
     assert.equal(byType.ProfilePage.mainEntity["@id"], byType.Person["@id"]);
     assert.equal(byType.WebPage, undefined);
+    assert.deepEqual(byType.Person.knowsAbout, copy.about.topics);
+    assert.equal(byType.Person.areaServed, undefined, "areaServed belongs on the offers, not Person");
+    assert.deepEqual(byType.Person.knowsLanguage, ["en"]);
+    assert.equal(byType.WebSite.datePublished, identity.launched);
 
     const offers = byType.Person.makesOffer;
     assert.equal(offers.length, copy.services.items.length);
@@ -532,6 +535,22 @@ test("the structured data states only what the page states", () => {
       const item = copy.services.items[index];
       const spec = offer.priceSpecification;
       assert.equal(offer.itemOffered.name, item.name);
+      assert.equal(offer.itemOffered.serviceType, item.name);
+      assert.deepEqual(offer.areaServed, copy.about.areaServed);
+      assert.match(
+        offer.areaServed[1],
+        lang === "en" ? /excluding.*heavy legal requirements/ : /excepto.*requisitos legales exigentes/
+      );
+      const channel = offer.itemOffered.availableChannel;
+      assert.equal(channel["@type"], "ServiceChannel");
+      assert.equal(channel.serviceUrl, `https://ks-design.art${languages[lang].path}#contact`);
+      assert.deepEqual(channel.availableLanguage, ["en", "es"]);
+      assert.equal(channel.description, copy.about.workLanguages);
+      assert.match(channel.description, lang === "en" ? /translation support/ : /apoyo de traducción/);
+      assert.deepEqual(offer.itemOffered.audience, {
+        "@type": "BusinessAudience",
+        audienceType: copy.about.audience
+      });
       assert.equal(spec.priceCurrency, "USD");
       assert.equal(spec.price ?? spec.minPrice, Number(item.price.replace(/\D/g, "")));
       assert.equal("minPrice" in spec, !item.price.startsWith("USD"), `${lang}: ${item.price}`);
@@ -619,6 +638,9 @@ test("llms.txt carries the offer, the work and the contacts in plain words", asy
   for (const item of copy.work.items) assert.ok(llms.includes(`](${item.href})`), item.name);
   for (const lang of LOCALES) assert.ok(llms.includes(`](https://ks-design.art${languages[lang].path})`));
   assert.ok(llms.includes(links.email));
+  for (const key of ["background", "method", "webArt"]) assert.ok(llms.includes(copy.about[key]), key);
+  assert.ok(llms.includes(copy.about.workLanguages));
+  assert.match(llms, /excluding those with heavy legal requirements/);
 });
 
 /* --- structure and accessibility ---------------------------------------------- */
