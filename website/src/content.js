@@ -66,19 +66,40 @@ export const identity = {
   name: "Kristina Aquila",
   brand: "ks-design",
   locality: "Buenos Aires",
-  country: "AR"
+  country: "AR",
+  launched: "2026-08",
+  workLanguages: ["en", "es"]
 };
 
 export const content = {
   en: {
     meta: {
-      title: "ks-design — Kristina Aquila, web designer",
+      title: "Small business website design — ks-design, Kristina Aquila",
       jobTitle: "Web designer",
       description:
-        "Landing pages and websites designed to pull people in and sell. I work with AI, so it lands faster and costs less. Based in Buenos Aires, working remotely.",
+        "Small business website design: landing pages and one-page websites for coffee shops, salons, therapists and consultants. Non-generic AI design from Buenos Aires.",
       ogTitle: "I'll design something that pulls people in",
       ogDescription:
         "Web design for landing pages and websites. A concept, two rounds of edits, a finished site."
+    },
+    about: {
+      audience: "Small businesses and solo entrepreneurs",
+      audienceExamples:
+        "pastry shops, coffee shops and beauty salons; consultants, therapists and tutors",
+      areaServed: ["Argentina", "English-speaking countries"],
+      workLanguages: "English and Spanish",
+      background: `In web development since ${CAREER_START_YEAR}: a technical writer at a large e-commerce company, then QA and JavaScript test automation. Now designs websites with AI.`,
+      method:
+        "Non-generic AI design: raw AI output is never shipped. Every design is built from references and her own creative direction, so it does not read as made by a neural network.",
+      webArt:
+        "Web art is a main direction: interactive studies that also work as animation, screensavers or exhibition pieces.",
+      topics: [
+        "Small business website design",
+        "One-page website design",
+        "Landing page design",
+        "AI web design",
+        "Web art"
+      ]
     },
     nav: {
       label: "Page sections",
@@ -105,10 +126,7 @@ export const content = {
       notes: [
         { text: "%YEARS%+ years in web development" },
         { text: "I do non-generic AI web design" },
-        {
-          text: "AI expert",
-          items: ["leading my TG channel (RU)", "leading an AI engineers community"]
-        },
+        { text: "AI expert" },
         { text: "I value aesthetics & authenticity" }
       ]
     },
@@ -144,7 +162,7 @@ export const content = {
         {
           slug: "ember",
           name: "Ember",
-          kind: "Lab study · interactive",
+          kind: "Web art · interactive",
           year: "2026",
           summary:
             "An interactive canvas study: a wireframe figure smolders under the cursor, burns down and reassembles to a synthesized tuning-fork tone.",
@@ -177,7 +195,7 @@ export const content = {
         {
           slug: "fathom",
           name: "Fathom",
-          kind: "Lab study · interactive",
+          kind: "Web art · interactive",
           year: "2026",
           summary:
             "An interactive school of shimmering goldfish drifting through painted water that changes with the visitor's local time of day.",
@@ -217,7 +235,7 @@ export const content = {
         {
           name: "Landing page",
           price: "USD 1,000",
-          note: "A single-page site, done end to end.",
+          note: "A single-page site for a small business or a solo practice, done end to end.",
           features: [
             "Up to 8 sections on one page",
             "Structure and light editing of your copy",
@@ -307,13 +325,32 @@ export const content = {
 
   es: {
     meta: {
-      title: "ks-design — Kristina Aquila, diseñadora web",
+      title: "Diseño web para emprendedores — ks-design, Kristina Aquila",
       jobTitle: "Diseñadora web",
       description:
-        "Diseño de landings y sitios web que atrapan y venden. Trabajo con IA, así que sale más rápido y más barato. Estoy en Buenos Aires y trabajo en remoto.",
+        "Diseño web para emprendedores y pequeños negocios: landings y sitios de una página para cafeterías, salones, psicólogos y consultores. Diseño con IA, nada genérico.",
       ogTitle: "Te hago un diseño que atrapa",
       ogDescription:
         "Diseño web para landings y sitios. Un concepto, dos rondas de cambios, un sitio terminado."
+    },
+    about: {
+      audience: "Pequeños negocios y emprendedores",
+      audienceExamples:
+        "pastelerías, cafeterías y salones de belleza; consultores, psicólogos y profesores particulares",
+      areaServed: ["Argentina", "Países de habla inglesa"],
+      workLanguages: "Inglés y español",
+      background: `En desarrollo web desde ${CAREER_START_YEAR}: redactora técnica en una gran empresa de e-commerce, después QA y automatización de pruebas en JavaScript. Hoy diseña sitios web con IA.`,
+      method:
+        "Diseño con IA, nada genérico: nunca publica lo que la IA da en crudo. Cada diseño parte de referencias y de su propia dirección creativa, para que no parezca hecho por una red neuronal.",
+      webArt:
+        "El arte web es una de sus líneas principales: estudios interactivos que también sirven como animación, salvapantallas o pieza de exposición.",
+      topics: [
+        "Diseño web para emprendedores",
+        "Diseño de páginas web para pequeños negocios",
+        "Diseño de landings",
+        "Diseño web con IA",
+        "Arte web"
+      ]
     },
     nav: {
       label: "Secciones de la página",
@@ -333,10 +370,7 @@ export const content = {
       notes: [
         { text: "%YEARS%+ años en desarrollo web" },
         { text: "hago diseño web con IA, nada genérico" },
-        {
-          text: "experta en IA",
-          items: ["lidero mi canal de TG (RU)", "lidero una comunidad de ingenieros de IA"]
-        },
+        { text: "experta en IA" },
         { text: "valoro la estética y la autenticidad" }
       ]
     },
@@ -372,7 +406,7 @@ export const content = {
         {
           slug: "ember",
           name: "Ember",
-          kind: "Estudio de laboratorio · interactivo",
+          kind: "Arte web · interactivo",
           year: "2026",
           summary:
             "Un estudio interactivo en canvas: una figura de alambre arde bajo el cursor, se consume y se rearma al tono de un diapasón sintetizado.",
@@ -405,7 +439,7 @@ export const content = {
         {
           slug: "fathom",
           name: "Fathom",
-          kind: "Estudio de laboratorio · interactivo",
+          kind: "Arte web · interactivo",
           year: "2026",
           summary:
             "Un cardumen interactivo de peces dorados brillantes que deriva por agua pintada y cambia según la hora local de quien lo visita.",
@@ -445,7 +479,7 @@ export const content = {
         {
           name: "Landing",
           price: "USD 1.000",
-          note: "Un sitio de una página, de punta a punta.",
+          note: "Un sitio de una página para un pequeño negocio o un emprendimiento, de punta a punta.",
           features: [
             "Hasta 8 secciones en una sola página",
             "Estructura y edición ligera de tus textos",

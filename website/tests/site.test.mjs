@@ -525,6 +525,10 @@ test("the structured data states only what the page states", () => {
     assert.equal(byType.ProfilePage.inLanguage, languages[lang].locale);
     assert.equal(byType.ProfilePage.mainEntity["@id"], byType.Person["@id"]);
     assert.equal(byType.WebPage, undefined);
+    assert.deepEqual(byType.Person.knowsAbout, copy.about.topics);
+    assert.deepEqual(byType.Person.areaServed, copy.about.areaServed);
+    assert.deepEqual(byType.Person.knowsLanguage, identity.workLanguages);
+    assert.equal(byType.WebSite.datePublished, identity.launched);
 
     const offers = byType.Person.makesOffer;
     assert.equal(offers.length, copy.services.items.length);
@@ -619,6 +623,7 @@ test("llms.txt carries the offer, the work and the contacts in plain words", asy
   for (const item of copy.work.items) assert.ok(llms.includes(`](${item.href})`), item.name);
   for (const lang of LOCALES) assert.ok(llms.includes(`](https://ks-design.art${languages[lang].path})`));
   assert.ok(llms.includes(links.email));
+  for (const key of ["background", "method", "webArt"]) assert.ok(llms.includes(copy.about[key]), key);
 });
 
 /* --- structure and accessibility ---------------------------------------------- */

@@ -552,6 +552,7 @@ function structuredData(lang, copy, origin) {
       url: `${origin}/`,
       name: identity.brand,
       inLanguage: Object.values(languages).map((config) => config.locale),
+      datePublished: identity.launched,
       publisher: person
     },
     {
@@ -582,9 +583,19 @@ function structuredData(lang, copy, origin) {
       },
       brand: { "@type": "Brand", name: identity.brand },
       sameAs: profiles,
+      knowsLanguage: identity.workLanguages,
+      knowsAbout: copy.about.topics,
+      areaServed: copy.about.areaServed,
       makesOffer: copy.services.items.map((item) => ({
         "@type": "Offer",
-        itemOffered: { "@type": "Service", name: item.name, description: item.note },
+        areaServed: copy.about.areaServed,
+        itemOffered: {
+          "@type": "Service",
+          name: item.name,
+          serviceType: copy.about.topics[0],
+          description: item.note,
+          audience: { "@type": "BusinessAudience", audienceType: copy.about.audience }
+        },
         priceSpecification: priceSpecification(item.price)
       }))
     },
@@ -643,6 +654,17 @@ export function renderLlms(origin) {
     `> ${copy.meta.description}`,
     "",
     ...about,
+    "",
+    "## About",
+    "",
+    `- Clients: ${copy.about.audience.toLowerCase()} — ${copy.about.audienceExamples}.`,
+    `- Markets: ${copy.about.areaServed.join(" and ")}. Works remotely from ${copy.contact.location}.`,
+    `- Languages: ${copy.about.workLanguages}.`,
+    `- ${copy.about.background}`,
+    `- ${copy.about.method}`,
+    `- ${copy.about.webArt}`,
+    `- Focus: ${copy.about.topics.join("; ")}.`,
+    `- Site online since ${identity.launched}.`,
     "",
     "## Pages",
     "",
