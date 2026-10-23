@@ -8,7 +8,7 @@ English is the default and is served at
 [ks-design.art](https://ks-design.art); Argentinian Spanish is at `/es/`. The
 old `/en/` prefix redirects permanently to the root.
 
-The page is a **deck**: six sections, each one screen tall on desktop,
+The page is a **deck**: six published sections, each at least one screen tall on desktop,
 scrolling with snap points. On phones it is an ordinary flowing document. Each
 section is opened by its heading and nothing else — the label above it and the
 lead paragraph under it repeated what the heading already said.
@@ -20,10 +20,14 @@ lead paragraph under it repeated what the heading already said.
 2. Selected projects — a filmstrip of screenshots at their own 16:9 proportion
 3. Process — `01`–`04`
 4. Services — three package cards
-5. Kind Words
+5. FAQ — ten native disclosures, two columns on desktop and one on mobile;
+   one answer open at a time, with the heading anchored at the top; all
+   answers are present in HTML and work without JavaScript
 6. Get in touch — a hand-written line that writes itself, then a full-width
    grey band with the e-mail address spelled out and LinkedIn, Telegram,
    WhatsApp, Instagram and GitHub, then the footer directly under it
+
+Kind Words remains unpublished until real client quotes are supplied.
 
 The header lists Process before Portfolio (the owner reads the menu
 offer-first), while the slides keep the portfolio first. The slide's id and
@@ -67,7 +71,8 @@ Caveat (OFL, beside the other font licenses).
 | Other profiles, awards, publications | None | client, 2026-10-19 |
 | Lab studies (Ember, Dream Board, Fathom) | Web art is one of the main directions: animation, screensavers, exhibitions | client, 2026-10-19 |
 | "Design: ks-design" credit on client sites | Already placed wherever the client allows it | client, 2026-10-19 |
-| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11; the new SEO and audience copy of 2026-10-19 awaits review and is listed in `localesAwaitingReview` |
+| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11; the SEO and audience copy of 2026-10-19 awaits review; the FAQ translation was client-approved on 2026-10-23 |
+| English FAQ translation | `/` FAQ copy | adapted from the owner-confirmed Russian FAQ; both FAQ translations and their layout were client-approved on 2026-10-23 |
 
 Every string lives in [`website/src/content.js`](./website/src/content.js).
 Nothing on the page is written anywhere else.
@@ -81,6 +86,14 @@ Quoted by the client, in US dollars:
 | Landing page | 1 000 |
 | Website, 5+ pages | from 3 000 |
 | Illustrations | from 75 per image |
+
+FAQ terms confirmed by the owner on 2026-10-23: landing pages take 2–3 weeks
+and five-page sites 4–6 weeks with materials ready. One alternative concept
+is included, followed by two rounds of revisions to the agreed concept.
+Extra revisions and post-launch updates cost USD 50/hour, with scope and cost
+agreed beforehand. Updates are handled by the designer; no editing dashboard
+is offered. Basic search preparation is included; ongoing SEO is not. Web art
+is quoted individually, with delivery format and usage rights agreed per project.
 
 Menu build and dish photo retouching were on this list and have been taken off
 it. The Chaijaná case study still says a menu and its dish photography were

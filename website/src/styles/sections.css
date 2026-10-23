@@ -775,6 +775,104 @@
   }
 }
 
+/* --- FAQ: native disclosures remain usable without scripts ------------------ */
+.faq.slide {
+  /* Anchor the heading above the answers instead of recentering the entire
+     block whenever a disclosure changes its height. */
+  align-content: start;
+  overflow-anchor: none;
+  padding-block: calc(var(--header-h) + var(--space-lg)) var(--space-lg);
+}
+
+.faq-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 clamp(2rem, 5vw, 4.5rem);
+  align-items: start;
+}
+
+.faq-item {
+  border-bottom: 1px solid var(--line);
+}
+
+.faq-item:first-child {
+  border-top: 1px solid var(--line);
+}
+
+.faq-item summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  min-height: 2.75rem;
+  padding-block: 1.125rem;
+  cursor: pointer;
+  list-style: none;
+  font-size: var(--step-body);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.faq-item summary::-webkit-details-marker {
+  display: none;
+}
+
+.faq-indicator {
+  position: relative;
+  flex: 0 0 0.875rem;
+  height: 0.875rem;
+}
+
+.faq-indicator::before,
+.faq-indicator::after {
+  content: "";
+  position: absolute;
+  inset: calc(50% - 0.5px) 0 auto;
+  height: 1px;
+  background: currentColor;
+}
+
+.faq-indicator::after {
+  transform: rotate(90deg);
+}
+
+.faq-item[open] .faq-indicator::after {
+  display: none;
+}
+
+.faq-answer {
+  padding: 0 1.875rem var(--space-md) 0;
+  color: var(--ink-soft);
+  font-size: var(--step-small);
+  line-height: 1.8;
+}
+
+.faq-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-md);
+  margin-top: var(--space-xs);
+}
+
+.faq-links a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.75rem;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+@media (max-width: 899px) {
+  .faq-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .faq-column + .faq-column .faq-item:first-child {
+    border-top: 0;
+  }
+}
+
 /* --- contact ----------------------------------------------------------------- */
 
 /* Last slide: the band and the footer are one block closing the page at its
