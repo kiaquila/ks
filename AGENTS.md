@@ -201,6 +201,13 @@ Below that it is an ordinary flowing document.
   into the markup. A visitor without JavaScript, or with reduced motion, gets
   every slide fully visible.
 
+## FAQ
+
+- Keep the FAQ aligned to the top of its slide, with `overflow-anchor: none`,
+  so opening an answer does not recenter the heading or shift the viewport.
+- Use native `<details>` with the shared `name="faq"` across both columns:
+  only one answer may be open at a time, including without JavaScript.
+
 ## The contact slide
 
 Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
@@ -257,8 +264,8 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   its content is marked `todo`; see README.
 - A translation the owner has not signed off on is not final copy either. List
   such a locale in `localesAwaitingReview` and the build names it on every run,
-  the way it names placeholder sections. The owner approved the current `es`
-  copy on 2026-08-17, so it is not on that list.
+  the way it names placeholder sections. Track approval history in README
+  and `content.js`, rather than treating a past locale approval as permanent.
 - The years of experience are **derived** from `CAREER_START_YEAR`, never typed.
   Copy uses the `%YEARS%` placeholder. A test fails if the literal is hardcoded.
 - Approved external destinations are listed in `links`. A test rejects any other

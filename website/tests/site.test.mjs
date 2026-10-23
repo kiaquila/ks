@@ -276,7 +276,30 @@ test("the hero annotations carry claims only; the feeds live in the contact band
     assert.doesNotMatch(html, /id="why"|href="#why"/);
     const nav = html.match(/<nav class="site-nav"[\s\S]*?<\/nav>/)[0];
     const anchors = [...nav.matchAll(/href="#([a-z-]+)"/g)].map((m) => m[1]);
-    assert.deepEqual(anchors, ["process", "work", "services", "contact"]);
+    assert.deepEqual(anchors, ["process", "work", "services", "faq", "contact"]);
+  }
+});
+
+test("the complete FAQ is readable in static HTML in both languages", () => {
+  for (const lang of LOCALES) {
+    const html = pages[lang];
+    const section = html.match(/<section[^>]*id="faq"[\s\S]*?<\/section>/)?.[0];
+    assert.ok(section, `${lang}: FAQ section is missing`);
+    assert.equal((section.match(/<details\b/g) ?? []).length, 10);
+    assert.equal((section.match(/<details\b[^>]*name="faq"/g) ?? []).length, 10);
+    assert.equal((section.match(/<summary>/g) ?? []).length, 10);
+    const text = stripTags(section);
+    for (const item of content[lang].faq.items) {
+      assert.ok(text.includes(item.question), `${lang}: missing question ${item.id}`);
+      assert.ok(text.includes(item.answer), `${lang}: missing answer ${item.id}`);
+    }
+    assert.match(text, /USD 50/);
+    assert.doesNotMatch(section, /Google Search Console|role="button"|aria-expanded=/);
+    assert.ok(html.indexOf('id="services"') < html.indexOf('id="faq"'));
+    assert.ok(html.indexOf('id="faq"') < html.indexOf('id="contact"'));
+    for (const href of [links.work.ember, links.work.fathom]) {
+      assert.ok(section.includes(`href="${href}"`));
+    }
   }
 });
 
@@ -374,8 +397,8 @@ test("Contact is reachable at every width and duplicated at none", () => {
 
 test("English is the default and Spanish is the prefixed second locale", () => {
   assert.deepEqual(Object.keys(languages), ["en", "es"]);
-  /* The new Spanish SEO and audience copy has not been signed off yet;
-     the build must keep naming it until the owner reviews it. */
+  /* The FAQ translations are owner-approved; the earlier Spanish SEO copy
+     still needs review. Keep its existing build warning until that review. */
   assert.deepEqual(localesAwaitingReview, ["es"]);
   assert.equal(languages.en.path, "/");
   assert.equal(languages.es.path, "/es/");

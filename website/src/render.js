@@ -109,7 +109,7 @@ function header(lang, copy, anchorBase = "") {
      appears twice. */
   /* Process is listed before Work although the slides run the other way —
      the client reads the menu as offer-first (client decision, 2026-08-28). */
-  const navItems = ["process", "work", "services", "contact"]
+  const navItems = ["process", "work", "services", "faq", "contact"]
     .map(
       (key) =>
         `<li${key === "contact" ? ' class="nav-contact"' : ""}><a href="${anchorBase}#${key}">${escapeHtml(copy.nav[key])}</a></li>`
@@ -336,6 +336,30 @@ function services(copy) {
       <div class="service-notes">
         <p class="currency-note">${escapeHtml(copy.services.currencyNote)}</p>
         <p class="hosting-note">${escapeHtml(copy.services.hostingNote)}</p>
+      </div>
+    </div>
+  </section>`;
+}
+
+function faq(copy) {
+  const column = (items) => `<div class="faq-column">${items.map((item) => `
+          <details class="faq-item" name="faq" id="faq-${escapeHtml(item.id)}">
+            <summary><span>${escapeHtml(item.question)}</span><span class="faq-indicator" aria-hidden="true"></span></summary>
+            <div class="faq-answer">
+              <p>${escapeHtml(item.answer)}</p>${item.references?.length ? `
+              <p class="faq-links">${item.references.map((reference) => `<a href="${escapeHtml(reference.href)}">${escapeHtml(reference.label)}</a>`).join("")}</p>` : ""}
+            </div>
+          </details>`).join("")}
+        </div>`;
+  const middle = Math.ceil(copy.faq.items.length / 2);
+  return `<section class="slide section faq" id="faq" aria-labelledby="faq-title">
+    <div class="container">
+      <div class="section-head">
+        <h2 id="faq-title">${escapeHtml(copy.faq.title)}</h2>
+      </div>
+      <div class="faq-grid">
+        ${column(copy.faq.items.slice(0, middle))}
+        ${column(copy.faq.items.slice(middle))}
       </div>
     </div>
   </section>`;
@@ -692,6 +716,9 @@ export function renderLlms(origin) {
     "",
     ...work,
     "",
+    `## ${copy.faq.title}`,
+    "",
+    ...copy.faq.items.flatMap((item) => [`### ${item.question}`, "", item.answer, ""]),
     `## ${copy.contact.band.title}`,
     "",
     ...contacts,
@@ -709,6 +736,7 @@ export function renderPage(lang, origin, assetVersions = {}) {
     ${work(copy)}
     ${process(copy)}
     ${services(copy)}
+    ${faq(copy)}
     ${kindWords(copy)}
     ${contact(copy)}
   </main>`;
