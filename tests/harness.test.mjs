@@ -449,3 +449,12 @@ test("configuration paths cannot escape the repository", () => {
     assert.match(result.stderr, /must stay inside the repository/);
   });
 });
+
+for (const module of ["codex-native-receipt.mjs", "codex-review-help.mjs"]) test(`rejects deletion of gate dependency ${module}`, () => {
+  withFixture({}, (root) => {
+    rmSync(join(root, "scripts", module));
+    const result = run(root, "check-repository.mjs");
+    assert.notEqual(result.status, 0);
+    assert.ok(result.stderr.includes(module), result.stderr);
+  });
+});

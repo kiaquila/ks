@@ -1,3 +1,4 @@
+import { isStrictNativeCodexReceipt } from "./codex-native-receipt.mjs";
 const TRUSTED_ASSOCIATIONS = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
 const CODEX_REVIEW_LOGIN = "chatgpt-codex-connector[bot]";
 
@@ -174,36 +175,12 @@ export function latestCodexNativeReviewResult(reviews = [], reviewComments = [],
 }
 
 export function isAcceptableCodexSummaryComment(comment, headSha, requestedAt, sourceCommentId) {
-  const body = String(comment?.body || "");
-  const shortSha = String(headSha || "").slice(0, 10);
-  const commentCreatedAt = Date.parse(comment?.created_at || "");
-  const requestTime = Date.parse(requestedAt || "");
-  const ordering = commentCreatedAt === requestTime
-    ? compareNumericIds(comment?.id, sourceCommentId) > 0
-    : commentCreatedAt > requestTime;
-  const isAfterRequest = !requestedAt ||
-    (Number.isFinite(commentCreatedAt) && Number.isFinite(requestTime) && ordering);
-  // Only the observed receipt envelope and optional GitHub help footer are
-  // allowed. In particular, a second verdict/SHA or state marker is ambiguous.
-  const receipt = body.startsWith("<!-- codex-review-receipt:v1 -->");
-  const text = receipt ? body.slice("<!-- codex-review-receipt:v1 -->".length).trimStart() : body;
-  const summary = text.replace(/\s*<details>\s*<summary>[^<]*About Codex in GitHub<\/summary>[\s\S]*<\/details>\s*$/, "");
-  const verdict = summary.match(/^Codex Review: Didn't find any major issues\.([^\r\n]*)\s+\*\*Reviewed commit:\*\*\s*`([a-f0-9]{10}(?:[a-f0-9]{30})?)`\s*$/i);
-  // Native receipts add varying encouragement after the fixed verdict. Keep
-  // that decoration compatible, but reject a second finding or review state.
-  const conflictingSuffix = /\b(?:but|however|found|findings?|issues?|problems?|pending|running|progress|incomplete|unresolved|failed|error|changes|blocked|regressions?)\b/i;
-  if (!/^[a-f0-9]{40}$/i.test(String(headSha || "")) ||
-      containsBlockingCodexSeverity(body) ||
-      (body.match(/<!--/g) || []).length !== (receipt ? 1 : 0) ||
-      (body.match(/Codex Review:/gi) || []).length !== 1 ||
-      (body.match(/\*\*Reviewed commit:\*\*/gi) || []).length !== 1 ||
-      !verdict || conflictingSuffix.test(verdict[1])) return false;
-  const reviewedSha = verdict[2];
-  return isAfterRequest &&
-    isTrustedCodexLogin(comment?.user?.login) &&
-    /^Codex Review:\s*Didn't find any major issues\./im.test(body) &&
-    Boolean(shortSha) &&
-    (normalize(reviewedSha) === normalize(shortSha) || normalize(reviewedSha) === normalize(headSha));
+  if (!isTrustedCodexLogin(comment?.user?.login) ||
+      !isStrictNativeCodexReceipt(comment?.body, headSha)) return false;
+  const created = Date.parse(comment?.created_at || "");
+  const requested = Date.parse(requestedAt || "");
+  return !requestedAt || (Number.isFinite(created) && Number.isFinite(requested) &&
+    (created > requested || (created === requested && compareNumericIds(comment?.id, sourceCommentId) > 0)));
 }
 
 export function evaluateCodexReviewEvidence({ comments, reviews, reviewComments, threads, headSha, requestMarker }) {

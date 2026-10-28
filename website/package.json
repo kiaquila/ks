@@ -2,7 +2,7 @@
   "name": "ks-website",
   "version": "1.0.0",
   "private": true,
-  "description": "Kristina Aquila — bilingual web design portfolio landing",
+  "description": "Kristina Aquila \u2014 bilingual web design portfolio landing",
   "engines": {
     "node": ">=22.18.0"
   },
@@ -21,6 +21,7 @@
     "wrangler": "4.149.0"
   },
   "overrides": {
-    "sharp": "0.35.5"
+    "sharp": "0.35.5",
+    "undici": "7.30.1"
   }
 }
