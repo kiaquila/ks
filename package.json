@@ -9,7 +9,7 @@
     "check:delivery": "node scripts/check-delivery-speed.mjs",
     "delivery:baseline": "node scripts/check-delivery-speed.mjs --update",
     "delivery:live": "node scripts/check-delivery-speed.mjs --url https://ks-design.art",
-    "test:harness": "node --test tests/harness.test.mjs tests/codex-review-gate.test.mjs",
+    "test:harness": "node --test tests/harness.test.mjs tests/codex-review-gate.test.mjs tests/codex-receipt-boundaries.test.mjs",
     "preflight": "npm run check:repository && npm run test:harness && npm run check:project && npm run check:delivery"
   },
   "engines": {
