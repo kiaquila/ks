@@ -15,3 +15,7 @@ The native request/rerun path keeps its current permissions and trusted code.
 `tests/codex-receipt-boundaries.test.mjs` exercises all 19 catalogued closings plus
 observed emoji, wrong heads/authors/times and ambiguous or contradictory bodies.
 Unknown future formats fail closed and require a recorded fixture and review.
+
+The required OSV scan also covers development tooling. Wrangler currently pins
+Undici 7.29.1 transitively; an explicit 7.30.1 override removes the reported
+security advisories without suppressing scanner findings or excluding dev tools.
