@@ -27,6 +27,8 @@ for (const path of [
   ".github/workflows/codex-review-rerun.yml",
   "scripts/codex-review-gate.mjs",
   "scripts/codex-review-helpers.mjs",
+  "scripts/codex-native-receipt.mjs",
+  "scripts/codex-review-help.mjs",
   "scripts/codex-review-request.mjs",
   "scripts/codex-review-rerun.mjs",
   "scripts/publish-codex-review-check.mjs",
