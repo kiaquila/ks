@@ -9,7 +9,7 @@
    desktop, and the deck scrolls with snap points. Everything still reads as a
    plain document on phones and without CSS. */
 
-import { content, experienceYears, identity, languages, links, ogImages } from "./content.js";
+import { content, experienceYears, faqTopics, identity, languages, links, ogImages } from "./content.js";
 
 const escapeHtml = (value = "") =>
   String(value)
@@ -590,6 +590,7 @@ function structuredData(lang, copy, origin) {
       isPartOf: website,
       about: person,
       mainEntity: person,
+      hasPart: { "@id": `${page}#faq` },
       primaryImageOfPage: `${origin}/assets/${ogImages[lang]}`
     },
     {
@@ -615,6 +616,7 @@ function structuredData(lang, copy, origin) {
         areaServed: copy.about.areaServed,
         itemOffered: {
           "@type": "Service",
+          "@id": `${page}#service-${item.id}`,
           name: item.name,
           serviceType: item.name,
           description: item.note,
@@ -638,12 +640,34 @@ function structuredData(lang, copy, origin) {
         position: index + 1,
         item: {
           "@type": "CreativeWork",
+          "@id": `${page}#work-${item.image}`,
           name: item.name,
           description: item.summary,
           url: item.href,
           image: `${origin}/assets/work/${item.image}-1200.jpg?v=2`,
           dateCreated: item.year,
           creator: person
+        }
+      }))
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${page}#faq`,
+      url: `${page}#faq`,
+      name: copy.faq.title,
+      inLanguage: languages[lang].locale,
+      isPartOf: { "@id": `${page}#webpage` },
+      author: person,
+      mainEntity: copy.faq.items.map((item) => ({
+        "@type": "Question",
+        "@id": `${page}#faq-${item.id}`,
+        url: `${page}#faq-${item.id}`,
+        name: item.question,
+        about: faqTopics[item.id].map((topic) => (topic === "person" ? person : { "@id": `${page}#${topic}` })),
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+          author: person
         }
       }))
     }
@@ -716,9 +740,19 @@ export function renderLlms(origin) {
     "",
     ...work,
     "",
-    `## ${copy.faq.title}`,
-    "",
-    ...copy.faq.items.flatMap((item) => [`### ${item.question}`, "", item.answer, ""]),
+    ...Object.keys(languages).flatMap((code) => [
+      `## ${content[code].faq.title}`,
+      "",
+      ...content[code].faq.items.flatMap((item) => [
+        `### [${item.question}](${origin}${languages[code].path}#faq-${item.id})`,
+        "",
+        item.answer,
+        ...(item.references?.length
+          ? ["", item.references.map((reference) => `[${reference.label}](${reference.href})`).join(", ")]
+          : []),
+        ""
+      ])
+    ]),
     `## ${copy.contact.band.title}`,
     "",
     ...contacts,

@@ -64,6 +64,19 @@ export const localesAwaitingReview = ["es"];
  *  named here so those three cannot disagree. */
 export const ogImages = { en: "og-en.png", es: "og-es.png" };
 
+export const faqTopics = {
+  clients: ["person"],
+  "website-price": ["service-landing", "service-website"],
+  timeline: ["service-landing", "service-website"],
+  content: ["service-landing"],
+  "ai-design": ["person"],
+  revisions: ["service-landing", "service-website"],
+  editing: ["service-landing", "service-website"],
+  seo: ["service-landing", "service-website"],
+  "art-examples": ["work-ember", "work-fathom"],
+  "art-commission": ["person"]
+};
+
 export const identity = {
   name: "Kristina Aquila",
   brand: "ks-design",
@@ -240,6 +253,7 @@ export const content = {
         "* Domain registration, paid fonts and images, plugins, and subscriptions are paid separately. Hosting can be arranged for an additional fee.",
       items: [
         {
+          id: "landing",
           name: "Landing page",
           price: "USD 1,000",
           note: "A single-page site for a small business or a solo practice, done end to end.",
@@ -252,6 +266,7 @@ export const content = {
           ]
         },
         {
+          id: "website",
           name: "Website, 5+ pages",
           price: "from USD 3,000",
           note: "A multi-page site with one consistent structure.",
@@ -264,6 +279,7 @@ export const content = {
           ]
         },
         {
+          id: "illustrations",
           name: "Illustrations",
           price: "from USD 75",
           note: "Illustration work, priced per image.",
@@ -545,6 +561,7 @@ export const content = {
         "* El registro del dominio, las tipografías e imágenes pagas, los plugins y las suscripciones se pagan por separado. Podemos acordar el hosting por un costo adicional.",
       items: [
         {
+          id: "landing",
           name: "Landing",
           price: "USD 1.000",
           note: "Un sitio de una página para un pequeño negocio o un emprendimiento, de punta a punta.",
@@ -557,6 +574,7 @@ export const content = {
           ]
         },
         {
+          id: "website",
           name: "Sitio de 5+ páginas",
           price: "desde USD 3.000",
           note: "Un sitio de varias páginas con una estructura consistente.",
@@ -569,6 +587,7 @@ export const content = {
           ]
         },
         {
+          id: "illustrations",
           name: "Ilustraciones",
           price: "desde USD 75",
           note: "Creación de ilustraciones, precio por imagen.",
