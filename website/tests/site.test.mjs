@@ -13,6 +13,7 @@ import {
   CAREER_START_YEAR,
   content,
   experienceYears,
+  faqTopics,
   identity,
   languages,
   links,
@@ -602,6 +603,16 @@ test("the structured data states only what the page states", () => {
       assert.ok(pages[lang].includes(`id="${question.url.split("#")[1]}"`), `${lang}: ${question.url} has no target`);
       assert.ok(visible.includes(question.name) && visible.includes(question.acceptedAnswer.text), `${lang}: ${question.url} is not on the page`);
     }
+    assert.deepEqual(Object.keys(faqTopics).sort(), copy.faq.items.map((item) => item.id).sort());
+    const ids = new Set([...JSON.stringify(graph).matchAll(/"@id":"([^"]+)","@type"|"@type":"[^"]+","@id":"([^"]+)"/g)].map((match) => match[1] ?? match[2]));
+    for (const question of faq.mainEntity) {
+      assert.ok(question.about.length > 0, `${lang}: ${question.url} is about nothing`);
+      for (const { "@id": id } of question.about) assert.ok(ids.has(id), `${lang}: ${question.url} points at a missing node ${id}`);
+    }
+    assert.deepEqual(
+      faq.mainEntity.find((question) => question.url.endsWith("#faq-art-examples")).about.map((node) => node["@id"]),
+      [`${page}#work-ember`, `${page}#work-fathom`]
+    );
 
     for (const [, url] of JSON.stringify(graph).matchAll(/"(https?:\/\/[^"]+)"/g)) {
       const { origin } = new URL(url);

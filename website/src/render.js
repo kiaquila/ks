@@ -9,7 +9,7 @@
    desktop, and the deck scrolls with snap points. Everything still reads as a
    plain document on phones and without CSS. */
 
-import { content, experienceYears, identity, languages, links, ogImages } from "./content.js";
+import { content, experienceYears, faqTopics, identity, languages, links, ogImages } from "./content.js";
 
 const escapeHtml = (value = "") =>
   String(value)
@@ -616,6 +616,7 @@ function structuredData(lang, copy, origin) {
         areaServed: copy.about.areaServed,
         itemOffered: {
           "@type": "Service",
+          "@id": `${page}#service-${item.id}`,
           name: item.name,
           serviceType: item.name,
           description: item.note,
@@ -639,6 +640,7 @@ function structuredData(lang, copy, origin) {
         position: index + 1,
         item: {
           "@type": "CreativeWork",
+          "@id": `${page}#work-${item.image}`,
           name: item.name,
           description: item.summary,
           url: item.href,
@@ -661,11 +663,11 @@ function structuredData(lang, copy, origin) {
         "@id": `${page}#faq-${item.id}`,
         url: `${page}#faq-${item.id}`,
         name: item.question,
+        about: faqTopics[item.id].map((topic) => (topic === "person" ? person : { "@id": `${page}#${topic}` })),
         acceptedAnswer: {
           "@type": "Answer",
           text: item.answer,
-          author: person,
-          ...(item.references?.length && { citation: item.references.map((reference) => reference.href) })
+          author: person
         }
       }))
     }

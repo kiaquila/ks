@@ -209,7 +209,9 @@ Below that it is an ordinary flowing document.
   only one answer may be open at a time, including without JavaScript.
 - The FAQ is published three ways from the same `content.js` items, word for
   word: the visible disclosures, a `FAQPage` node in each locale's JSON-LD
-  (part of the `ProfilePage`, each `Question` at its `#faq-<id>` anchor), and
+  (part of the `ProfilePage`, each `Question` at its `#faq-<id>` anchor and
+  linked by `about` to the graph nodes it answers for — the Person, a
+  `#service-<id>`, a `#work-<image>` — through `faqTopics`), and
   both locales' questions in `llms.txt`. Google shows FAQ rich results only
   for authoritative government and health sites, so the markup is there for
   answer engines and entity understanding, not for a snippet; never mark up
