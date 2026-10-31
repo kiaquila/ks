@@ -590,6 +590,7 @@ function structuredData(lang, copy, origin) {
       isPartOf: website,
       about: person,
       mainEntity: person,
+      hasPart: { "@id": `${page}#faq` },
       primaryImageOfPage: `${origin}/assets/${ogImages[lang]}`
     },
     {
@@ -644,6 +645,27 @@ function structuredData(lang, copy, origin) {
           image: `${origin}/assets/work/${item.image}-1200.jpg?v=2`,
           dateCreated: item.year,
           creator: person
+        }
+      }))
+    },
+    {
+      "@type": "FAQPage",
+      "@id": `${page}#faq`,
+      url: `${page}#faq`,
+      name: copy.faq.title,
+      inLanguage: languages[lang].locale,
+      isPartOf: { "@id": `${page}#webpage` },
+      author: person,
+      mainEntity: copy.faq.items.map((item) => ({
+        "@type": "Question",
+        "@id": `${page}#faq-${item.id}`,
+        url: `${page}#faq-${item.id}`,
+        name: item.question,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.answer,
+          author: person,
+          ...(item.references?.length && { citation: item.references.map((reference) => reference.href) })
         }
       }))
     }
@@ -716,9 +738,19 @@ export function renderLlms(origin) {
     "",
     ...work,
     "",
-    `## ${copy.faq.title}`,
-    "",
-    ...copy.faq.items.flatMap((item) => [`### ${item.question}`, "", item.answer, ""]),
+    ...Object.keys(languages).flatMap((code) => [
+      `## ${content[code].faq.title}`,
+      "",
+      ...content[code].faq.items.flatMap((item) => [
+        `### [${item.question}](${origin}${languages[code].path}#faq-${item.id})`,
+        "",
+        item.answer,
+        ...(item.references?.length
+          ? ["", item.references.map((reference) => `[${reference.label}](${reference.href})`).join(", ")]
+          : []),
+        ""
+      ])
+    ]),
     `## ${copy.contact.band.title}`,
     "",
     ...contacts,

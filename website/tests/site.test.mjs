@@ -585,6 +585,24 @@ test("the structured data states only what the page states", () => {
       copy.work.items.map((item) => [item.name, item.href])
     );
 
+    const page = `https://ks-design.art${languages[lang].path}`;
+    const faq = byType.FAQPage;
+    assert.equal(faq["@id"], `${page}#faq`);
+    assert.equal(faq.name, copy.faq.title);
+    assert.equal(faq.inLanguage, languages[lang].locale);
+    assert.equal(faq.isPartOf["@id"], byType.ProfilePage["@id"]);
+    assert.equal(byType.ProfilePage.hasPart["@id"], faq["@id"]);
+    assert.equal(faq.author["@id"], byType.Person["@id"]);
+    assert.deepEqual(
+      faq.mainEntity.map((question) => [question["@type"], question.url, question.name, question.acceptedAnswer["@type"], question.acceptedAnswer.text]),
+      copy.faq.items.map((item) => ["Question", `${page}#faq-${item.id}`, item.question, "Answer", item.answer])
+    );
+    const visible = stripTags(pages[lang]);
+    for (const question of faq.mainEntity) {
+      assert.ok(pages[lang].includes(`id="${question.url.split("#")[1]}"`), `${lang}: ${question.url} has no target`);
+      assert.ok(visible.includes(question.name) && visible.includes(question.acceptedAnswer.text), `${lang}: ${question.url} is not on the page`);
+    }
+
     for (const [, url] of JSON.stringify(graph).matchAll(/"(https?:\/\/[^"]+)"/g)) {
       const { origin } = new URL(url);
       if (origin === "https://ks-design.art" || origin === "https://schema.org") continue;
@@ -664,6 +682,12 @@ test("llms.txt carries the offer, the work and the contacts in plain words", asy
   for (const key of ["background", "method", "webArt"]) assert.ok(llms.includes(copy.about[key]), key);
   assert.ok(llms.includes(copy.about.workLanguages));
   assert.match(llms, /excluding those with heavy legal requirements/);
+  for (const lang of LOCALES) {
+    assert.ok(llms.includes(`## ${content[lang].faq.title}\n`), `${lang}: FAQ heading`);
+    for (const item of content[lang].faq.items) {
+      assert.ok(llms.includes(`### [${item.question}](https://ks-design.art${languages[lang].path}#faq-${item.id})\n\n${item.answer}\n`), `${lang}: ${item.id}`);
+    }
+  }
 });
 
 /* --- structure and accessibility ---------------------------------------------- */
