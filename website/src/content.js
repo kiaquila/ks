@@ -55,7 +55,9 @@ export const languages = {
  *  translations on 2026-09-11 as well, and the contact line with the
  *  Portfolio nav label on 2026-09-17. The Spanish SEO and audience copy added
  *  on 2026-10-19 still awaits review. The owner approved the English and
- *  Spanish FAQ translations and their layout on 2026-10-23. */
+ *  Spanish FAQ translations and their layout on 2026-10-23. On 2026-11-02,
+ *  the owner approved adding her name and Buenos Aires to the first FAQ
+ *  answer and the city to its question in both languages. */
 export const localesAwaitingReview = ["es"];
 
 /** One social card per language — sharing a page with a card that carries
@@ -298,8 +300,8 @@ export const content = {
       "items": [
         {
           "id": "clients",
-          "question": "Who do you design websites and landing pages for?",
-          "answer": "I design websites for small businesses and independent professionals: coffee shops, bakeries, salons, therapists, consultants and tutors. A landing page works well for one offer; a multi-page website gives several services their own space. Based in Buenos Aires, I work remotely with clients in Argentina and English-speaking countries. I communicate in English, and in Spanish with translation support."
+          "question": "Do you design websites and landing pages for small businesses in Buenos Aires and abroad?",
+          "answer": "I'm Kristina Aquila, a web designer in Buenos Aires. I design websites for small businesses and independent professionals: coffee shops, bakeries, salons, therapists, consultants and tutors. A landing page works well for one offer; a multi-page website gives several services their own space. I work remotely with clients in Argentina and English-speaking countries. I communicate in English, and in Spanish with translation support."
         },
         {
           "id": "website-price",
@@ -606,8 +608,8 @@ export const content = {
       "items": [
         {
           "id": "clients",
-          "question": "¿Para quiénes diseñás sitios web y landing pages?",
-          "answer": "Diseño sitios para pequeños negocios y profesionales independientes: cafeterías, pastelerías, salones de belleza, psicólogos, consultores y profesores particulares. Una landing sirve para presentar una propuesta; un sitio de varias páginas permite separar distintos servicios. Estoy en Buenos Aires y trabajo a distancia con clientes de Argentina y países de habla inglesa. Me comunico en inglés y, en español, con ayuda de traducción."
+          "question": "¿Diseñás sitios web y landing pages para pequeños negocios en Buenos Aires y en el exterior?",
+          "answer": "Soy Kristina Aquila, diseñadora web en Buenos Aires. Diseño sitios para pequeños negocios y profesionales independientes: cafeterías, pastelerías, salones de belleza, psicólogos, consultores y profesores particulares. Una landing sirve para presentar una propuesta; un sitio de varias páginas permite separar distintos servicios. Trabajo a distancia con clientes de Argentina y países de habla inglesa. Me comunico en inglés y, en español, con ayuda de traducción."
         },
         {
           "id": "website-price",
