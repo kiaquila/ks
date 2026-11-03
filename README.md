@@ -95,6 +95,12 @@ agreed beforehand. Updates are handled by the designer; no editing dashboard
 is offered. Basic search preparation is included; ongoing SEO is not. Web art
 is quoted individually, with delivery format and usage rights agreed per project.
 
+Both locales publish the visible FAQ verbatim in a `FAQPage` JSON-LD node and
+in `llms.txt`, with links to each answer. On 2026-11-02 the owner approved
+identifying Kristina Aquila as a web designer in Buenos Aires in the first
+answer and naming Buenos Aires in the question about small-business clients,
+in both English and Spanish.
+
 Menu build and dish photo retouching were on this list and have been taken off
 it. The Chaijaná case study still says a menu and its dish photography were
 part of that project, which is a record of work done rather than an offer.
