@@ -305,7 +305,7 @@ test("the complete FAQ is readable in static HTML in both languages", () => {
 });
 
 test("every selected project ships in both languages and keeps its order", () => {
-  const slugs = ["chaijana", "alex-neon", "ember", "misha", "dreamboard", "fathom"];
+  const slugs = ["igor-psy", "chaijana", "alex-neon", "ember", "misha", "dreamboard", "fathom"];
   for (const lang of LOCALES) {
     assert.deepEqual(
       content[lang].work.items.map((item) => item.slug),
@@ -467,6 +467,7 @@ test("the only external links are the approved destinations", () => {
       links.whatsapp,
       links.instagram,
       links.github,
+      links.work.igorPsy,
       links.work.chaijana,
       links.work.alexNeon,
       links.work.ember,

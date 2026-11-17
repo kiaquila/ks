@@ -107,9 +107,11 @@ part of that project, which is a record of work done rather than an offer.
 
 ### Portfolio entries
 
-The six projects are maintained in separate standalone repositories; this
+The projects are maintained in separate standalone repositories; this
 repository contains only the portfolio copy and card screenshots that present
 them. In carousel order they are
+[Igor Cherkasov](https://igor-psy.ks-design.art/)
+([repository](https://github.com/kiaquila/igor-psy)),
 [Chaijaná Noir](https://chaijana.ks-design.workers.dev)
 ([repository](https://github.com/kiaquila/chaijana), private),
 [Alex Neon](https://alex-neon.ks-design.workers.dev)
@@ -124,6 +126,9 @@ them. In carousel order they are
 ([repository](https://github.com/kiaquila/fathom)). The card images are
 screenshots of those stages at the section's 16:9 proportion, regenerated with
 the commands in [`AGENTS.md`](./AGENTS.md).
+
+The Igor Cherkasov card uses the first screen of the live Russian-language
+site. The Spanish card copy awaits owner review.
 
 Ember's card is not a resting screenshot: it is a frame taken about 1.3
 seconds into the burn, while the figure is still whole and its lower edge is

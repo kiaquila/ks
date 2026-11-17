@@ -191,7 +191,8 @@
           void card.offsetWidth;
           card.classList.remove("no-tr");
         }
-        place(i, s);
+        /* Cards beyond the visible strip share the hidden end slots. */
+        place(i, Math.max(-3, s));
       });
       count.textContent = `${active + 1}/${n}`;
     };
