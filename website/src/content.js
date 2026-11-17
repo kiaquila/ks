@@ -26,6 +26,7 @@ export const links = {
   github: "https://github.com/kiaquila",
   email: "ks@ks-design.art",
   work: {
+    igorPsy: "https://igor-psy.ks-design.art/",
     chaijana: "https://chaijana.ks-design.workers.dev",
     alexNeon: "https://alex-neon.ks-design.workers.dev",
     /* Custom domain configured ahead of the rollout; serves once deployed. */
@@ -57,7 +58,8 @@ export const languages = {
  *  on 2026-10-19 still awaits review. The owner approved the English and
  *  Spanish FAQ translations and their layout on 2026-10-23. On 2026-11-02,
  *  the owner approved adding her name and Buenos Aires to the first FAQ
- *  answer and the city to its question in both languages. */
+ *  answer and the city to its question in both languages. The Spanish Igor
+ *  Cherkasov card also awaits review. */
 export const localesAwaitingReview = ["es"];
 
 /** One social card per language — sharing a page with a card that carries
@@ -159,6 +161,17 @@ export const content = {
       next: "Next projects",
       visit: "Open the site",
       items: [
+        {
+          slug: "igor-psy",
+          name: "Igor Cherkasov",
+          kind: "Landing page",
+          year: "2026",
+          summary:
+            "A landing page for a psychologist who practices cognitive behavioral therapy (CBT).",
+          href: links.work.igorPsy,
+          image: "igor-psy",
+          alt: "First screen of Igor Cherkasov’s psychology practice website"
+        },
         {
           slug: "chaijana",
           name: "Chaijaná Noir",
@@ -467,6 +480,17 @@ export const content = {
       next: "Proyectos siguientes",
       visit: "Abrir el sitio",
       items: [
+        {
+          slug: "igor-psy",
+          name: "Igor Cherkasov",
+          kind: "Landing",
+          year: "2026",
+          summary:
+            "Una landing para un psicólogo que trabaja con terapia cognitivo-conductual (TCC).",
+          href: links.work.igorPsy,
+          image: "igor-psy",
+          alt: "Primera pantalla del sitio del psicólogo Igor Cherkasov"
+        },
         {
           slug: "chaijana",
           name: "Chaijaná Noir",

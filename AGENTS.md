@@ -70,9 +70,9 @@ rules, heavy tracked capitals. Everything below follows from that.
 - **Above 900px the work slide is a filmstrip** (client pick, 2026-09-11:
   "Paper", one of twelve variants after a muz.li reference): the current
   project sits large on a `--ground-alt` panel with its name, a two-line
-  summary and the "Open the site" link below; the other five wait as
-  thumbnails either side, two visible per side and one unseen in the wings;
-  a counter (`1/6`) sits at the strip's far right, level with the shot's top
+  summary and the "Open the site" link below; the other projects wait as
+  thumbnails either side, two visible per side with the rest in hidden slots;
+  a counter sits at the strip's far right, level with the shot's top
   and above the outer thumbnail — outside the panel on purpose, where the
   reference keeps it, not on the shot's own edge. The
   arrows, a click on a thumbnail or an arrow key on the focused track slide
