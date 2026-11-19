@@ -27,9 +27,10 @@ rules, heavy tracked capitals. Everything below follows from that.
   Display** for the chapter numerals, the pull quotes and the italic e-mail
   address in the contact band — nowhere else. The single sanctioned exception
   (client decision, 2026-08-28) is **Caveat**, the hand-written voice of the
-  hero portrait's hover annotations and, since 2026-09-17, of the one line
-  over the contact band — and of nothing else; see "The hero portrait" and
-  "The contact slide". Do not add a fourth family. `Manrope Fallback` is
+  hero portrait's hover annotations, since 2026-09-17 of the one line over
+  the contact band, and since 2026-11-19 of the `art` in the wordmark — and
+  of nothing else; see "The hero portrait", "The contact slide" and the
+  wordmark below. Do not add a fourth family. `Manrope Fallback` is
   not one: it is the visitor's own Arial, loaded from nothing, with
   `size-adjust` and ascent/descent overrides measured against Manrope in
   Chrome (2026-10-02: 102.2% for 200–500, 95.1% for 600–800, widths within
@@ -37,8 +38,8 @@ rules, heavy tracked capitals. Everything below follows from that.
   if the Manrope file changes.
 - Headings are uppercase with open tracking (`0.06em`–`0.09em`), not tight
   display type.
-- **The header is set in two voices, not one.** The wordmark and the
-  navigation links share `0.78rem`/`0.14em` (client pick, 2026-08-29,
+- **The header is set in two voices, not one.** The wordmark's capitals and
+  the navigation links share `0.78rem`/`0.14em` (client pick, 2026-08-29,
   reversing the one-step-down trial of 2026-08-28: at `0.72rem` the links
   read too quiet next to the mark); the language switch alone stays a step
   below at `0.72rem`/`0.09em` — it is a utility, not a signpost. The
@@ -126,19 +127,36 @@ rules, heavy tracked capitals. Everything below follows from that.
   files uncropped, not portrait crops.
 - The process numerals grow slightly on hover. Any motion added here stays at
   that scale: a transform on one element, killed by `prefers-reduced-motion`.
-- The wordmark is **typography, not an image**: `ks·design` set in Manrope as
-  tracked uppercase at `0.78rem`/`0.14em` — a step above the navigation
-  beside it, so the header has one voice and one echo — with a cornflower dot
-  on the baseline between the two words — nearer the KS than the DESIGN in a 1:2
-  proportion (position: client decision, 2026-08-19; the dot replaced the
-  hyphen of the earlier bold lowercase `ks-design`). The dot uses
+- The wordmark is **typography, not an image**: `ks design.art` (client
+  decision, 2026-11-19 — variant 07 «Рукописный art» of a 10-variant show,
+  `prototypes/logo-art/` in the owner's workspace, not in this repository).
+  `KS DESIGN` is Manrope 700, tracked uppercase at `0.78rem`/`0.14em`, the
+  navigation's own setting. Then the cornflower dot as the domain's full
+  stop: on the baseline like a period, never centred, tight to the N
+  (`margin: 0 0.08em 0 0.02em` — the N's tracking already opens 0.14em).
+  Then `art`, written by hand in Caveat 600 at `1.95em` of the caps, which
+  puts its x-height level with their height: untracked, lowercase, lifted
+  `−5°` about its own foot so it stays on the line, and `line-height: 0` so
+  the larger face does not open the header row. The three parts are one
+  name and never wrap apart (`white-space: nowrap`); at 360px the row still
+  holds the mark, the language switch and the hamburger. Screen readers and
+  crawlers get the plain name: the dot is `aria-hidden` and a visually
+  hidden `.` stands in for it, so the home link reads "ks design.art" — a
+  test pins it to `identity.brand`. History: the name replaced `ks·design`
+  (2026-08-19 … 2026-11-19), whose dot sat between the two words nearer the
+  KS in a 1:2 proportion, which in turn replaced the hyphen of the bold
+  lowercase `ks-design`. The dot uses
   `--brand-dot`, an indigo-to-cyan gradient at 135° (client decision,
   2026-08-28, picked from a 20-variant show as «Васильковый»; it replaced
   the flat `--brand-gold`), the page's only chromatic device, and a test
   allows exactly its two hexes and no other colour. There is still no logo
   image, and the old gradient monogram is gone and should not come back.
-  Running text and footer credits keep plain `ks-design`; the mark is a
-  header-only device. The favicon is its own device (client pick,
+  The mark lives in the header and on the social cards, which
+  `make-og.mjs` sets with the same rules (mirror `layout.css` when it
+  moves, and bump `ogImageVersion` in `content.js` with the pixels:
+  messengers cache a preview by its image URL). In text the brand is
+  written `ks design.art`; see "The site name" under Implementation. The
+  favicon is its own device (client pick,
   2026-08-31, variant 20 of a 20-variant show; it replaced the type-set
   transparent `KS.` of 2026-08-29): white lowercase `ks` — a nod to the
   original lowercase mark — on an OPAQUE plate of the `--brand-dot`
@@ -407,6 +425,18 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
   and checks every fact in it against `content.js`.
 - Accessibility: one `h1` per page, AA contrast, visible `:focus-visible`, tap
   targets ≥ 44 px, `prefers-reduced-motion` disables every transition.
+- **The site name is `ks design.art`** (client decision, 2026-11-19: the
+  name and the domain read as one, so a search for either finds the site).
+  `identity.brand` feeds every place a search engine reads a site name —
+  both titles, `og:site_name`, the `WebSite` node's `name`, the Person's
+  `Brand`, the `llms.txt` heading and the 404 titles — and the `WebSite`
+  node adds `alternateName: ["ks-design", "ks-design.art"]`: the earlier
+  name first, then the bare domain, last and lowercase, which is how
+  Google's site-name system recognises a domain. That system reads the
+  `WebSite` node first and wants the title, `og:site_name` and the headings
+  to agree with it, so never name the site differently in one of them; a
+  test pins them all. The `ks-design-portfolio` Compose project, image and
+  server paths are infrastructure names, not the brand, and stay.
 - Production is `https://ks-design.art`. Keep canonical, Open Graph, sitemap,
   and robots URLs on that origin even when a Cloudflare stage builds the same
   source.
@@ -516,8 +546,8 @@ Client pick of 2026-09-17, variant 10 "Brand dot" of a 10-variant show
 - Caveat is the **one sanctioned third family** (client decision,
   2026-08-28): a single static 600 weight, subset to ASCII plus the Spanish
   lowercase accents the notes set, self-hosted like the other faces with its
-  OFL text beside it. It exists for the annotations only — never for UI or
-  running text. A test walks every note string against the subset, because a
+  OFL text beside it. It exists for the annotations, the contact line and
+  the wordmark's `art` only — never for UI or running text. A test walks every note string against the subset, because a
   missing glyph falls back to a system script mid-word rather than failing
   loudly. Widening that subset makes the face heavier, and the delivery
   check will say by how much.

@@ -85,10 +85,11 @@
   height: 100%;
 }
 
-/* The wordmark is typography, not a mark: bold lowercase, like an item name
-   set on the menu card. */
-/* The wordmark follows the ember lab study's setting: tracked caps with the
-   cornflower dot sitting on the baseline between the two words. */
+/* The wordmark is typography, not an image: "ks design.art" (client pick,
+   2026-11-19, variant 07 «Рукописный art» of a 10-variant show). KS DESIGN
+   keeps the ember lab study's tracked caps; the cornflower dot is the
+   domain's full stop, on the baseline; "art" is written by hand in the
+   contact line's Caveat. It never wraps: the three parts are one name. */
 .brand {
   display: inline-flex;
   align-items: center;
@@ -98,20 +99,39 @@
   font-size: 0.78rem;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+  white-space: nowrap;
   color: var(--ink);
 }
 
-/* The dot sits nearer the KS than the DESIGN in a strict 1:2 proportion —
-   0.15em after the S, 0.30em before the D (client pick, 2026-08-19). The
-   letter-spacing after the S already adds 0.14em, so the left margin only
-   tops it up. */
+/* A full stop, not a separator: tight to the N — whose tracking already
+   opens 0.14em after it — and a hair of air before the hand-written word,
+   whose own side bearing does the rest. Inline-block on the baseline, never
+   centred. */
 .brand-dot {
   display: inline-block;
   width: 0.4em;
   height: 0.4em;
   border-radius: 50%;
   background: var(--brand-dot);
-  margin: 0 0.3em 0 0.01em;
+  margin: 0 0.08em 0 0.02em;
+}
+
+/* "art" in Caveat's one weight: 1.95em puts its x-height level with the
+   caps' height, and the −5° lift off the baseline is the pen's, pivoting on
+   the word's foot so it stays on the line. `line-height: 0` keeps the larger
+   face from opening the header row; the hand face never takes the caps'
+   tracking or case. */
+.brand-art {
+  display: inline-block;
+  margin-left: 0.02em;
+  font-family: var(--font-hand);
+  font-weight: 600;
+  font-size: 1.95em;
+  line-height: 0;
+  letter-spacing: 0;
+  text-transform: none;
+  transform: rotate(-5deg) translateY(0.02em);
+  transform-origin: 0 100%;
 }
 
 /* From the taped-print breakpoint the wordmark hangs 15px into the gutter,

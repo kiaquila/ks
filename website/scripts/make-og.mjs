@@ -8,10 +8,13 @@
    The handful of colours below are mirrored from `tokens.css` rather than
    imported, because a 1200×630 card needs its own type sizes anyway and the
    fluid scale does not apply. Change a palette token and change it here too.
+   The wordmark is the header's, scaled: tracked KS DESIGN, the cornflower
+   dot as the domain's full stop, "art" in Caveat — mirror `layout.css` when
+   it moves, and bump `ogImageVersion` in content.js whenever the pixels do.
 
    This needs Chrome on the machine, so it is deliberately NOT part of
    `npm run build` — the cards are committed and only regenerated when the hero
-   copy, the portrait or the palette changes.
+   copy, the portrait, the wordmark or the palette changes.
 
    Run from the project: node scripts/make-og.mjs */
 
@@ -60,11 +63,13 @@ async function dataUri(relativePath, mime) {
 async function cardHtml(lang) {
   const copy = content[lang];
   /* Match the real page's split @font-face declarations. The Cyrillic subset
-     does not contain the English alphabet or every glyph in `ks-design`, so
-     both cards need the Latin subset as well. */
-  const [manropeCyrillic, manropeLatin, portrait] = await Promise.all([
+     does not contain the English alphabet or every glyph in the wordmark,
+     so both cards need the Latin subset as well. Caveat writes the
+     wordmark's "art". */
+  const [manropeCyrillic, manropeLatin, caveat, portrait] = await Promise.all([
     dataUri("assets/fonts/manrope-cyrillic.woff2", "font/woff2"),
     dataUri("assets/fonts/manrope-latin.woff2", "font/woff2"),
+    dataUri("assets/fonts/caveat-latin.woff2", "font/woff2"),
     dataUri("assets/portrait/calm-776.jpg", "image/jpeg")
   ]);
 
@@ -75,6 +80,7 @@ async function cardHtml(lang) {
   @font-face { font-family: "Manrope"; src: url("${manropeLatin}") format("woff2");
                font-weight: 200 800; unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
                  U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+  @font-face { font-family: "Caveat"; src: url("${caveat}") format("woff2"); font-weight: 600; }
   * { margin: 0; box-sizing: border-box; }
   body { width: 1200px; height: 630px; display: grid; grid-template-columns: 1fr 430px;
          background: #fff; color: #0b0b0c; font-family: "Manrope", sans-serif; overflow: hidden; }
@@ -82,13 +88,19 @@ async function cardHtml(lang) {
   h1 { font-size: 52px; font-weight: 800; line-height: 1.1; letter-spacing: 0.05em;
        text-transform: uppercase; max-width: 16ch; }
   .sub { margin-top: 20px; font-size: 23px; line-height: 1.35; color: #55565a; max-width: 30ch; }
-  .name { font-size: 26px; font-weight: 800; letter-spacing: -0.015em; }
+  .name { font-size: 22px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+          white-space: nowrap; line-height: 1; padding-top: 12px; }
+  .name .dot { display: inline-block; width: 0.4em; height: 0.4em; border-radius: 50%;
+               background: linear-gradient(135deg, #818cf8, #22d3ee); margin: 0 0.08em 0 0.02em; }
+  .name .art { display: inline-block; margin-left: 0.02em; font-family: "Caveat", cursive; font-weight: 600;
+               font-size: 1.95em; line-height: 0; letter-spacing: 0; text-transform: none;
+               transform: rotate(-5deg) translateY(0.02em); transform-origin: 0 100%; }
   .shot { position: relative; }
   .shot img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
 </style></head>
 <body>
   <div class="copy">
-    <div class="name">ks-design</div>
+    <div class="name">ks design<span class="dot"></span><span class="art">art</span></div>
     <div>
       <h1>${copy.hero.title}</h1>
       <p class="sub">${copy.hero.subtitle}</p>
