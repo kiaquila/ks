@@ -53,6 +53,7 @@ Caveat (OFL, beside the other font licenses).
 | Item | Value | Source |
 | --- | --- | --- |
 | Owner | Kristina Aquila | client |
+| Brand and site name | `ks design.art` — the wordmark, titles, `og:site_name` and the `WebSite` node; alternates `ks-design`, `ks-design.art` | client, 2026-11-19 |
 | Location | Buenos Aires, Argentina | client |
 | Email | `ks@ks-design.art` | client, 2026-08-31 |
 | Telegram | [@ks_aquila](https://t.me/ks_aquila) | client |
@@ -70,7 +71,7 @@ Caveat (OFL, beside the other font licenses).
 | Primary search phrases | `small business website design`, `diseño web para emprendedores`; also `one page website design`, `diseño de páginas web para pequeños negocios`; niche: `coffee shop website design`, `website design for therapists`, `diseño web para cafeterías`, `diseño web para psicólogos` | client, 2026-10-19 |
 | Other profiles, awards, publications | None | client, 2026-10-19 |
 | Lab studies (Ember, Dream Board, Fathom) | Web art is one of the main directions: animation, screensavers, exhibitions | client, 2026-10-19 |
-| "Design: ks-design" credit on client sites | Already placed wherever the client allows it | client, 2026-10-19 |
+| "Design: ks-design" credit on client sites | Already placed wherever the client allows it; to be renamed `ks design.art` on the client's side (outside this repository) | client, 2026-10-19; brand renamed 2026-11-19 |
 | Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11; the SEO and audience copy of 2026-10-19 awaits review; the FAQ translation was client-approved on 2026-10-23 |
 | English FAQ translation | `/` FAQ copy | adapted from the owner-confirmed Russian FAQ; both FAQ translations and their layout were client-approved on 2026-10-23 |
 

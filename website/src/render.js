@@ -9,7 +9,7 @@
    desktop, and the deck scrolls with snap points. Everything still reads as a
    plain document on phones and without CSS. */
 
-import { content, experienceYears, faqTopics, identity, languages, links, ogImages } from "./content.js";
+import { content, experienceYears, faqTopics, identity, languages, links, ogImages, ogImageVersion } from "./content.js";
 
 const escapeHtml = (value = "") =>
   String(value)
@@ -18,6 +18,9 @@ const escapeHtml = (value = "") =>
     .replaceAll(">", "&gt;")
     .replaceAll('"', "&quot;")
     .replaceAll("'", "&#039;");
+
+/** The social card's absolute URL, versioned: previews are cached by it. */
+const ogImageUrl = (origin, lang) => `${origin}/assets/${ogImages[lang]}?v=${ogImageVersion}`;
 
 /** `%YEARS%` is the only placeholder in the copy: the career length is derived
  *  from a start year so it cannot go stale. */
@@ -118,7 +121,7 @@ function header(lang, copy, anchorBase = "") {
 
   return `<header class="site-header" data-header>
     <div class="container header-inner">
-      <a class="brand" href="${home}"><span class="brand-word">ks<span class="brand-dot" aria-hidden="true"></span><span class="visually-hidden"> </span>design</span></a>
+      <a class="brand" href="${home}"><span class="brand-word">ks design<span class="brand-dot" aria-hidden="true"></span><span class="visually-hidden">.</span><span class="brand-art">art</span></span></a>
       <nav class="site-nav" id="site-nav" aria-label="${escapeHtml(copy.nav.label)}">
         <ul role="list">${navItems}</ul>
       </nav>
@@ -522,7 +525,7 @@ function documentShell({ lang, copy, origin, body, description, title, canonical
   <meta property="og:locale" content="${languages[lang].ogLocale}">
   ${ogLocaleAlternates}
   <meta property="og:url" content="${origin}${canonicalPath}">
-  <meta property="og:image" content="${origin}/assets/${ogImages[lang]}">
+  <meta property="og:image" content="${ogImageUrl(origin, lang)}">
   <meta property="og:image:type" content="image/png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -576,6 +579,7 @@ function structuredData(lang, copy, origin) {
       ...website,
       url: `${origin}/`,
       name: identity.brand,
+      alternateName: identity.alternateNames,
       inLanguage: Object.values(languages).map((config) => config.locale),
       datePublished: identity.launched,
       publisher: person
@@ -591,7 +595,7 @@ function structuredData(lang, copy, origin) {
       about: person,
       mainEntity: person,
       hasPart: { "@id": `${page}#faq` },
-      primaryImageOfPage: `${origin}/assets/${ogImages[lang]}`
+      primaryImageOfPage: ogImageUrl(origin, lang)
     },
     {
       "@type": "Person",
@@ -813,7 +817,7 @@ export function renderNotFound(lang, origin, assetVersions = {}) {
     copy,
     origin,
     body,
-    title: `${copy.notFound.title} · ks-design`,
+    title: `${copy.notFound.title} · ${identity.brand}`,
     description: copy.notFound.body,
     canonicalPath: languages[lang].path,
     extraHead: '<meta name="robots" content="noindex">',

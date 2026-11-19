@@ -18,10 +18,14 @@ import {
   languages,
   links,
   localesAwaitingReview,
-  ogImages
+  ogImages,
+  ogImageVersion
 } from "../src/content.js";
 
 const root = resolve(import.meta.dirname, "..");
+
+/** A literal string as a regular-expression source: the brand has a dot. */
+const literal = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 const dist = join(root, "dist");
 
 /** English first, because English is what `/` serves. */
@@ -671,7 +675,7 @@ test("the shipped stylesheet and pages carry no source comments", () => {
 test("the social tags describe the page for every network", () => {
   for (const lang of LOCALES) {
     assert.match(pages[lang], /<meta name="twitter:card" content="summary_large_image">/);
-    assert.match(pages[lang], new RegExp(`<meta property="og:site_name" content="${identity.brand}">`));
+    assert.match(pages[lang], new RegExp(`<meta property="og:site_name" content="${literal(identity.brand)}">`));
     for (const [code, config] of Object.entries(languages)) {
       const alternate = new RegExp(`<meta property="og:locale:alternate" content="${config.ogLocale}">`);
       code === lang
@@ -684,7 +688,7 @@ test("the social tags describe the page for every network", () => {
 test("llms.txt carries the offer, the work and the contacts in plain words", async () => {
   const llms = await readFile(join(dist, "llms.txt"), "utf8");
   const copy = content.en;
-  assert.match(llms, new RegExp(`^# ${identity.brand} — ${identity.name}\\n`));
+  assert.match(llms, new RegExp(`^# ${literal(identity.brand)} — ${identity.name}\\n`));
   assert.doesNotMatch(llms, /%YEARS%|TODO/);
   assert.ok(llms.includes(`${experienceYears()}+ years`));
   for (const item of copy.services.items) assert.ok(llms.includes(`${item.name}, ${item.price}`), item.name);
@@ -774,15 +778,48 @@ test("the portrait swaps frames and the annotations stay readable", () => {
   }
 });
 
-test("the wordmark is still two words to a screen reader", () => {
-  /* The brand dot is decorative and hidden, so without a real separator the
-     home link would be announced as one run-on word instead of the brand. */
+test("the wordmark is announced as the brand's name", () => {
+  /* The gradient dot is decorative and hidden, so a visually hidden full
+     stop stands in for it: without one the home link would be announced as
+     "ks designart" instead of the name the site is searched by. */
   for (const key of DOCUMENTS) {
     const brand = pages[key].match(/<a class="brand"[\s\S]*?<\/a>/)[0];
-    assert.match(brand, /aria-hidden="true"/);
-    const spoken = stripTags(brand).replace(/\s+/g, " ").trim();
-    assert.equal(spoken, "ks design", `${key}: the wordmark is announced as "${spoken}"`);
+    assert.match(brand, /<span class="brand-dot" aria-hidden="true"><\/span>/);
+    /* Inline spans join without a space, so the tags are dropped, not
+       turned into gaps the way stripTags reads block content. */
+    const spoken = brand.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
+    assert.equal(spoken, identity.brand, `${key}: the wordmark is announced as "${spoken}"`);
   }
+});
+
+test("the wordmark's art is the hand-written face, untracked and in lowercase", () => {
+  const rule = css.match(/\.brand-art \{[^}]*\}/)?.[0];
+  assert.ok(rule, "the .brand-art rule is missing");
+  assert.match(rule, /font-family: var\(--font-hand\)/);
+  assert.match(rule, /font-weight: 600/, "Caveat ships one weight, 600");
+  assert.match(rule, /letter-spacing: 0;/);
+  assert.match(rule, /text-transform: none/);
+  assert.match(css, /\.brand \{[^}]*white-space: nowrap/, "the three parts of the name must not wrap apart");
+});
+
+test("search engines read one site name: ks design.art", async () => {
+  /* Google's site-name system reads the WebSite node first, then
+     og:site_name, the title and the headings, and wants them to agree.
+     The bare domain is the last alternate, in lowercase, which is how that
+     system recognises one. */
+  assert.equal(identity.brand, "ks design.art");
+  assert.equal(identity.alternateNames.at(-1), "ks-design.art");
+  for (const lang of LOCALES) {
+    const site = structuredGraph(lang).find((node) => node["@type"] === "WebSite");
+    assert.equal(site.name, identity.brand, `${lang}: WebSite name`);
+    assert.deepEqual(site.alternateName, identity.alternateNames, `${lang}: WebSite alternateName`);
+    const person = structuredGraph(lang).find((node) => node["@type"] === "Person");
+    assert.equal(person.brand.name, identity.brand, `${lang}: Brand name`);
+    assert.ok(content[lang].meta.title.includes(identity.brand), `${lang}: the title does not name the brand`);
+    assert.match(pages[lang], new RegExp(`<title>[^<]*${literal(identity.brand)}[^<]*</title>`));
+    assert.doesNotMatch(pages[lang], /<title>[^<]*ks-design[^.][^<]*<\/title>/, `${lang}: the old name is still in the title`);
+  }
+  assert.match(pages.notFound, new RegExp(`<title>[^<]*· ${literal(identity.brand)}</title>`));
 });
 
 test("the carousel arrows have accessible names and start hidden", () => {
@@ -1225,9 +1262,11 @@ test("each language gets its own social card", async () => {
      mixed-language preview. */
   assert.equal(new Set(Object.values(ogImages)).size, LOCALES.length);
   for (const lang of LOCALES) {
+    /* Versioned: messengers cache a preview by its image URL, so a redrawn
+       card under the old URL keeps showing the old one. */
     assert.match(
       pages[lang],
-      new RegExp(`og:image" content="[^"]+/assets/${ogImages[lang]}"`)
+      new RegExp(`og:image" content="[^"]+/assets/${literal(ogImages[lang])}\\?v=${ogImageVersion}"`)
     );
     const info = await stat(join(dist, "assets", ogImages[lang]));
     assert.ok(info.isFile(), `${ogImages[lang]} is referenced but not built`);
@@ -1236,10 +1275,12 @@ test("each language gets its own social card", async () => {
 
 test("the social-card renderer embeds both Manrope subsets", () => {
   /* The Cyrillic file contains only isolated Latin glyphs. Without the Latin
-     face, the English and Spanish cards and the `ks-design` wordmark silently
-     use a system fallback even though the Russian headline appears correct. */
+     face, the English and Spanish cards and the wordmark silently use a
+     system fallback even though the Russian headline appears correct. The
+     wordmark's hand-written "art" needs Caveat on the card as on the page. */
   assert.match(ogGenerator, /assets\/fonts\/manrope-cyrillic\.woff2/);
   assert.match(ogGenerator, /assets\/fonts\/manrope-latin\.woff2/);
+  assert.match(ogGenerator, /assets\/fonts\/caveat-latin\.woff2/);
   assert.match(ogGenerator, /unicode-range:\s*U\+0301,\s*U\+0400-045F/);
   assert.match(ogGenerator, /unicode-range:\s*U\+0000-00FF/);
 });
