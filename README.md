@@ -1,6 +1,6 @@
 # KS — Kristina Aquila portfolio
 
-Bilingual selling landing page for Kristina Aquila's web design practice. It is
+Bilingual selling landing page for ks-design.art, Kristina Aquila's creative agency. It is
 an original design rather than a redesign: the business, the offer and the
 copy are the owner's own.
 
@@ -69,7 +69,7 @@ The header and social-card renderer use these outlined assets.
 | GitHub | [kiaquila](https://github.com/kiaquila) | client, 2026-09-11 |
 | Pinterest | [ks_aquila](https://www.pinterest.com/ks_aquila/) | client, 2026-08-27 |
 | AI channel and AI-engineers community | Not mentioned on the site: Russian-speaking audience, irrelevant to clients | client, 2026-10-19 |
-| Hero annotation claims | %YEARS%+ years, not generic AI web design, AI expert, aesthetics and authenticity; no links | client, 2026-08-28; links dropped 2026-09-11; TG channel and community bullets dropped 2026-10-19 |
+| Hero annotation claims | %YEARS%+ years, not generic AI web design, focus on results, aesthetics and authenticity; no links | client, 2026-08-28; links dropped 2026-09-11; TG channel and community bullets dropped 2026-10-19; agency voice and results claim approved 2026-11-27 |
 | In web development since | 2017 — technical writer at a large e-commerce company, then QA and JS test automation; web design with AI recently | client; background 2026-10-19 |
 | Site launched | August 2026 | client, 2026-10-19 |
 | Ideal client | Small businesses (pastry shop, coffee shop, beauty salon…) and solo entrepreneurs (consultants, therapists, tutors…) | client, 2026-10-19 |
@@ -118,6 +118,7 @@ part of that project, which is a record of work done rather than an offer.
 The projects are maintained in separate standalone repositories; this
 repository contains only the portfolio copy and card screenshots that present
 them. In carousel order they are
+[Animated Menus](https://menu.ks-design.art/),
 [Igor Cherkasov](https://igor-psy.ks-design.art/)
 ([repository](https://github.com/kiaquila/igor-psy)),
 [Chaijaná Noir](https://chaijana.ks-design.workers.dev)
@@ -134,6 +135,16 @@ them. In carousel order they are
 ([repository](https://github.com/kiaquila/fathom)). The card images are
 screenshots of those stages at the section's 16:9 proportion, regenerated with
 the commands in [`AGENTS.md`](./AGENTS.md).
+
+The Animated Menus card shows the first screen of the live English landing, captured
+at 1440×810 and resized without cropping to 1200×675 and 800×450 in JPEG
+and WebP. The project is presented before Igor Cherkasov as the newest work.
+
+The homepage speaks as “we” in both languages (client decision, 2026-11-27),
+including the hero, annotations, process and FAQ answers. Questions written
+from the visitor’s perspective keep “I”. The footer reads
+`Creative agency ks-design.art`, with the domain linking to the production
+homepage. The Spanish agency copy and Animated Menus card await owner review.
 
 The Igor Cherkasov card uses the first screen of the live Russian-language
 site. The Spanish card copy awaits owner review.
