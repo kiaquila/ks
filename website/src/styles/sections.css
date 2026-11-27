@@ -7,6 +7,20 @@
   background: var(--ground);
 }
 
+/* The creative-agency signature over the headline (client decision,
+   2026-11-27). Same tracked grey capitals as the work cards' kind line, so
+   the page gains a line of copy and no new typographic voice: --ink-mute is
+   the 4.9:1 grey, 700 is the weight small capitals need to hold their
+   counters, and 0.18em is the tracking the rest of the eyebrows use. */
+.hero-eyebrow {
+  margin-bottom: var(--space-sm);
+  color: var(--ink-mute);
+  font-size: var(--step-eyebrow);
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+}
+
 .hero h1 {
   max-width: 16ch;
 }

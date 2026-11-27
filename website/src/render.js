@@ -206,6 +206,7 @@ function hero(copy, years) {
   return `<section class="slide hero" aria-labelledby="hero-title">
     <div class="container hero-inner">
       <div class="hero-copy">
+        <p class="hero-eyebrow">${escapeHtml(copy.hero.eyebrow)}</p>
         <h1 id="hero-title">${escapeHtml(copy.hero.title)}</h1>
         <p class="hero-subtitle">${escapeHtml(copy.hero.subtitle)}</p>
         <div class="hero-actions">
@@ -573,6 +574,7 @@ function structuredData(lang, copy, origin) {
   const page = `${origin}${languages[lang].path}`;
   const person = { "@id": `${origin}/#person` };
   const website = { "@id": `${origin}/#website` };
+  const organization = { "@id": `${origin}/#organization` };
   const graph = [
     {
       "@type": "WebSite",
@@ -582,7 +584,34 @@ function structuredData(lang, copy, origin) {
       alternateName: identity.alternateNames,
       inLanguage: Object.values(languages).map((config) => config.locale),
       datePublished: identity.launched,
-      publisher: person
+      publisher: organization
+    },
+    /* The creative-agency signature, for the readers who never see the page
+       (client decision, 2026-11-27). The practice is both a person and an
+       agency, and the graph says so without either claim crowding out the
+       other: the Organization publishes the site and the Person founds the
+       Organization and stays the ProfilePage's subject, so a search for the
+       name and a search for the agency arrive at the same graph. The name is
+       the brand, unchanged — `og:site_name`, the WebSite node and the titles
+       still read one site name, which is what Google's site-name system
+       wants. */
+    {
+      "@type": "Organization",
+      ...organization,
+      name: identity.brand,
+      alternateName: identity.alternateNames,
+      description: copy.meta.organization,
+      url: `${origin}/`,
+      email: `mailto:${links.email}`,
+      founder: person,
+      address: {
+        "@type": "PostalAddress",
+        addressLocality: identity.locality,
+        addressCountry: identity.country
+      },
+      areaServed: copy.about.areaServed,
+      knowsAbout: copy.about.topics,
+      sameAs: profiles
     },
     {
       "@type": "ProfilePage",
@@ -612,6 +641,7 @@ function structuredData(lang, copy, origin) {
         addressCountry: identity.country
       },
       brand: { "@type": "Brand", name: identity.brand },
+      worksFor: organization,
       sameAs: profiles,
       knowsLanguage: identity.knownLanguages,
       knowsAbout: copy.about.topics,

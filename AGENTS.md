@@ -54,7 +54,10 @@ rules, heavy tracked capitals. Everything below follows from that.
   over a rule and the lead paragraph beneath both restated the heading, so all
   three of them said one thing three times; the label and the lead are gone and
   the `.eyebrow` rule with them. Do not reintroduce either — if a section needs
-  explaining, the heading is wrong. The one lead paragraph left on the site is
+  explaining, the heading is wrong. The hero alone carries the approved
+  `.hero-eyebrow` agency-and-location signature (client decision, 2026-11-27);
+  it identifies the practice rather than restating a section heading.
+  The one lead paragraph left on the site is
   on the 404 page, which has no hierarchy to explain itself with.
 - **One call to action per screen.** "Start a project" belongs to the hero. The
   header's top-right button is Contact, and the services head carries no button

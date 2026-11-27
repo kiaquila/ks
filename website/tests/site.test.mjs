@@ -125,6 +125,37 @@ test("the hero carries the approved headline in every language", () => {
   }
 });
 
+test("the hero names the practice above the headline", () => {
+  /* The creative-agency signature (client decision, 2026-11-27). It is an
+     eyebrow, so it reads before the headline and is set like every other
+     eyebrow on the page: it must stand above the h1, not inside it, and it
+     must not turn into a second sentence or a second call to action. */
+  assert.match(pages.enText, /Creative agency · Buenos Aires/);
+  assert.match(pages.esText, /Agencia creativa · Buenos Aires/);
+  for (const lang of LOCALES) {
+    const eyebrow = content[lang].hero.eyebrow;
+    assert.ok(eyebrow, `${lang}: the hero eyebrow is missing`);
+    assert.ok(!eyebrow.endsWith("."), `${lang}: the eyebrow is a label, not a sentence`);
+    const order = pages[lang].match(
+      /<p class="hero-eyebrow">([^<]+)<\/p>\s*<h1 id="hero-title">/
+    );
+    assert.ok(order, `${lang}: the eyebrow must sit directly above the h1`);
+    assert.equal(order[1], eyebrow, `${lang}: the eyebrow does not carry the approved wording`);
+    assert.doesNotMatch(
+      pages[lang],
+      new RegExp(`<h1[^>]*>[^<]*${literal(eyebrow)}`),
+      `${lang}: the signature belongs over the headline, not in it`
+    );
+  }
+  /* Tracked grey capitals, the same voice as the work cards' kind line — the
+     signature adds a line of copy, not a new typographic register. */
+  const rule = css.match(/\.hero-eyebrow \{[^}]*\}/)?.[0];
+  assert.ok(rule, "the hero eyebrow has no rule of its own");
+  assert.match(rule, /text-transform: uppercase/);
+  assert.match(rule, /color: var\(--ink-mute\)/);
+  assert.match(rule, /font-size: var\(--step-eyebrow\)/);
+});
+
 test("every process step appears in order", () => {
   for (const lang of LOCALES) {
     const text = pages[`${lang}Text`];
@@ -808,6 +839,34 @@ test("search engines read one site name: ks design.art", async () => {
     assert.doesNotMatch(pages[lang], /<title>[^<]*ks-design[^.][^<]*<\/title>/, `${lang}: the old name is still in the title`);
   }
   assert.match(pages.notFound, new RegExp(`<title>[^<]*· ${literal(identity.brand)}</title>`));
+});
+
+test("the graph names an agency without unseating the person", () => {
+  /* The creative-agency signature for the readers who never see the page
+     (client decision, 2026-11-27). Both claims are true and both are stated:
+     the Organization publishes the site, the Person founds the Organization
+     and remains what the ProfilePage is about. The Organization borrows the
+     brand verbatim — a second name here would split the site name Google
+     reads from the WebSite node and og:site_name. */
+  for (const lang of LOCALES) {
+    const graph = structuredGraph(lang);
+    const org = graph.find((node) => node["@type"] === "Organization");
+    const person = graph.find((node) => node["@type"] === "Person");
+    const site = graph.find((node) => node["@type"] === "WebSite");
+    const page = graph.find((node) => node["@type"] === "ProfilePage");
+
+    assert.ok(org, `${lang}: the Organization node is missing`);
+    assert.equal(org.name, identity.brand, `${lang}: the agency is not the brand`);
+    assert.ok(!Object.hasOwn(org, "foundingDate"), `${lang}: the website launch is not a confirmed agency founding date`);
+    assert.equal(site.datePublished, identity.launched, `${lang}: preserve the confirmed website launch date`);
+    assert.equal(org.description, content[lang].meta.organization, `${lang}: agency description`);
+    assert.match(org.description, lang === "es" ? /[Aa]gencia creativa/ : /[Cc]reative agency/);
+    assert.equal(org.founder["@id"], person["@id"], `${lang}: the founder is not the person`);
+    assert.equal(person.worksFor["@id"], org["@id"], `${lang}: the person does not work for it`);
+    assert.equal(site.publisher["@id"], org["@id"], `${lang}: the agency does not publish the site`);
+    assert.equal(page.mainEntity["@id"], person["@id"], `${lang}: the page is still about the person`);
+    assert.notEqual(org["@id"], person["@id"], `${lang}: the two must be separate nodes`);
+  }
 });
 
 test("the carousel arrows have accessible names and start hidden", () => {
