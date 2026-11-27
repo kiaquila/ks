@@ -1,0 +1,60 @@
+{
+  "reference_url": "https://ks-design.art/",
+  "lettering": "ks-design.art",
+  "approved_change": "Replace the space between KS and DESIGN with a hyphen, as requested by the user on 2026-11-27.",
+  "tail_shift_css_px": 2.75,
+  "reference_git_commit": "d06ad17679b22743154443e7ae511aa7fe578ecd",
+  "font_files": {
+    "manrope-latin.woff2": "e310b55a7fd9677f5e3555e6c6c4d064fa1f1d24393f0ddbe217cea12a8c432f",
+    "caveat-latin.woff2": "cbf64db5bdc2a361932e01b25aae910b4ce593d7c027a0e305496c31a3972fc8"
+  },
+  "font_sizes_css_px": {
+    "caps": 12.48,
+    "art": 24.336
+  },
+  "weights": {
+    "Manrope": 700,
+    "Caveat": 600
+  },
+  "art_shaping": [
+    {
+      "glyph": "a",
+      "glyph_id": 79,
+      "cluster": 0,
+      "advance": 443
+    },
+    {
+      "glyph": "r",
+      "glyph_id": 102,
+      "cluster": 1,
+      "advance": 360
+    },
+    {
+      "glyph": "glyph00132",
+      "glyph_id": 132,
+      "cluster": 2,
+      "advance": 331
+    }
+  ],
+  "art_paint_offset_css_px": 0.4,
+  "ink_bounds_css_px": [
+    0.8735999999999999,
+    -14.473411660485766,
+    119.50213510037793,
+    0.1872
+  ],
+  "view_box": [
+    0,
+    -17,
+    121,
+    20
+  ],
+  "native_size_css_px": [
+    121,
+    20
+  ],
+  "path_coordinate_decimal_places": 10,
+  "dot_diameter_css_px": 4.984375,
+  "fonttools_version": "4.63.0",
+  "harfbuzz_version": "hb-shape (HarfBuzz) 14.2.0"
+}

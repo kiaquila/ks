@@ -10,7 +10,8 @@
     "delivery:baseline": "node scripts/check-delivery-speed.mjs --update",
     "delivery:live": "node scripts/check-delivery-speed.mjs --url https://ks-design.art",
     "test:harness": "node --test tests/harness.test.mjs tests/codex-review-gate.test.mjs tests/codex-receipt-boundaries.test.mjs",
-    "preflight": "npm run check:repository && npm run test:harness && npm run check:project && npm run check:delivery"
+    "preflight": "npm run check:repository && npm run test:harness && npm run check:project && npm run check:delivery && npm run test:logo",
+    "test:logo": "node --test tests/logo-assets.test.mjs"
   },
   "engines": {
     "node": ">=22.18.0"

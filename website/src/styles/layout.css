@@ -85,53 +85,20 @@
   height: 100%;
 }
 
-/* The wordmark is typography, not an image: "ks design.art" (client pick,
-   2026-11-19, variant 07 «Рукописный art» of a 10-variant show). KS DESIGN
-   keeps the ember lab study's tracked caps; the cornflower dot is the
-   domain's full stop, on the baseline; "art" is written by hand in the
-   contact line's Caveat. It never wraps: the three parts are one name. */
+/* Canonical SVG geometry; preserve its size at every breakpoint. */
 .brand {
   display: inline-flex;
   align-items: center;
   min-height: 2.75rem;
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: 0.78rem;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   white-space: nowrap;
   color: var(--ink);
 }
-
-/* A full stop, not a separator: tight to the N — whose tracking already
-   opens 0.14em after it — and a hair of air before the hand-written word,
-   whose own side bearing does the rest. Inline-block on the baseline, never
-   centred. */
-.brand-dot {
-  display: inline-block;
-  width: 0.4em;
-  height: 0.4em;
-  border-radius: 50%;
-  background: var(--brand-dot);
-  margin: 0 0.08em 0 0.02em;
-}
-
-/* "art" in Caveat's one weight: 1.95em puts its x-height level with the
-   caps' height, and the −5° lift off the baseline is the pen's, pivoting on
-   the word's foot so it stays on the line. `line-height: 0` keeps the larger
-   face from opening the header row; the hand face never takes the caps'
-   tracking or case. */
-.brand-art {
-  display: inline-block;
-  margin-left: 0.02em;
-  font-family: var(--font-hand);
-  font-weight: 600;
-  font-size: 1.95em;
-  line-height: 0;
-  letter-spacing: 0;
-  text-transform: none;
-  transform: rotate(-5deg) translateY(0.02em);
-  transform-origin: 0 100%;
+.brand-logo {
+  display: block;
+  width: 121px;
+  height: 20px;
+  max-width: none;
+  flex-shrink: 0;
 }
 
 /* From the taped-print breakpoint the wordmark hangs 15px into the gutter,

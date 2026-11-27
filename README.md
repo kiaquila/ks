@@ -48,12 +48,19 @@ exposure was tried on 2026-08-27–28 and dropped; the hover returned, now
 carrying the owner's claims as hand-written annotations in self-hosted
 Caveat (OFL, beside the other font licenses).
 
+## Shared logo assets
+
+The canonical outlined `ks-design.art` master and transparent SVGs for light
+and dark backgrounds live in [`brand/`](./brand/README.md). Open the
+[`sample sheet`](./brand/preview.html) to compare both at native size and 4×.
+The header and social-card renderer use these outlined assets.
+
 ## Source of truth
 
 | Item | Value | Source |
 | --- | --- | --- |
 | Owner | Kristina Aquila | client |
-| Brand and site name | `ks design.art` — the wordmark, titles, `og:site_name` and the `WebSite` node; alternates `ks-design`, `ks-design.art` | client, 2026-11-19 |
+| Brand and site name | `ks-design.art` — the wordmark, titles, `og:site_name` and the `WebSite` node; alternates `ks design.art`, `ks-design` | client, 2026-11-19 |
 | Location | Buenos Aires, Argentina | client |
 | Email | `ks@ks-design.art` | client, 2026-08-31 |
 | Telegram | [@ks_aquila](https://t.me/ks_aquila) | client |
@@ -216,3 +223,8 @@ request marker and real native receipt/formal review exist, rerun the existing
 `gh run rerun <run-id>`). This evaluates the real review with the installed
 default-branch gate. Never publish a replacement success or execute proposed
 gate scripts with elevated permissions to install a gate update.
+
+The SVG request adds 6,829 compressed bytes to the KS first screen. The
+recorded delivery baseline is 1,114/1,116 ms (EN/ES) over the configured
+mobile connection, 4.5–4.6% above the older stored baseline. The asset removes
+font shaping differences in the logo; the original latency tolerance stays unchanged.
