@@ -270,6 +270,14 @@
   font-size: var(--step-small);
 }
 
+.footer-brand {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
 /* The pin is a mark on a label, not an icon in its own right: it sits on the
    text baseline's line box and takes the same muted grey. */
 .footer-location {

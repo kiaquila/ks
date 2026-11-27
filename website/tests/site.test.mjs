@@ -112,8 +112,8 @@ before(async () => {
 /* --- the client's wording ------------------------------------------------- */
 
 test("the hero carries the approved headline in every language", () => {
-  assert.match(pages.enText, /I'll design something that pulls people in/);
-  assert.match(pages.esText, /Te hago un diseño que atrapa/);
+  assert.match(pages.enText, /We'll design something that pulls people in/);
+  assert.match(pages.esText, /Te hacemos un diseño que atrapa/);
   /* The subtitle is a single line with no full stop — it is a caption under the
      headline, not a sentence in a paragraph. */
   assert.match(pages.enText, /The kind of work people remember — and come back to(?!\.)/);
@@ -275,9 +275,10 @@ test("the hero annotations carry claims only; the feeds live in the contact band
     assert.deepEqual(hrefs, [links.linkedin, links.telegram, links.whatsapp, links.instagram, links.github]);
     /* wa.me opens a chat for a phone number only; a handle there is a dead link. */
     assert.match(links.whatsapp, /^https:\/\/wa\.me\/\d{10,15}$/);
-    /* The footer keeps its two labels and no link at all. */
+    /* The feeds stay in the band; the footer links only to the agency. */
     const footer = html.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/)[1];
-    assert.doesNotMatch(footer, /<a\b/, `${lang}: the feeds live in the band, not the footer`);
+    assert.deepEqual([...footer.matchAll(/href="([^"]+)"/g)].map((m) => m[1]), [links.website]);
+    assert.ok(stripTags(footer).includes("© Creative agency ks-design.art"));
     assert.doesNotMatch(html, /id="why"|href="#why"/);
     const nav = html.match(/<nav class="site-nav"[\s\S]*?<\/nav>/)[0];
     const anchors = [...nav.matchAll(/href="#([a-z-]+)"/g)].map((m) => m[1]);
@@ -309,7 +310,7 @@ test("the complete FAQ is readable in static HTML in both languages", () => {
 });
 
 test("every selected project ships in both languages and keeps its order", () => {
-  const slugs = ["igor-psy", "chaijana", "alex-neon", "ember", "misha", "dreamboard", "fathom"];
+  const slugs = ["menu", "igor-psy", "chaijana", "alex-neon", "ember", "misha", "dreamboard", "fathom"];
   for (const lang of LOCALES) {
     assert.deepEqual(
       content[lang].work.items.map((item) => item.slug),
@@ -471,6 +472,7 @@ test("the only external links are the approved destinations", () => {
       links.whatsapp,
       links.instagram,
       links.github,
+      links.work.menu,
       links.work.igorPsy,
       links.work.chaijana,
       links.work.alexNeon,
