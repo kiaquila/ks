@@ -18,6 +18,7 @@ export const experienceYears = (now = new Date()) =>
 /** Approved external destinations. Kept in one place so the test that forbids
  *  stray outbound links has a list to check against. */
 export const links = {
+  website: "https://ks-design.art/",
   linkedin: "https://www.linkedin.com/in/kiaquila",
   telegram: "https://t.me/ks_aquila",
   /* wa.me resolves a phone number only — a handle does not open a chat. */
@@ -26,6 +27,7 @@ export const links = {
   github: "https://github.com/kiaquila",
   email: "ks@ks-design.art",
   work: {
+    menu: "https://menu.ks-design.art/",
     igorPsy: "https://igor-psy.ks-design.art/",
     chaijana: "https://chaijana.ks-design.workers.dev",
     alexNeon: "https://alex-neon.ks-design.workers.dev",
@@ -59,7 +61,8 @@ export const languages = {
  *  Spanish FAQ translations and their layout on 2026-10-23. On 2026-11-02,
  *  the owner approved adding her name and Buenos Aires to the first FAQ
  *  answer and the city to its question in both languages. The Spanish Igor
- *  Cherkasov card also awaits review. */
+ *  Cherkasov card, the Animated Menus card and the agency-voice changes
+ *  of 2026-11-27 also await review. */
 export const localesAwaitingReview = ["es"];
 
 /** One social card per language — sharing a page with a card that carries
@@ -70,9 +73,10 @@ export const ogImages = { en: "og-en.png", es: "og-es.png" };
 
 /** Bumped whenever the cards' pixels change. Social networks and messengers
  *  cache a preview by its image URL far past any page revalidation, so a
- *  redrawn card under the old URL keeps showing the old one. 4: the
- *  restored outlined ks design.art wordmark (2026-11-27). */
-export const ogImageVersion = 4;
+ *  redrawn card under the old URL keeps showing the old one. 5: the
+ *  restored outlined ks design.art wordmark and agency-voice headlines
+ *  in both languages (2026-11-27). */
+export const ogImageVersion = 5;
 
 export const faqTopics = {
   clients: ["person"],
@@ -112,7 +116,7 @@ export const content = {
       jobTitle: "Web designer",
       description:
         "Small business website design: landing pages and one-page websites for coffee shops, salons, therapists and consultants. Non-generic AI design from Buenos Aires.",
-      ogTitle: "I'll design something that pulls people in",
+      ogTitle: "We'll design something that pulls people in",
       ogDescription:
         "Web design for landing pages and websites. A concept, two rounds of edits, a finished site.",
       /* The Organization node's description — the same signature the hero
@@ -160,7 +164,7 @@ export const content = {
          headline speaks. It is the only place the page says it in so many
          words; the wordmark stays a wordmark. */
       eyebrow: "Creative agency · Buenos Aires",
-      title: "I'll design something that pulls people in",
+      title: "We'll design something that pulls people in",
       subtitle: "The kind of work people remember — and come back to",
       primary: "Start a project",
       secondary: "See the work",
@@ -172,9 +176,9 @@ export const content = {
          pointer leaves the print, so a link out there could not be reached. */
       notes: [
         { text: "%YEARS%+ years in web development" },
-        { text: "I do non-generic AI web design" },
-        { text: "AI expert" },
-        { text: "I value aesthetics & authenticity" }
+        { text: "We do non-generic AI web design" },
+        { text: "Focus on results" },
+        { text: "We value aesthetics & authenticity" }
       ]
     },
     work: {
@@ -184,6 +188,17 @@ export const content = {
       next: "Next projects",
       visit: "Open the site",
       items: [
+        {
+          slug: "menu",
+          name: "Animated Menus",
+          kind: "Restaurant · digital menu",
+          year: "2026",
+          summary:
+            "A landing page for animated restaurant menus, with an interactive demo, dish photography and video.",
+          href: links.work.menu,
+          image: "menu",
+          alt: "Animated Menus landing page with a restaurant menu preview on a phone"
+        },
         {
           slug: "igor-psy",
           name: "Igor Cherkasov",
@@ -273,7 +288,7 @@ export const content = {
           body:
             "We carefully gather and sharpen your meaning together — everything you consider important and want the landing page or site to say."
         },
-        { n: "02", title: "A design concept", body: "I design a concept for you." },
+        { n: "02", title: "A design concept", body: "We design a concept for you." },
         {
           n: "03",
           title: "Two rounds of edits",
@@ -337,7 +352,7 @@ export const content = {
         {
           "id": "clients",
           "question": "Do you design websites and landing pages for small businesses in Buenos Aires and abroad?",
-          "answer": "I'm Kristina Aquila, a web designer in Buenos Aires. I design websites for small businesses and independent professionals: coffee shops, bakeries, salons, therapists, consultants and tutors. A landing page works well for one offer; a multi-page website gives several services their own space. I work remotely with clients in Argentina and English-speaking countries. I communicate in English, and in Spanish with translation support."
+          "answer": "We are ks-design.art, a creative agency founded by Kristina Aquila in Buenos Aires. We design websites for small businesses and independent professionals: coffee shops, bakeries, salons, therapists, consultants and tutors. A landing page works well for one offer; a multi-page website gives several services their own space. We work remotely with clients in Argentina and English-speaking countries. We communicate in English, and in Spanish with translation support."
         },
         {
           "id": "website-price",
@@ -357,22 +372,22 @@ export const content = {
         {
           "id": "ai-design",
           "question": "Do you use AI to design websites?",
-          "answer": "Yes. I use AI as a tool, working from references and my own visual concept. I rework the suggested designs and refine both design and code into a finished website. The aim is to express the character of your project."
+          "answer": "Yes. We use AI as a tool, working from references and our own visual concept. We rework the suggested designs and refine both design and code into a finished website. The aim is to express the character of your project."
         },
         {
           "id": "revisions",
           "question": "What if I don’t like the concept? How many revisions are included?",
-          "answer": "We first discuss what didn’t work for you. One alternative concept is included at no extra cost. The price covers two rounds of revisions within the agreed concept; for each round, you collect your feedback in one list. Extra revisions cost USD 50 per hour. We agree on the scope, time and cost before I start."
+          "answer": "We first discuss what didn’t work for you. One alternative concept is included at no extra cost. The price covers two rounds of revisions within the agreed concept; for each round, you collect your feedback in one list. Extra revisions cost USD 50 per hour. We agree on the scope, time and cost before we start."
         },
         {
           "id": "editing",
           "question": "How do I update my website after launch?",
-          "answer": "For now, I handle updates myself and don’t offer a CMS or editing dashboard. Changes to text, photos, prices and other content cost USD 50 per hour. We agree on the scope and cost in advance."
+          "answer": "For now, we handle updates and don’t offer a CMS or editing dashboard. Changes to text, photos, prices and other content cost USD 50 per hour. We agree on the scope and cost in advance."
         },
         {
           "id": "seo",
           "question": "Is SEO included in the website?",
-          "answer": "Basic search preparation is included: page titles and meta descriptions, a clear heading structure, image descriptions, a sitemap and checks that search engines can access the site. I also check the mobile version and optimize loading. I don’t currently offer ongoing SEO services or guarantee specific search rankings."
+          "answer": "Basic search preparation is included: page titles and meta descriptions, a clear heading structure, image descriptions, a sitemap and checks that search engines can access the site. We also check the mobile version and optimize loading. We don’t currently offer ongoing SEO services or guarantee specific search rankings."
         },
         {
           "id": "art-examples",
@@ -383,7 +398,7 @@ export const content = {
         {
           "id": "art-commission",
           "question": "Can I commission web art? How much does it cost?",
-          "answer": "Yes, I accept web art commissions. Each project is quoted individually, depending on the idea, visual complexity, interaction and display format. We agree on delivery format and usage rights separately for each project. To start, send me your idea and visual references."
+          "answer": "Yes, we accept web art commissions. Each project is quoted individually, depending on the idea, visual complexity, interaction and display format. We agree on delivery format and usage rights separately for each project. To start, send us your idea and visual references."
         }
       ]
     },
@@ -433,7 +448,7 @@ export const content = {
         github: "GitHub"
       }
     },
-    footer: { copyright: "© Kristina Aquila" },
+    footer: { copyright: "Creative agency", brand: "ks-design.art" },
     notFound: {
       title: "Page not found",
       body: "There is no such page here. Head back to the home page.",
@@ -447,7 +462,7 @@ export const content = {
       jobTitle: "Diseñadora web",
       description:
         "Diseño web para emprendedores y pequeños negocios: landings y sitios de una página para cafeterías, salones, psicólogos y consultores. Diseño con IA, nada genérico.",
-      ogTitle: "Te hago un diseño que atrapa",
+      ogTitle: "Te hacemos un diseño que atrapa",
       ogDescription:
         "Diseño web para landings y sitios. Un concepto, dos rondas de cambios, un sitio terminado.",
       organization: "Agencia creativa en Buenos Aires"
@@ -486,16 +501,16 @@ export const content = {
     skipLink: "Ir al contenido",
     hero: {
       eyebrow: "Agencia creativa · Buenos Aires",
-      title: "Te hago un diseño que atrapa",
+      title: "Te hacemos un diseño que atrapa",
       subtitle: "Del tipo que la gente recuerda y al que vuelve",
       primary: "Hablemos del proyecto",
       secondary: "Ver los trabajos",
       portraitAlt: "Kristina Aquila, retrato",
       notes: [
         { text: "%YEARS%+ años en desarrollo web" },
-        { text: "hago diseño web con IA, nada genérico" },
-        { text: "experta en IA" },
-        { text: "valoro la estética y la autenticidad" }
+        { text: "hacemos diseño web con IA, nada genérico" },
+        { text: "enfoque en resultados" },
+        { text: "valoramos la estética y la autenticidad" }
       ]
     },
     work: {
@@ -505,6 +520,17 @@ export const content = {
       next: "Proyectos siguientes",
       visit: "Abrir el sitio",
       items: [
+        {
+          slug: "menu",
+          name: "Menús animados",
+          kind: "Restaurante · menú digital",
+          year: "2026",
+          summary:
+            "Una landing para menús animados de restaurantes, con una demo interactiva, fotografía de platos y video.",
+          href: links.work.menu,
+          image: "menu",
+          alt: "Landing de Menús animados con una vista previa del menú en un celular"
+        },
         {
           slug: "igor-psy",
           name: "Igor Cherkasov",
@@ -594,7 +620,7 @@ export const content = {
           body:
             "Juntamos y afinamos el sentido con vos — todo lo que te parece importante y querés que la landing o el sitio digan."
         },
-        { n: "02", title: "Un concepto de diseño", body: "Diseño un concepto para vos." },
+        { n: "02", title: "Un concepto de diseño", body: "Diseñamos un concepto para vos." },
         {
           n: "03",
           title: "Dos rondas de cambios",
@@ -657,8 +683,8 @@ export const content = {
       "items": [
         {
           "id": "clients",
-          "question": "¿Diseñás sitios web y landing pages para pequeños negocios en Buenos Aires y en el exterior?",
-          "answer": "Soy Kristina Aquila, diseñadora web en Buenos Aires. Diseño sitios para pequeños negocios y profesionales independientes: cafeterías, pastelerías, salones de belleza, psicólogos, consultores y profesores particulares. Una landing sirve para presentar una propuesta; un sitio de varias páginas permite separar distintos servicios. Trabajo a distancia con clientes de Argentina y países de habla inglesa. Me comunico en inglés y, en español, con ayuda de traducción."
+          "question": "¿Diseñan sitios web y landing pages para pequeños negocios en Buenos Aires y en el exterior?",
+          "answer": "Somos ks-design.art, una agencia creativa fundada por Kristina Aquila en Buenos Aires. Diseñamos sitios para pequeños negocios y profesionales independientes: cafeterías, pastelerías, salones de belleza, psicólogos, consultores y profesores particulares. Una landing sirve para presentar una propuesta; un sitio de varias páginas permite separar distintos servicios. Trabajamos a distancia con clientes de Argentina y países de habla inglesa. Nos comunicamos en inglés y, en español, con ayuda de traducción."
         },
         {
           "id": "website-price",
@@ -672,13 +698,13 @@ export const content = {
         },
         {
           "id": "content",
-          "question": "¿Qué tengo que preparar? ¿Me ayudás con los textos?",
+          "question": "¿Qué tengo que preparar? ¿Me ayudan con los textos?",
           "answer": "Reuní una descripción de tu negocio y servicios, datos de contacto, textos, fotos y los materiales de marca que tengas. También sirven ejemplos de sitios con una explicación de qué te gusta de cada uno. El paquete de landing incluye estructura y edición ligera de tus textos; no incluye escribirlos desde cero."
         },
         {
           "id": "ai-design",
-          "question": "¿Usás inteligencia artificial para diseñar sitios web?",
-          "answer": "Sí. Uso IA como herramienta, a partir de referencias y una propuesta visual propia. Reelaboro las soluciones que genera y ajusto el diseño y el código hasta llegar al sitio terminado. Busco que el resultado refleje el carácter de tu proyecto."
+          "question": "¿Usan inteligencia artificial para diseñar sitios web?",
+          "answer": "Sí. Usamos IA como herramienta, a partir de referencias y una propuesta visual propia. Reelaboramos las soluciones que genera y ajustamos el diseño y el código hasta llegar al sitio terminado. Buscamos que el resultado refleje el carácter de tu proyecto."
         },
         {
           "id": "revisions",
@@ -688,23 +714,23 @@ export const content = {
         {
           "id": "editing",
           "question": "¿Cómo actualizo mi sitio después de publicarlo?",
-          "answer": "Por ahora, las actualizaciones las hago yo; no ofrezco un panel para que edites el sitio por tu cuenta. Los cambios de textos, fotos, precios y otros contenidos cuestan USD 50 por hora. Acordamos el alcance y el costo de antemano."
+          "answer": "Por ahora, nos encargamos de las actualizaciones; no ofrecemos un panel para que edites el sitio por tu cuenta. Los cambios de textos, fotos, precios y otros contenidos cuestan USD 50 por hora. Acordamos el alcance y el costo de antemano."
         },
         {
           "id": "seo",
           "question": "¿El sitio incluye SEO?",
-          "answer": "Incluye la preparación básica para buscadores: títulos y descripciones de las páginas, una estructura clara de encabezados, descripciones de imágenes, mapa del sitio y revisión del acceso para los robots de búsqueda. También reviso la versión para celular y optimizo la carga. Por ahora no ofrezco posicionamiento SEO como servicio continuo ni garantizo posiciones específicas en los resultados."
+          "answer": "Incluye la preparación básica para buscadores: títulos y descripciones de las páginas, una estructura clara de encabezados, descripciones de imágenes, mapa del sitio y revisión del acceso para los robots de búsqueda. También revisamos la versión para celular y optimizamos la carga. Por ahora no ofrecemos posicionamiento SEO como servicio continuo ni garantizamos posiciones específicas en los resultados."
         },
         {
           "id": "art-examples",
           "references": [{ "label": "Ember", "href": links.work.ember }, { "label": "Fathom", "href": links.work.fathom }],
-          "question": "¿Qué es el arte web y dónde puedo ver tus trabajos?",
+          "question": "¿Qué es el arte web y dónde puedo ver sus trabajos?",
           "answer": "El arte web es una obra que funciona en el navegador: una escena en movimiento, un experimento visual o una composición interactiva. En Ember, una figura de alambre se quema bajo el cursor y vuelve a formarse. En Fathom, peces dorados nadan en agua que cambia según la hora local de quien la mira. Se pueden crear obras para navegadores, animaciones, protectores de pantalla y proyectos de exhibición."
         },
         {
           "id": "art-commission",
-          "question": "¿Puedo encargarte una obra de arte web? ¿Cuánto cuesta?",
-          "answer": "Sí, acepto encargos de arte web. Cotizo cada proyecto de forma individual, según la idea, la complejidad visual, la interacción y el formato de exhibición. El formato de entrega y los derechos de uso se acuerdan por separado para cada proyecto. Para empezar, mandame tu idea y referencias visuales."
+          "question": "¿Puedo encargarles una obra de arte web? ¿Cuánto cuesta?",
+          "answer": "Sí, aceptamos encargos de arte web. Cotizamos cada proyecto de forma individual, según la idea, la complejidad visual, la interacción y el formato de exhibición. El formato de entrega y los derechos de uso se acuerdan por separado para cada proyecto. Para empezar, mandanos tu idea y referencias visuales."
         }
       ]
     },
@@ -752,7 +778,7 @@ export const content = {
         github: "GitHub"
       }
     },
-    footer: { copyright: "© Kristina Aquila" },
+    footer: { copyright: "Creative agency", brand: "ks-design.art" },
     notFound: {
       title: "Página no encontrada",
       body: "Acá no hay ninguna página así. Volvé al inicio.",

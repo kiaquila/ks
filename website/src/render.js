@@ -465,7 +465,7 @@ function contact(copy) {
     </div>
     <footer class="site-footer">
       <div class="container footer-inner">
-        <p class="footer-copyright">${escapeHtml(copy.footer.copyright)}</p>
+        <p class="footer-copyright">${escapeHtml(copy.footer.copyright)} <a class="footer-brand" href="${escapeHtml(links.website)}">${escapeHtml(copy.footer.brand)}</a></p>
         <p class="footer-location">${icons.pin}${escapeHtml(copy.contact.location)}</p>
       </div>
     </footer>
@@ -838,7 +838,7 @@ export function renderNotFound(lang, origin, assetVersions = {}) {
   </main>
   <footer class="site-footer">
     <div class="container footer-inner">
-      <p class="footer-copyright">${escapeHtml(copy.footer.copyright)}</p>
+      <p class="footer-copyright">${escapeHtml(copy.footer.copyright)} <a class="footer-brand" href="${escapeHtml(links.website)}">${escapeHtml(copy.footer.brand)}</a></p>
     </div>
   </footer>`;
 
