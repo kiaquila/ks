@@ -127,21 +127,21 @@ rules, heavy tracked capitals. Everything below follows from that.
   files uncropped, not portrait crops.
 - The process numerals grow slightly on hover. Any motion added here stays at
   that scale: a transform on one element, killed by `prefers-reduced-motion`.
-- The canonical wordmark is `ks-design.art` (client correction and SVG
+- The canonical wordmark is `ks design.art` (client preference and SVG
   approval, 2026-11-27). Use the master and two transparent outlined exports
   in `brand/`; follow `brand/README.md` for export, dimensions and hashes.
   The header loads the light-background file from `website/assets/brand/`
-  at 121 × 20 CSS px on desktop and phones. Use the white-ink variant on
+  at 118 × 20 CSS px on desktop and phones. Use the white-ink variant on
   dark surfaces. Do not resize, recolour, fade, filter or redraw it locally.
-  Its accessible name is the image alt text `ks-design.art`.
+  Its accessible name is the image alt text `ks design.art`.
   The outlines preserve Manrope 700 caps, tracking, Caveat 600 lowercase
   `art`, its contextual t and -5° tilt; the dot keeps the original 135°
   indigo-to-cyan gradient. The original live-text measurements remain in
-  `brand/reference-metrics.json`, with the hyphen correction recorded in
+  `brand/reference-metrics.json`, with the original spacing restored through
   `brand/lettering-metrics.json`. Old marks and the gradient monogram must
   not return. Social cards embed the same SVG at proportional scale;
   regenerate with `make-og.mjs` and bump `ogImageVersion` when pixels change.
-  The brand name in copy and search metadata is `ks-design.art`. The
+  The brand name in copy and search metadata is `ks design.art`. The
   favicon is its own device (client pick,
   2026-08-31, variant 20 of a 20-variant show; it replaced the type-set
   transparent `KS.` of 2026-08-29): white lowercase `ks` — a nod to the

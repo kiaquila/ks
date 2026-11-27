@@ -121,7 +121,7 @@ function header(lang, copy, anchorBase = "", assetVersions = {}) {
 
   return `<header class="site-header" data-header>
     <div class="container header-inner">
-      <a class="brand" href="${home}"><img class="brand-logo" src="${versioned("/assets/brand/ks-design-art-on-light.svg", assetVersions)}" alt="ks-design.art" width="121" height="20"></a>
+      <a class="brand" href="${home}"><img class="brand-logo" src="${versioned("/assets/brand/ks-design-art-on-light.svg", assetVersions)}" alt="ks design.art" width="118" height="20"></a>
       <nav class="site-nav" id="site-nav" aria-label="${escapeHtml(copy.nav.label)}">
         <ul role="list">${navItems}</ul>
       </nav>

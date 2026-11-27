@@ -2,49 +2,49 @@
   {
     "theme": "light",
     "dpr": 1,
-    "different_pixels": 558,
-    "mean_rgb_error_0_to_255": 2.3607407407407406,
-    "max_contour_distance_css_px": 1.4142135623730951,
+    "different_pixels": 510,
+    "mean_rgb_error_0_to_255": 1.1694074074074075,
+    "max_contour_distance_css_px": 1.0,
     "p95_contour_distance_css_px": 1.0
   },
   {
     "theme": "light",
     "dpr": 2,
-    "different_pixels": 1309,
-    "mean_rgb_error_0_to_255": 1.9473796296296297,
-    "max_contour_distance_css_px": 1.0,
-    "p95_contour_distance_css_px": 0.7071067811865476
+    "different_pixels": 1016,
+    "mean_rgb_error_0_to_255": 0.5339537037037037,
+    "max_contour_distance_css_px": 0.7071067811865476,
+    "p95_contour_distance_css_px": 0.5
   },
   {
     "theme": "light",
     "dpr": 8,
-    "different_pixels": 9402,
-    "mean_rgb_error_0_to_255": 1.8227135416666667,
-    "max_contour_distance_css_px": 0.875,
-    "p95_contour_distance_css_px": 0.7071067811865476
+    "different_pixels": 5830,
+    "mean_rgb_error_0_to_255": 0.3069236111111111,
+    "max_contour_distance_css_px": 0.2795084971874737,
+    "p95_contour_distance_css_px": 0.125
   },
   {
     "theme": "dark",
     "dpr": 1,
-    "different_pixels": 558,
-    "mean_rgb_error_0_to_255": 2.2886296296296296,
-    "max_contour_distance_css_px": 1.4142135623730951,
+    "different_pixels": 520,
+    "mean_rgb_error_0_to_255": 1.1402962962962964,
+    "max_contour_distance_css_px": 1.0,
     "p95_contour_distance_css_px": 1.0
   },
   {
     "theme": "dark",
     "dpr": 2,
-    "different_pixels": 1219,
-    "mean_rgb_error_0_to_255": 1.8845555555555555,
-    "max_contour_distance_css_px": 1.0,
-    "p95_contour_distance_css_px": 0.7071067811865476
+    "different_pixels": 1017,
+    "mean_rgb_error_0_to_255": 0.5215925925925926,
+    "max_contour_distance_css_px": 0.7071067811865476,
+    "p95_contour_distance_css_px": 0.5
   },
   {
     "theme": "dark",
     "dpr": 8,
-    "different_pixels": 9403,
-    "mean_rgb_error_0_to_255": 1.767005787037037,
-    "max_contour_distance_css_px": 0.875,
-    "p95_contour_distance_css_px": 0.673145600891813
+    "different_pixels": 5830,
+    "mean_rgb_error_0_to_255": 0.30375289351851853,
+    "max_contour_distance_css_px": 0.2795084971874737,
+    "p95_contour_distance_css_px": 0.125
   }
 ]

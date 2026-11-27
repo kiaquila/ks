@@ -301,7 +301,8 @@
       "left": 129.37054443359375
     }
   },
-  "label": "ks-design.art",
-  "change": "Replace the space between KS and DESIGN with a hyphen, as requested by the user on 2026-11-27.",
-  "chromium": "158.0.8127.89"
+  "label": "ks design.art",
+  "change": "Restore the original space between KS and DESIGN, as requested by the user on 2026-11-27. The before/after measurements retain the hyphen trial as history.",
+  "chromium": "158.0.8127.89",
+  "active": "before"
 }

@@ -1,7 +1,7 @@
-# ks-design.art logo master
+# ks design.art logo master
 
 The shared wordmark is an outlined SVG, based on the approved KS header,
-with the user-requested hyphen: `ks-design.art` (2026-11-27).
+with the original space: `ks design.art` (user preference, 2026-11-27).
 The artwork is fixed; projects select the ink colour for their background.
 The dot remains the same indigo-to-cyan gradient in both versions.
 
@@ -14,7 +14,7 @@ The dot remains the same indigo-to-cyan gradient in both versions.
 - `manifest.json` — SHA-256 hashes for exact copies in consumer projects.
 - `provenance.json` — font hashes, shaping, bounds and authoring details.
 - `reference-metrics.json` — measured positions from the original live header.
-- `lettering-metrics.json` — before/after positions for the approved hyphen.
+- `lettering-metrics.json` — original and hyphen-trial positions; `active: before` restores the space.
 - `verification/` — comparison captures and measured rendering differences.
 
 The user approved this asset workflow and the six-project rollout on
@@ -24,18 +24,18 @@ consumer projects copy the SVGs unchanged and record their hashes.
 ## Rendering contract
 
 ```html
-<img src="ks-design-art-on-light.svg" alt="ks-design.art" width="121" height="20">
+<img src="ks-design-art-on-light.svg" alt="ks design.art" width="118" height="20">
 ```
 
-Use **121 × 20 CSS pixels** for the shared header logo, including on phones.
+Use **118 × 20 CSS pixels** for the shared header logo, including on phones.
 This canvas keeps the original 12.48px caps and 24.336px script scale. It is
 wider than the original text layout box because it contains the script's
-overhang and transparent safety space. The viewBox is `0 -17 121 20`.
+overhang and transparent safety space. The viewBox is `0 -17 118 20`.
 
 Preserve the aspect ratio. Do not apply local resizing, filters, opacity,
 rotation, CSS recolouring, path edits, or a new type treatment. Adapt the
 surrounding header when space is tight. Use the dark-background asset on dark
-surfaces. Keep `alt="ks-design.art"`; the SVG title provides the same name when
+surfaces. Keep `alt="ks design.art"`; the SVG title provides the same name when
 the file is opened directly. The files have no font, script or network dependency.
 
 For presentations and print, proportional enlargement is allowed. The 4×
@@ -68,22 +68,18 @@ The source families are Manrope and Caveat, already licensed in
 
 ## Verification result
 
-The two SVG variants have identical geometry and differ only in ink colour.
-The hyphen uses the same Manrope 700 outlines and tracking. The DESIGN
-letters, dot and script move right to accommodate it without shrinking the
-letters. The reference font files, weights, contextual glyph, scale, spacing, tilt
-and gradient were retained. Nothing is clipped by the viewBox.
+The original space between KS and DESIGN is restored from the retained
+measurements, without shrinking or redrawing the letters. The two variants
+have identical geometry and differ only in ink colour. The dot, handwritten
+contextual t, scale, spacing and -5° tilt retain the original master positions.
+The domain URLs and asset filenames keep their hyphens.
 
-Text glyphs and SVG paths use different browser rasterisation, so comparison
-with the reference typography amended to `ks-design` is **not a zero-pixel bitmap match**. At 8×,
-95% of the thresholded outline comparisons are within 0.708 CSS px; the
-largest measured contour distance is 0.875 CSS px. These figures describe
-the updated `ks-design` text comparison, not the earlier unhyphenated proof.
-The script geometry retains the original master's optical position, shifted
-right by 2.75px with the dot after the hyphen insertion. Native 1× and 2× captures
-are included, rather than claiming that edge smoothing is identical.
-See `verification/comparison.json` and `verification/contour-overlay-8x.png`.
+The current `verification/` captures compare the restored artwork with the
+original unhyphenated reference. Browser text and SVG paths use different
+rasterisation; a zero-pixel match against live text is not claimed. Consumer
+SVGs are copied byte-for-byte and checked against the manifest hashes.
 
-Once all projects use the same SVGs at the same size, differences caused by
-font versions, shaping, missing fonts, or independently rounded outlines are
-removed. Browser/OS rasterisation can still differ across environments.
+At 8×, 95% of the thresholded contour comparisons are within 0.125 CSS px;
+the largest measured distance is 0.280 CSS px. Both colour variants have
+zero alpha-mask differences at 1×, 2× and 8×. See `verification/comparison.json`
+and `verification/variant-checks.json`.
