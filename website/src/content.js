@@ -108,13 +108,16 @@ export const identity = {
 export const content = {
   en: {
     meta: {
-      title: "Small business website design — ks-design.art, Kristina Aquila",
+      title: "Small business website design — ks-design.art, creative agency",
       jobTitle: "Web designer",
       description:
         "Small business website design: landing pages and one-page websites for coffee shops, salons, therapists and consultants. Non-generic AI design from Buenos Aires.",
       ogTitle: "I'll design something that pulls people in",
       ogDescription:
-        "Web design for landing pages and websites. A concept, two rounds of edits, a finished site."
+        "Web design for landing pages and websites. A concept, two rounds of edits, a finished site.",
+      /* The Organization node's description — the same signature the hero
+         eyebrow carries, written as a sentence for the graph. */
+      organization: "Creative agency in Buenos Aires"
     },
     about: {
       audience: "Small businesses and solo entrepreneurs",
@@ -151,6 +154,12 @@ export const content = {
     langSwitch: { label: "Language", en: "EN", es: "ES" },
     skipLink: "Skip to content",
     hero: {
+      /* The creative-agency signature (client decision, 2026-11-27). It sits
+         over the headline as tracked capitals — the eyebrow the work cards
+         already use — and names the practice and where it works before the
+         headline speaks. It is the only place the page says it in so many
+         words; the wordmark stays a wordmark. */
+      eyebrow: "Creative agency · Buenos Aires",
       title: "I'll design something that pulls people in",
       subtitle: "The kind of work people remember — and come back to",
       primary: "Start a project",
@@ -434,13 +443,14 @@ export const content = {
 
   es: {
     meta: {
-      title: "Diseño web para emprendedores — ks-design.art, Kristina Aquila",
+      title: "Diseño web para emprendedores — ks-design.art, agencia creativa",
       jobTitle: "Diseñadora web",
       description:
         "Diseño web para emprendedores y pequeños negocios: landings y sitios de una página para cafeterías, salones, psicólogos y consultores. Diseño con IA, nada genérico.",
       ogTitle: "Te hago un diseño que atrapa",
       ogDescription:
-        "Diseño web para landings y sitios. Un concepto, dos rondas de cambios, un sitio terminado."
+        "Diseño web para landings y sitios. Un concepto, dos rondas de cambios, un sitio terminado.",
+      organization: "Agencia creativa en Buenos Aires"
     },
     about: {
       audience: "Pequeños negocios y emprendedores",
@@ -475,6 +485,7 @@ export const content = {
     langSwitch: { label: "Idioma", en: "EN", es: "ES" },
     skipLink: "Ir al contenido",
     hero: {
+      eyebrow: "Agencia creativa · Buenos Aires",
       title: "Te hago un diseño que atrapa",
       subtitle: "Del tipo que la gente recuerda y al que vuelve",
       primary: "Hablemos del proyecto",

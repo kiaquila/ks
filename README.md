@@ -61,6 +61,7 @@ The header and social-card renderer use these outlined assets.
 | --- | --- | --- |
 | Owner | Kristina Aquila | client |
 | Brand and site name | `ks-design.art` — the wordmark, titles, `og:site_name` and the `WebSite` node; alternates `ks design.art`, `ks-design` | client, 2026-11-19 |
+| Creative-agency signature | `Creative agency · Buenos Aires` as the hero eyebrow, `creative agency` closing the title in place of the owner's name, and an `Organization` node that publishes the site and is founded by the `Person`. `og:site_name` and the `WebSite` node still carry the brand alone, so the site name stays one string | client, 2026-11-27 |
 | Location | Buenos Aires, Argentina | client |
 | Email | `ks@ks-design.art` | client, 2026-08-31 |
 | Telegram | [@ks_aquila](https://t.me/ks_aquila) | client |
@@ -79,7 +80,7 @@ The header and social-card renderer use these outlined assets.
 | Other profiles, awards, publications | None | client, 2026-10-19 |
 | Lab studies (Ember, Dream Board, Fathom) | Web art is one of the main directions: animation, screensavers, exhibitions | client, 2026-10-19 |
 | "Design: ks-design" credit on client sites | Already placed wherever the client allows it; to be renamed `ks design.art` on the client's side (outside this repository) | client, 2026-10-19; brand renamed 2026-11-19 |
-| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11; the SEO and audience copy of 2026-10-19 awaits review; the FAQ translation was client-approved on 2026-10-23 |
+| Argentinian Spanish translation | `/es/` copy | original copy client-approved on 2026-08-17; the hero annotations (`hero.notes`) approved on 2026-08-28; the Dream Board and Fathom cards approved on 2026-09-11; the SEO and audience copy of 2026-10-19 awaits review; the FAQ translation was client-approved on 2026-10-23; the creative-agency signature of 2026-11-27 (`Agencia creativa · Buenos Aires`, `agencia creativa` in the title) awaits review |
 | English FAQ translation | `/` FAQ copy | adapted from the owner-confirmed Russian FAQ; both FAQ translations and their layout were client-approved on 2026-10-23 |
 
 Every string lives in [`website/src/content.js`](./website/src/content.js).
