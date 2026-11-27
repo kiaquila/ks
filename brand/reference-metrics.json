@@ -1,0 +1,227 @@
+{
+  "reference": {
+    "x": 144.03125,
+    "y": 23.390625,
+    "width": 114.171875,
+    "height": 20.21875,
+    "top": 23.390625,
+    "right": 258.203125,
+    "bottom": 43.609375,
+    "left": 144.03125
+  },
+  "caps": [
+    {
+      "char": "K",
+      "box": {
+        "x": 144.03125,
+        "y": 24.390625,
+        "width": 9.453125,
+        "height": 17,
+        "top": 24.390625,
+        "right": 153.484375,
+        "bottom": 41.390625,
+        "left": 144.03125
+      }
+    },
+    {
+      "char": "S",
+      "box": {
+        "x": 153.46875,
+        "y": 24.390625,
+        "width": 9.96875,
+        "height": 17,
+        "top": 24.390625,
+        "right": 163.4375,
+        "bottom": 41.390625,
+        "left": 153.46875
+      }
+    },
+    {
+      "char": " ",
+      "box": {
+        "x": 163.421875,
+        "y": 24.390625,
+        "width": 4.265625,
+        "height": 17,
+        "top": 24.390625,
+        "right": 167.6875,
+        "bottom": 41.390625,
+        "left": 163.421875
+      }
+    },
+    {
+      "char": "D",
+      "box": {
+        "x": 167.671875,
+        "y": 24.390625,
+        "width": 10.5,
+        "height": 17,
+        "top": 24.390625,
+        "right": 178.171875,
+        "bottom": 41.390625,
+        "left": 167.671875
+      }
+    },
+    {
+      "char": "E",
+      "box": {
+        "x": 178.15625,
+        "y": 24.390625,
+        "width": 8.984375,
+        "height": 17,
+        "top": 24.390625,
+        "right": 187.140625,
+        "bottom": 41.390625,
+        "left": 178.15625
+      }
+    },
+    {
+      "char": "S",
+      "box": {
+        "x": 187.125,
+        "y": 24.390625,
+        "width": 9.953125,
+        "height": 17,
+        "top": 24.390625,
+        "right": 197.078125,
+        "bottom": 41.390625,
+        "left": 187.125
+      }
+    },
+    {
+      "char": "I",
+      "box": {
+        "x": 197.0625,
+        "y": 24.390625,
+        "width": 5.265625,
+        "height": 17,
+        "top": 24.390625,
+        "right": 202.328125,
+        "bottom": 41.390625,
+        "left": 197.0625
+      }
+    },
+    {
+      "char": "G",
+      "box": {
+        "x": 202.3125,
+        "y": 24.390625,
+        "width": 10.90625,
+        "height": 17,
+        "top": 24.390625,
+        "right": 213.21875,
+        "bottom": 41.390625,
+        "left": 202.3125
+      }
+    },
+    {
+      "char": "N",
+      "box": {
+        "x": 213.203125,
+        "y": 24.390625,
+        "width": 10.71875,
+        "height": 17,
+        "top": 24.390625,
+        "right": 223.921875,
+        "bottom": 41.390625,
+        "left": 213.203125
+      }
+    }
+  ],
+  "dot": {
+    "box": {
+      "x": 224.15625,
+      "y": 32.40625,
+      "width": 4.984375,
+      "height": 4.984375,
+      "top": 32.40625,
+      "right": 229.140625,
+      "bottom": 37.390625,
+      "left": 224.15625
+    },
+    "style": {
+      "fontFamily": "Manrope, \"Manrope Fallback\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+      "fontSize": "12.48px",
+      "fontWeight": "700",
+      "letterSpacing": "1.7472px",
+      "lineHeight": "20.2176px",
+      "transform": "none",
+      "transformOrigin": "2.49219px 2.49219px",
+      "color": "rgb(11, 11, 12)",
+      "backgroundImage": "linear-gradient(135deg, rgb(129, 140, 248), rgb(34, 211, 238))",
+      "width": "4.98438px",
+      "height": "4.98438px"
+    }
+  },
+  "art": {
+    "box": {
+      "x": 230.65179443359375,
+      "y": 27.470539093017578,
+      "width": 27.488739013671875,
+      "height": 2.4049530029296875,
+      "top": 27.470539093017578,
+      "right": 258.1405334472656,
+      "bottom": 29.875492095947266,
+      "left": 230.65179443359375
+    },
+    "style": {
+      "fontFamily": "Caveat, \"Bradley Hand\", \"Segoe Print\", cursive",
+      "fontSize": "24.336px",
+      "fontWeight": "600",
+      "letterSpacing": "normal",
+      "lineHeight": "0px",
+      "transform": "matrix(0.996195, -0.0871557, 0.0871557, 0.996195, 0.0424204, 0.484868)",
+      "transformOrigin": "0px 0px",
+      "color": "rgb(11, 11, 12)",
+      "backgroundImage": "none",
+      "width": "27.5938px",
+      "height": "0px"
+    },
+    "untransformedBox": {
+      "x": 230.609375,
+      "y": 29.390625,
+      "width": 27.59375,
+      "height": 0,
+      "top": 29.390625,
+      "right": 258.203125,
+      "bottom": 29.390625,
+      "left": 230.609375
+    },
+    "baseline": {
+      "x": 258.203125,
+      "y": 37.390625,
+      "width": 0,
+      "height": 0,
+      "top": 37.390625,
+      "right": 258.203125,
+      "bottom": 37.390625,
+      "left": 258.203125
+    }
+  },
+  "style": {
+    "fontFamily": "Manrope, \"Manrope Fallback\", -apple-system, \"system-ui\", \"Segoe UI\", sans-serif",
+    "fontSize": "12.48px",
+    "fontWeight": "700",
+    "letterSpacing": "1.7472px",
+    "lineHeight": "20.2176px",
+    "transform": "none",
+    "transformOrigin": "57.0859px 10.1094px",
+    "color": "rgb(11, 11, 12)",
+    "backgroundImage": "none",
+    "width": "114.172px",
+    "height": "20.2188px"
+  },
+  "baseline": {
+    "x": 258.203125,
+    "y": 37.390625,
+    "width": 0,
+    "height": 0,
+    "top": 37.390625,
+    "right": 258.203125,
+    "bottom": 37.390625,
+    "left": 258.203125
+  },
+  "sourceUrl": "https://ks-design.art/",
+  "chromium": "158.0.8127.89",
+  "measuredAt": "2026-11-27T13:43:30.191Z"
+}

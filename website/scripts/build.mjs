@@ -42,7 +42,7 @@ async function buildStylesheet() {
 
 /** Copy sub-trees of assets/ that ship as-is. */
 async function copyAssets() {
-  for (const dir of ["fonts", "portrait", "work", "kind"]) {
+  for (const dir of ["fonts", "portrait", "work", "kind", "brand"]) {
     await cp(join(root, "assets", dir), join(dist, "assets", dir), {
       recursive: true
     });
@@ -114,6 +114,7 @@ async function main() {
   const analytics = await readFile(join(root, "src/js/analytics.js"));
   const assetVersions = {
     ...fontVersions,
+    "/assets/brand/ks-design-art-on-light.svg": contentVersion(await readFile(join(root, "assets/brand/ks-design-art-on-light.svg"))),
     "/assets/styles.css": contentVersion(stylesheet),
     "/assets/site.js": contentVersion(script),
     "/assets/analytics.js": contentVersion(analytics)

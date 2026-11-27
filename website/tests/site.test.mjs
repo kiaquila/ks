@@ -778,28 +778,13 @@ test("the portrait swaps frames and the annotations stay readable", () => {
   }
 });
 
-test("the wordmark is announced as the brand's name", () => {
-  /* The gradient dot is decorative and hidden, so a visually hidden full
-     stop stands in for it: without one the home link would be announced as
-     "ks designart" instead of the name the site is searched by. */
+test("the wordmark is an accessible SVG at the shared native size", () => {
   for (const key of DOCUMENTS) {
     const brand = pages[key].match(/<a class="brand"[\s\S]*?<\/a>/)[0];
-    assert.match(brand, /<span class="brand-dot" aria-hidden="true"><\/span>/);
-    /* Inline spans join without a space, so the tags are dropped, not
-       turned into gaps the way stripTags reads block content. */
-    const spoken = brand.replace(/<[^>]+>/g, "").replace(/\s+/g, " ").trim();
-    assert.equal(spoken, identity.brand, `${key}: the wordmark is announced as "${spoken}"`);
+    assert.match(brand, /src="\/assets\/brand\/ks-design-art-on-light\.svg\?v=[0-9a-f]{10}" alt="ks-design\.art" width="121" height="20"/);
+    assert.doesNotMatch(brand, /brand-art|brand-dot/);
   }
-});
-
-test("the wordmark's art is the hand-written face, untracked and in lowercase", () => {
-  const rule = css.match(/\.brand-art \{[^}]*\}/)?.[0];
-  assert.ok(rule, "the .brand-art rule is missing");
-  assert.match(rule, /font-family: var\(--font-hand\)/);
-  assert.match(rule, /font-weight: 600/, "Caveat ships one weight, 600");
-  assert.match(rule, /letter-spacing: 0;/);
-  assert.match(rule, /text-transform: none/);
-  assert.match(css, /\.brand \{[^}]*white-space: nowrap/, "the three parts of the name must not wrap apart");
+  assert.match(css, /\.brand-logo \{[^}]*width: 121px;\s*height: 20px;/);
 });
 
 test("search engines read one site name: ks design.art", async () => {
@@ -807,8 +792,8 @@ test("search engines read one site name: ks design.art", async () => {
      og:site_name, the title and the headings, and wants them to agree.
      The bare domain is the last alternate, in lowercase, which is how that
      system recognises one. */
-  assert.equal(identity.brand, "ks design.art");
-  assert.equal(identity.alternateNames.at(-1), "ks-design.art");
+  assert.equal(identity.brand, "ks-design.art");
+  assert.deepEqual(identity.alternateNames, ["ks design.art", "ks-design"]);
   for (const lang of LOCALES) {
     const site = structuredGraph(lang).find((node) => node["@type"] === "WebSite");
     assert.equal(site.name, identity.brand, `${lang}: WebSite name`);
@@ -1018,7 +1003,7 @@ test("the filmstrip is claimed by the script and leaves the scroller behind", ()
   /* The cornflower stays on the wordmark's dot and on the same dot closing
      the contact line (client decision, 2026-09-17) — nowhere else. */
   const dotUsers = [...clean.matchAll(/([^{}]+)\{[^}]*var\(--brand-dot\)[^}]*\}/g)].map((m) => m[1].trim());
-  assert.deepEqual(dotUsers, [".brand-dot", ".hand-dot"]);
+  assert.deepEqual(dotUsers, [".hand-dot"]);
 });
 
 test("switching language keeps the reader in the same section", () => {
@@ -1280,7 +1265,7 @@ test("the social-card renderer embeds both Manrope subsets", () => {
      wordmark's hand-written "art" needs Caveat on the card as on the page. */
   assert.match(ogGenerator, /assets\/fonts\/manrope-cyrillic\.woff2/);
   assert.match(ogGenerator, /assets\/fonts\/manrope-latin\.woff2/);
-  assert.match(ogGenerator, /assets\/fonts\/caveat-latin\.woff2/);
+  assert.match(ogGenerator, /assets\/brand\/ks-design-art-on-light\.svg/);
   assert.match(ogGenerator, /unicode-range:\s*U\+0301,\s*U\+0400-045F/);
   assert.match(ogGenerator, /unicode-range:\s*U\+0000-00FF/);
 });

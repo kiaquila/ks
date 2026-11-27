@@ -1,0 +1,29 @@
+[
+  {
+    "dpr": 1,
+    "variantSourceDifference": "ink fill only",
+    "alphaDifferencePixels": 0,
+    "canvasPixels": [
+      121,
+      20
+    ]
+  },
+  {
+    "dpr": 2,
+    "variantSourceDifference": "ink fill only",
+    "alphaDifferencePixels": 0,
+    "canvasPixels": [
+      242,
+      40
+    ]
+  },
+  {
+    "dpr": 8,
+    "variantSourceDifference": "ink fill only",
+    "alphaDifferencePixels": 0,
+    "canvasPixels": [
+      968,
+      160
+    ]
+  }
+]

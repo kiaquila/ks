@@ -17,13 +17,13 @@ rules, heavy tracked capitals. Everything below follows from that.
   2026-08-28, replacing the brand-gold amber of 2026-08-19) is the
   cornflower gradient `--brand-dot` on the wordmark dot described below, and
   on that same dot standing as the full stop of the contact line (client
-  decision, 2026-09-17; see "The contact slide"). A test pins those two
-  users and no third. A
+  decision, 2026-09-17; see "The contact slide"). The outlined logo and the contact-line dot are the two sanctioned
+  uses. A
   test walks every hex colour in the compiled stylesheet, allows exactly the
   gradient's two stops, and fails any other whose RGB channels spread more
   than 12, so a stray accent cannot slip in.
 - Type is two working families, both already licensed in this repository:
-  **Manrope** for the wordmark, headings, navigation and body; **Playfair
+  **Manrope** for headings, navigation and body, and outlined in the wordmark; **Playfair
   Display** for the chapter numerals, the pull quotes and the italic e-mail
   address in the contact band — nowhere else. The single sanctioned exception
   (client decision, 2026-08-28) is **Caveat**, the hand-written voice of the
@@ -127,35 +127,21 @@ rules, heavy tracked capitals. Everything below follows from that.
   files uncropped, not portrait crops.
 - The process numerals grow slightly on hover. Any motion added here stays at
   that scale: a transform on one element, killed by `prefers-reduced-motion`.
-- The wordmark is **typography, not an image**: `ks design.art` (client
-  decision, 2026-11-19 — variant 07 «Рукописный art» of a 10-variant show,
-  `prototypes/logo-art/` in the owner's workspace, not in this repository).
-  `KS DESIGN` is Manrope 700, tracked uppercase at `0.78rem`/`0.14em`, the
-  navigation's own setting. Then the cornflower dot as the domain's full
-  stop: on the baseline like a period, never centred, tight to the N
-  (`margin: 0 0.08em 0 0.02em` — the N's tracking already opens 0.14em).
-  Then `art`, written by hand in Caveat 600 at `1.95em` of the caps, which
-  puts its x-height level with their height: untracked, lowercase, lifted
-  `−5°` about its own foot so it stays on the line, and `line-height: 0` so
-  the larger face does not open the header row. The three parts are one
-  name and never wrap apart (`white-space: nowrap`); at 360px the row still
-  holds the mark, the language switch and the hamburger. Screen readers and
-  crawlers get the plain name: the dot is `aria-hidden` and a visually
-  hidden `.` stands in for it, so the home link reads "ks design.art" — a
-  test pins it to `identity.brand`. History: the name replaced `ks·design`
-  (2026-08-19 … 2026-11-19), whose dot sat between the two words nearer the
-  KS in a 1:2 proportion, which in turn replaced the hyphen of the bold
-  lowercase `ks-design`. The dot uses
-  `--brand-dot`, an indigo-to-cyan gradient at 135° (client decision,
-  2026-08-28, picked from a 20-variant show as «Васильковый»; it replaced
-  the flat `--brand-gold`), the page's only chromatic device, and a test
-  allows exactly its two hexes and no other colour. There is still no logo
-  image, and the old gradient monogram is gone and should not come back.
-  The mark lives in the header and on the social cards, which
-  `make-og.mjs` sets with the same rules (mirror `layout.css` when it
-  moves, and bump `ogImageVersion` in `content.js` with the pixels:
-  messengers cache a preview by its image URL). In text the brand is
-  written `ks design.art`; see "The site name" under Implementation. The
+- The canonical wordmark is `ks-design.art` (client correction and SVG
+  approval, 2026-11-27). Use the master and two transparent outlined exports
+  in `brand/`; follow `brand/README.md` for export, dimensions and hashes.
+  The header loads the light-background file from `website/assets/brand/`
+  at 121 × 20 CSS px on desktop and phones. Use the white-ink variant on
+  dark surfaces. Do not resize, recolour, fade, filter or redraw it locally.
+  Its accessible name is the image alt text `ks-design.art`.
+  The outlines preserve Manrope 700 caps, tracking, Caveat 600 lowercase
+  `art`, its contextual t and -5° tilt; the dot keeps the original 135°
+  indigo-to-cyan gradient. The original live-text measurements remain in
+  `brand/reference-metrics.json`, with the hyphen correction recorded in
+  `brand/lettering-metrics.json`. Old marks and the gradient monogram must
+  not return. Social cards embed the same SVG at proportional scale;
+  regenerate with `make-og.mjs` and bump `ogImageVersion` when pixels change.
+  The brand name in copy and search metadata is `ks-design.art`. The
   favicon is its own device (client pick,
   2026-08-31, variant 20 of a 20-variant show; it replaced the type-set
   transparent `KS.` of 2026-08-29): white lowercase `ks` — a nod to the

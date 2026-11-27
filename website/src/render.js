@@ -102,7 +102,7 @@ function langSwitch(lang, copy) {
  *  page already. The 404 page reuses this header but has none of those ids, so
  *  it passes the home path and the links become `/#work` rather than a `#work`
  *  that silently does nothing. */
-function header(lang, copy, anchorBase = "") {
+function header(lang, copy, anchorBase = "", assetVersions = {}) {
   const home = languages[lang].path;
   /* Each nav key is also the id of the section it points at. Contact is marked
      so the stylesheet can drop it from the desktop row, where the solid button
@@ -121,7 +121,7 @@ function header(lang, copy, anchorBase = "") {
 
   return `<header class="site-header" data-header>
     <div class="container header-inner">
-      <a class="brand" href="${home}"><span class="brand-word">ks design<span class="brand-dot" aria-hidden="true"></span><span class="visually-hidden">.</span><span class="brand-art">art</span></span></a>
+      <a class="brand" href="${home}"><img class="brand-logo" src="${versioned("/assets/brand/ks-design-art-on-light.svg", assetVersions)}" alt="ks-design.art" width="121" height="20"></a>
       <nav class="site-nav" id="site-nav" aria-label="${escapeHtml(copy.nav.label)}">
         <ul role="list">${navItems}</ul>
       </nav>
@@ -768,7 +768,7 @@ export function renderPage(lang, origin, assetVersions = {}) {
   const copy = content[lang];
   const years = experienceYears();
 
-  const body = `${header(lang, copy)}
+  const body = `${header(lang, copy, "", assetVersions)}
   <main id="main">
     ${hero(copy, years)}
     ${work(copy)}
@@ -796,7 +796,7 @@ export function renderNotFound(lang, origin, assetVersions = {}) {
   const copy = content[lang];
   /* None of the section ids exist here, so the header's anchors are qualified
      with the home path instead of pointing at nothing. */
-  const body = `${header(lang, copy, languages[lang].path)}
+  const body = `${header(lang, copy, languages[lang].path, assetVersions)}
   <main id="main">
     <section class="slide section not-found">
       <div class="container">

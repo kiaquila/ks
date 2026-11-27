@@ -1,0 +1,80 @@
+[
+  {
+    "dpr": 1,
+    "geometry": {
+      "baseline": 65.890625,
+      "box": {
+        "x": 40,
+        "y": 51.890625,
+        "width": 116.921875,
+        "height": 20.21875,
+        "top": 51.890625,
+        "right": 156.921875,
+        "bottom": 72.109375,
+        "left": 40
+      },
+      "fonts": [
+        {
+          "family": "Manrope",
+          "status": "loaded"
+        },
+        {
+          "family": "Caveat",
+          "status": "loaded"
+        }
+      ]
+    }
+  },
+  {
+    "dpr": 2,
+    "geometry": {
+      "baseline": 65.890625,
+      "box": {
+        "x": 40,
+        "y": 51.890625,
+        "width": 116.921875,
+        "height": 20.21875,
+        "top": 51.890625,
+        "right": 156.921875,
+        "bottom": 72.109375,
+        "left": 40
+      },
+      "fonts": [
+        {
+          "family": "Manrope",
+          "status": "loaded"
+        },
+        {
+          "family": "Caveat",
+          "status": "loaded"
+        }
+      ]
+    }
+  },
+  {
+    "dpr": 8,
+    "geometry": {
+      "baseline": 65.890625,
+      "box": {
+        "x": 40,
+        "y": 51.890625,
+        "width": 116.921875,
+        "height": 20.21875,
+        "top": 51.890625,
+        "right": 156.921875,
+        "bottom": 72.109375,
+        "left": 40
+      },
+      "fonts": [
+        {
+          "family": "Manrope",
+          "status": "loaded"
+        },
+        {
+          "family": "Caveat",
+          "status": "loaded"
+        }
+      ]
+    }
+  }
+]
