@@ -439,7 +439,7 @@ export const content = {
         github: "GitHub"
       }
     },
-    footer: { copyright: "© Creative agency", brand: identity.brand },
+    footer: { copyright: "Creative agency", brand: identity.brand },
     notFound: {
       title: "Page not found",
       body: "There is no such page here. Head back to the home page.",
@@ -767,7 +767,7 @@ export const content = {
         github: "GitHub"
       }
     },
-    footer: { copyright: "© Creative agency", brand: identity.brand },
+    footer: { copyright: "Creative agency", brand: identity.brand },
     notFound: {
       title: "Página no encontrada",
       body: "Acá no hay ninguna página así. Volvé al inicio.",

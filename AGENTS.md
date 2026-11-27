@@ -173,10 +173,10 @@ rules, heavy tracked capitals. Everything below follows from that.
   one until their cache expires; that is the accepted cost of the
   convention.
 - The footer is **one horizontal row directly under the contact band**, and the
-  pair is anchored to the bottom of the last slide: copyright hard left, a pin
+  pair is anchored to the bottom of the last slide: agency credit hard left, a pin
   icon and the location hard right — in the corner the social icons held
   until they moved up into the band (client decision, 2026-09-17). It carries
-  the agency homepage link in `© Creative agency ks-design.art` (client
+  the agency homepage link in `Creative agency ks-design.art` (client
   decision, 2026-11-27) and no rule on top — the band above it already divides the page,
   and the band must not be pushed away from it by a spacer row.
 - Write the practice’s visible homepage copy as “we” in both locales. Keep

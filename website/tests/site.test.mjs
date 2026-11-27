@@ -278,7 +278,8 @@ test("the hero annotations carry claims only; the feeds live in the contact band
     /* The feeds stay in the band; the footer links only to the agency. */
     const footer = html.match(/<footer class="site-footer">([\s\S]*?)<\/footer>/)[1];
     assert.deepEqual([...footer.matchAll(/href="([^"]+)"/g)].map((m) => m[1]), [links.website]);
-    assert.ok(stripTags(footer).includes("© Creative agency ks-design.art"));
+    assert.ok(stripTags(footer).includes("Creative agency ks-design.art"));
+    assert.doesNotMatch(footer, /©|&copy;|&#(?:169|x0*a9);/i);
     assert.doesNotMatch(html, /id="why"|href="#why"/);
     const nav = html.match(/<nav class="site-nav"[\s\S]*?<\/nav>/)[0];
     const anchors = [...nav.matchAll(/href="#([a-z-]+)"/g)].map((m) => m[1]);

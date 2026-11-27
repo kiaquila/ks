@@ -143,7 +143,7 @@ and WebP. The project is presented before Igor Cherkasov as the newest work.
 The homepage speaks as “we” in both languages (client decision, 2026-11-27),
 including the hero, annotations, process and FAQ answers. Questions written
 from the visitor’s perspective keep “I”. The footer reads
-`© Creative agency ks-design.art`, with the domain linking to the production
+`Creative agency ks-design.art`, with the domain linking to the production
 homepage. The Spanish agency copy and Animated Menus card await owner review.
 
 The Igor Cherkasov card uses the first screen of the live Russian-language
