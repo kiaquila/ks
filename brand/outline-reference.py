@@ -12,8 +12,9 @@ REPO = ROOT.parent
 METRICS = json.loads((ROOT / 'reference-metrics.json').read_text())
 LETTERING = json.loads((ROOT / 'lettering-metrics.json').read_text())
 LABEL = LETTERING['label']
-WIDTH = math.ceil(118 + LETTERING['after']['box']['width'] - LETTERING['before']['box']['width'])
-TAIL_SHIFT = LETTERING['after']['dot']['x'] - LETTERING['before']['dot']['x']
+ACTIVE = LETTERING[LETTERING.get('active', 'after')]
+WIDTH = math.ceil(118 + ACTIVE['box']['width'] - LETTERING['before']['box']['width'])
+TAIL_SHIFT = ACTIVE['dot']['x'] - LETTERING['before']['dot']['x']
 FONTS = REPO / 'website/assets/fonts'
 
 def number(n):
@@ -38,11 +39,11 @@ hand_size = float(METRICS['art']['style']['fontSize'].removesuffix('px'))
 caps_scale = caps_size / caps_font['head'].unitsPerEm
 hand_scale = hand_size / hand_font['head'].unitsPerEm
 caps_paths, bounds = [], []
-for item in LETTERING['after']['caps']:
+for item in ACTIVE['caps']:
     if item['char'].isspace():
         continue
     glyph = caps_font.getBestCmap()[ord(item['char'])]
-    x = item['box']['x'] - LETTERING['after']['box']['x']
+    x = item['box']['x'] - ACTIVE['box']['x']
     d, b = path_and_bounds(caps_set, glyph, Transform(caps_scale, 0, 0, -caps_scale, x, 0))
     caps_paths.append(d)
     bounds.append(b)

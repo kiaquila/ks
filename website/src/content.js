@@ -70,9 +70,9 @@ export const ogImages = { en: "og-en.png", es: "og-es.png" };
 
 /** Bumped whenever the cards' pixels change. Social networks and messengers
  *  cache a preview by its image URL far past any page revalidation, so a
- *  redrawn card under the old URL keeps showing the old one. 3: the
- *  canonical outlined ks-design.art wordmark (2026-11-27). */
-export const ogImageVersion = 3;
+ *  redrawn card under the old URL keeps showing the old one. 4: the
+ *  restored outlined ks design.art wordmark (2026-11-27). */
+export const ogImageVersion = 4;
 
 export const faqTopics = {
   clients: ["person"],
@@ -87,7 +87,7 @@ export const faqTopics = {
   "art-commission": ["person"]
 };
 
-/* The brand is "ks-design.art" (client correction, 2026-11-27): the name and
+/* The brand is "ks design.art" (client preference, 2026-11-27): the name and
    the domain read as one, so a search for either finds the other. It is the
    site name everywhere a search engine reads one — the titles, og:site_name,
    the WebSite node, the Brand, llms.txt. `alternateNames` are the backups
@@ -96,8 +96,8 @@ export const faqTopics = {
    lowercase, which is how that system recognises a domain. */
 export const identity = {
   name: "Kristina Aquila",
-  brand: "ks-design.art",
-  alternateNames: ["ks design.art", "ks-design"],
+  brand: "ks design.art",
+  alternateNames: ["ks-design", "ks-design.art"],
   locality: "Buenos Aires",
   country: "AR",
   launched: "2026-08",
@@ -108,7 +108,7 @@ export const identity = {
 export const content = {
   en: {
     meta: {
-      title: "Small business website design — ks-design.art, creative agency",
+      title: "Small business website design — ks design.art, creative agency",
       jobTitle: "Web designer",
       description:
         "Small business website design: landing pages and one-page websites for coffee shops, salons, therapists and consultants. Non-generic AI design from Buenos Aires.",
@@ -443,7 +443,7 @@ export const content = {
 
   es: {
     meta: {
-      title: "Diseño web para emprendedores — ks-design.art, agencia creativa",
+      title: "Diseño web para emprendedores — ks design.art, agencia creativa",
       jobTitle: "Diseñadora web",
       description:
         "Diseño web para emprendedores y pequeños negocios: landings y sitios de una página para cafeterías, salones, psicólogos y consultores. Diseño con IA, nada genérico.",

@@ -28,6 +28,8 @@ import { content, ogImages } from "../src/content.js";
 
 const run = promisify(execFile);
 const root = resolve(import.meta.dirname, "..");
+const { nativeSize } = JSON.parse(await readFile(join(root, "../brand/manifest.json"), "utf8"));
+const logoScale = 35.256 / nativeSize.height;
 
 const CHROME_CANDIDATES = [
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
@@ -93,7 +95,7 @@ async function cardHtml(lang) {
 </style></head>
 <body>
   <div class="copy">
-    <div class="name"><img src="${logo}" alt="ks-design.art" width="213.302" height="35.256"></div>
+    <div class="name"><img src="${logo}" alt="ks design.art" width="${nativeSize.width * logoScale}" height="35.256"></div>
     <div>
       <h1>${copy.hero.title}</h1>
       <p class="sub">${copy.hero.subtitle}</p>
