@@ -781,10 +781,10 @@ test("the portrait swaps frames and the annotations stay readable", () => {
 test("the wordmark is an accessible SVG at the shared native size", () => {
   for (const key of DOCUMENTS) {
     const brand = pages[key].match(/<a class="brand"[\s\S]*?<\/a>/)[0];
-    assert.match(brand, /src="\/assets\/brand\/ks-design-art-on-light\.svg\?v=[0-9a-f]{10}" alt="ks-design\.art" width="121" height="20"/);
+    assert.match(brand, /src="\/assets\/brand\/ks-design-art-on-light\.svg\?v=[0-9a-f]{10}" alt="ks design\.art" width="118" height="20"/);
     assert.doesNotMatch(brand, /brand-art|brand-dot/);
   }
-  assert.match(css, /\.brand-logo \{[^}]*width: 121px;\s*height: 20px;/);
+  assert.match(css, /\.brand-logo \{[^}]*width: 118px;\s*height: 20px;/);
 });
 
 test("search engines read one site name: ks design.art", async () => {
@@ -792,8 +792,8 @@ test("search engines read one site name: ks design.art", async () => {
      og:site_name, the title and the headings, and wants them to agree.
      The bare domain is the last alternate, in lowercase, which is how that
      system recognises one. */
-  assert.equal(identity.brand, "ks-design.art");
-  assert.deepEqual(identity.alternateNames, ["ks design.art", "ks-design"]);
+  assert.equal(identity.brand, "ks design.art");
+  assert.deepEqual(identity.alternateNames, ["ks-design", "ks-design.art"]);
   for (const lang of LOCALES) {
     const site = structuredGraph(lang).find((node) => node["@type"] === "WebSite");
     assert.equal(site.name, identity.brand, `${lang}: WebSite name`);
